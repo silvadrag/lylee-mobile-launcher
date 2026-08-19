@@ -1,4 +1,4 @@
-<h1 align="center">PojavLauncher</h1>
+<h1 align="center">PojavLauncher (a.k.a. Pojav Reborn)</h1>
 
 <a href="./README_RU.md">Readme на русском</a>
 
@@ -25,14 +25,6 @@
 PojavLauncher is a launcher that allows you to play Minecraft: Java Edition on your Android and [iOS](https://github.com/PojavLauncherTeam/PojavLauncher_iOS) devices.
 
 For more details, check out our [wiki](https://pojavlauncher.app/)!
-
-> [!NOTE]
-> This is not the original PojavLauncher. The original project has been discontinued. This repository is a rewrite based on [MojoLauncher](https://github.com/MojoLauncher/MojoLauncher) commits. We are not affiliated with the PojavLauncherTeam in any way.
->
-> We do not maintain any social media accounts except Discord. All official PojavLauncherTeam social channels have been archived.
->
-> - Join [Discord](https://discord.gg/2HYpzs4gZT) for the latest updates and news.
-> - Check out the [original PojavLauncher](https://github.com/PojavLauncherTeam/PojavLauncher) source code.
 
 ## Table of Contents
 
@@ -183,7 +175,7 @@ PojavLauncher is licensed under [GNU LGPLv3](https://github.com/PojavLauncherTea
 - [Authlib-Injector](https://github.com/yushijinhun/authlib-injector) (Authorization via ely.by): [AGPL-3.0](https://github.com/yushijinhun/authlib-injector/blob/develop/LICENSE)
 
 ### Audio
-- [OpenAL-Soft](https://github.com/kcat/openal-soft): [GNU GPLv2 License](app_pojavlauncher/src/main/assets/licenses/OPENAL-SOFT_GPL2)
+- [OpenAL-Soft](https://github.com/kcat/openal-soft): [GNU LIBRARY GENERAL PUBLIC LICENSE](https://github.com/kcat/openal-soft/blob/master/COPYING) and [modified PFFFT](https://github.com/kcat/openal-soft/blob/master/LICENSE-pffft)
 - [oboe](https://github.com/google/oboe): [Apache License 2.0](https://github.com/google/oboe/blob/main/LICENSE)
 
 ### Other Services

@@ -1,4 +1,4 @@
-<h1 align="center">PojavLauncher</h1>
+<h1 align="center">PojavLauncher (a.k.a. Pojav Reborn)</h1>
 
 <img src="https://github.com/PojavLauncherTeam/PojavLauncher/blob/v3_openjdk/app_pojavlauncher/src/main/assets/pojavlauncher.png" align="left" width="130" height="150" alt="PojavLauncher logo">
 
@@ -21,14 +21,6 @@
 PojavLauncher হল একটি লঞ্চার যা আপনাকে আপনার Android এবং [iOS](https://github.com/PojavLauncherTeam/PojavLauncher_iOS) ডিভাইসে Minecraft: Java Edition খেলতে দেয়।
 
 বিস্তারিত তথ্যের জন্য আমাদের [উইকি](https://pojavlauncher.app/) দেখুন!
-
-> [!NOTE]
-> এটি আসল PojavLauncher নয়। মূল প্রকল্পটি বন্ধ হয়ে গেছে। এই রিপোজিটরিটি [MojoLauncher](https://github.com/MojoLauncher/MojoLauncher)  কমিটগুলোর উপর ভিত্তি করে একটি রিরাইট। আমরা PojavLauncherTeam এর সাথে কোনোভাবে সম্পর্কিত নই।
->
-> আমরা Discord ছাড়া অন্য কোনো সোশ্যাল মিডিয়া পরিচালনা করি না। PojavLauncherTeam-এর সব অফিসিয়াল সোশ্যাল চ্যানেল আর্কাইভ করা হয়েছে।
->
-> - সর্বশেষ আপডেট ও খবরের জন্য [Discord](https://discord.gg/2HYpzs4gZT) যোগ দিন।
-> - মূল PojavLauncher সোর্স কোড দেখতে [এখানে](https://github.com/PojavLauncherTeam/PojavLauncher) যান।
 
 ## বিষয়সূচি
 
@@ -176,7 +168,7 @@ PojavLauncher [GNU LGPLv3](https://github.com/PojavLauncherTeam/PojavLauncher/bl
 - [Authlib-Injector](https://github.com/yushijinhun/authlib-injector) (ely.by এর মাধ্যমে অনুমোদন): [AGPL-3.0](https://github.com/yushijinhun/authlib-injector/blob/develop/LICENSE)
 
 ### অডিও
-- [OpenAL-Soft](https://github.com/kcat/openal-soft): [GNU GPLv2 লাইসেন্স](app_pojavlauncher/src/main/assets/licenses/OPENAL-SOFT_GPL2)
+- [OpenAL-Soft](https://github.com/kcat/openal-soft): [GNU LIBRARY GENERAL PUBLIC LICENSE](https://github.com/kcat/openal-soft/blob/master/COPYING) এবং [modified PFFFT](https://github.com/kcat/openal-soft/blob/master/LICENSE-pffft)
 - [oboe](https://github.com/google/oboe): [Apache লাইসেন্স 2.0](https://github.com/google/oboe/blob/main/LICENSE)
 
 ### অন্যান্য সেবা
