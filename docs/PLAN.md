@@ -72,14 +72,35 @@ Research doc (mục 1) mô tả đơn giản hóa 5 package (`authenticator/cust
 Máy dev (Windows) **trước đây chưa có** Android Studio/SDK/NDK/Gradle (chỉ có sẵn JDK cho phần mod Java backend). Đã cài **2026-08-21**:
 - Android Studio qua `winget install Google.AndroidStudio` — chỉ cài IDE, KHÔNG tự có SDK/NDK.
 - `poppler` (qua winget, id `oschwartz10612.Poppler`) — công cụ phụ để đọc PDF dạng ảnh/scan (không liên quan trực tiếp launcher, nhưng cần để đọc tài liệu tham khảo dạng slide).
-- Android SDK Command-line Tools (tải trực tiếp từ `dl.google.com`, đã verify SHA-256) — cài vào `%LOCALAPPDATA%\Android\Sdk\cmdline-tools\latest`, đặt `ANDROID_HOME`/`ANDROID_SDK_ROOT` (user-level env var).
-- Qua công cụ mới `android` CLI (thay thế `sdkmanager` cũ, cú pháp gói dùng `/` thay vì `;`, VD `ndk/29.0.14206865` không phải `ndk;29.0.14206865`): `platform-tools`, `platforms/android-36`, `ndk/29.0.14206865` (khớp đúng yêu cầu thật của PojavLauncher, xem mục 2).
+- Android SDK Command-line Tools (tải trực tiếp từ `dl.google.com`, đã verify SHA-256) — **cài ở `D:\Android\Sdk`, KHÔNG phải `%LOCALAPPDATA%` mặc định** (xem lý do ở mục 7 — ổ C: gần đầy). `ANDROID_HOME`/`ANDROID_SDK_ROOT`/`GRADLE_USER_HOME` đều đặt user-level env var trỏ sang D:.
+- Qua công cụ mới `android` CLI (thay thế `sdkmanager` cũ, cú pháp gói dùng `/` thay vì `;`, VD `ndk/29.0.14206865` không phải `ndk;29.0.14206865`): `platform-tools`, `platforms/android-36`.
+- 3 bản NDK khác nhau (mỗi project/submodule pin 1 bản riêng, không dùng chung được): `29.0.14206865` (PojavLauncher chính), `28.2.13676358` (submodule NG-GL4ES của Pojav), `27.3.13750724`/`27.0.12077973` (FCLauncher — xem mục 7 về lý do cài tay bản NDK 28.2 thay vì qua trình quản lý).
 
-## 6. Việc cần làm tiếp
+## 6. Trạng thái build thật (cập nhật liên tục)
+
+- ✅ **PojavLauncher: BUILD SUCCESSFUL (2026-08-21)** — `./gradlew :app_pojavlauncher:assembleDebug` chạy sạch, ra 2 file APK thật (`app_pojavlauncher-full-debug.apk` 106MB, `app_pojavlauncher-noruntime-debug.apk` 78MB) tại `app_pojavlauncher/build/outputs/apk/`. Chưa cài lên máy/emulator thật để chạy thử (chỉ mới xác nhận BUILD được, chưa xác nhận CHẠY được).
+- ⏳ **Fold Craft Launcher: đang thử build lần đầu**, xem log thật khi xong thay vì đoán trước.
+
+## 7. Nhật ký dựng môi trường build thật (2026-08-21) — các lỗi gặp + cách sửa
+
+Loạt lỗi thật gặp phải khi build lần đầu trên máy Windows chưa từng làm Android bao giờ — ghi lại chi tiết vì admin tool Java (mod backend) cũng chạy trên máy này, dễ tái diễn khi build lại sau này hoặc trên máy khác:
+
+1. **`local.properties` viết path Windows kiểu `C:\Users\...` làm hỏng SDK path** — dấu `\U` trong `\Users` bị Java Properties parser hiểu nhầm thành escape unicode (`\uXXXX`), AGP báo lỗi mơ hồ `IOException: The filename, directory name, or volume label syntax is incorrect` ngay từ bước "configure project", trỏ sâu vào `SdkLocator.kt` chứ không phải lỗi thật của Pojav. **Sửa**: luôn dùng dấu `/` trong `local.properties` (`sdk.dir=D:/Android/Sdk`), Gradle/AGP trên Windows chấp nhận cả 2 kiểu nhưng `/` an toàn tuyệt đối, không cần escape.
+2. **Ổ C: gần đầy (99%, chỉ còn 1.9GB) giữa chừng cài đặt** — Android Studio + SDK cmdline-tools + NDK 795MB + Gradle distribution/cache đều mặc định đổ vào `%LOCALAPPDATA%`/`%USERPROFILE%\.gradle` (ổ C:). Gradle build fail nửa chừng với `IOException: There is not enough space on the disk`. **Sửa**: chuyển hẳn `ANDROID_HOME` sang `D:\Android\Sdk` và `GRADLE_USER_HOME` sang `D:\gradle-home` (ổ D: rảnh 46GB) — dọn lại được ~14GB trên C:. **Bài học**: kiểm tra `df -h` TRƯỚC khi cài bất cứ gì nặng, không đợi tới lúc build fail mới biết.
+3. **Windows MAX_PATH (260 ký tự) làm hỏng `git index` giữa chừng checkout** — clone lần đầu vào đường dẫn scratch quá sâu (`...\AppData\Local\Temp\claude\...\scratchpad\...`, đã hơn 140 ký tự trước khi tới path riêng của Pojav) khiến 1 số file "Filename too long" lúc checkout, để lại `.git/index` bị lỗi (`git status` báo TOÀN BỘ file bị "deleted" dù file vẫn còn trên đĩa). **Sửa**: `git config --global core.longpaths true` + luôn clone vào đường dẫn ngắn (`D:\dev\...`), không dùng thư mục scratch/temp sâu cho việc clone repo lớn.
+4. **`android` CLI mới âm thầm bỏ qua cài NDK nếu license chưa accept — không báo lỗi rõ** — khác `sdkmanager` cũ (hỏi `Accept? (y/N)` rõ ràng), công cụ `android sdk install` mới chạy xong "thành công" (exit code không nhất quán) nhưng thư mục NDK trống trơn (chỉ có `.installer/`, không có `source.properties`) — build sau đó báo `[CXX1101] NDK ... did not have a source.properties file`. Phát hiện qua `sdkmanager --licenses` thấy còn khoản chưa accept. **Sửa**: `yes | sdkmanager --licenses` chấp nhận hết TRƯỚC khi cài package mới qua công cụ nào cũng được.
+5. **1 bản NDK (28.2.13676358) vẫn cài lỗi dù đã accept license — dùng cách tải tay** — `sdkmanager`/`android sdk install` liên tục fail giữa chừng riêng với đúng bản này (không rõ nguyên nhân gốc, có thể do CDN tạm thời). **Sửa vòng qua**: tải thẳng file zip từ `https://dl.google.com/android/repository/android-ndk-r28c-windows.zip` (link + SHA1 lấy từ [trang chính thức NDK Unsupported Downloads](https://github.com/android/ndk/wiki/Unsupported-Downloads), đã verify checksum khớp trước khi dùng), tự giải nén vào đúng `D:\Android\Sdk\ndk\28.2.13676358\`.
+6. **Symlink Unix thật bị git-on-Windows checkout thành file text vô dụng** — PojavLauncher dùng symlink thật (`core.symlinks` mặc định `false` trên Windows) để nối `app_pojavlauncher/src/main/jni/{glfw,mojoexec,sdl}` sang 3 submodule ở gốc repo. Trên Windows, mỗi "symlink" đó chỉ còn là file text 15-20 byte chứa CHUỖI đường dẫn (VD `../../../../glfw/`), không phải liên kết thật — CMake báo `add_subdirectory given source "glfw" which is not an existing directory`. **Sửa**: xóa 3 file placeholder đó, tạo lại bằng NTFS junction thật (`New-Item -ItemType Junction`, KHÔNG cần quyền admin, khác symlink `mklink /D` cần admin) trỏ đúng tới submodule thật. Cần soát lại y hệt nếu FCL cũng dùng pattern symlink tương tự.
+7. **Java compiler 21 cảnh báo (không phải lỗi) khi compile source/target Java 8** — Pojav vẫn target bytecode Java 8 dù build bằng JDK 21, ra warning "deprecated support" — không chặn build, bỏ qua được.
+
+**Kết luận chung**: build APK debug PojavLauncher hoàn toàn khả thi trên máy dev thường (không cần Linux/Mac như nhiều hướng dẫn ngầm giả định), nhưng cần đúng thứ tự sửa 6 lỗi trên — nếu làm lại từ đầu (máy khác/sau khi dọn môi trường), làm theo đúng thứ tự này sẽ nhanh hơn nhiều so với lần đầu dò mù.
+
+## 8. Việc cần làm tiếp
 
 - [x] Cài Android Studio + SDK cmdline-tools + đúng platform/NDK PojavLauncher cần.
 - [x] Clone PojavLauncher (`--recurse-submodules`) vào scratch, đọc cấu trúc thật — xem mục 2.
-- [ ] Clone FCL (`--recurse-submodules`), đọc cấu trúc thật, so `build.gradle` lấy đúng SDK/NDK version cần (khác Pojav, chưa cài).
-- [ ] Build thử APK rỗng cho CẢ 2 (đang làm dở PojavLauncher trước, xem log build thật thay vì đoán).
+- [x] Build thành công APK debug cho PojavLauncher — xem mục 6.
+- [ ] Build thử FCL (đang chạy) — cập nhật mục 6 khi có kết quả thật.
+- [ ] Cài APK PojavLauncher lên máy/emulator thật, xác nhận CHẠY được (mở app, không crash) — build thành công chỉ là bước đầu.
 - [ ] Đọc kỹ LICENSE đúng tag sẽ fork của cả 2 (xác nhận nghĩa vụ copyleft cụ thể) — Pojav cần xác minh lại trực tiếp trên GitHub vì không thấy file LICENSE thật.
 - [ ] So sánh, chốt hướng — cập nhật mục 2 + 4 tài liệu này.
