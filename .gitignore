@@ -27,3 +27,11 @@ runtime/*.zip
 ## macOS / Windows
 .DS_Store
 Thumbs.db
+
+## ------ Kế thừa từ upstream PojavLauncher (v3_openjdk) ------
+/app_pojavlauncher/src/main/assets/components/jre
+/app_pojavlauncher/src/main/assets/components/jre-new/
+/app_pojavlauncher/src/main/assets/components/jre-21/
+.vs/
+/curseforge_key.txt
+/app_pojavlauncher/libs/ltw-release.aar

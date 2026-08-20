@@ -1,0 +1,15 @@
+[submodule "glfw"]
+	path = glfw
+	url = https://github.com/MojoLauncher/glfw
+[submodule "mojoexec"]
+	path = mojoexec
+	url = https://github.com/MojoLauncher/mojoexec
+[submodule "sdl"]
+	path = sdl
+	url = https://github.com/MojoLauncher/MojoSDL
+[submodule "MobileGlues"]
+	path = MobileGlues
+	url = https://github.com/MobileGL-Dev/MobileGlues.git
+[submodule "NG-GL4ES/NG-GL4ES"]
+	path = NG-GL4ES/NG-GL4ES
+	url = https://github.com/TeamPojavLauncher/NG-GL4ES.git
