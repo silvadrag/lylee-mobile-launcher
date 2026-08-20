@@ -27,3 +27,17 @@ runtime/*.zip
 ## macOS / Windows
 .DS_Store
 Thumbs.db
+
+## ------ Kế thừa từ upstream Fold Craft Launcher ------
+*.log
+release
+output.json
+android-ndk-r26d/
+.trae/
+google-services.json
+*.hprof
+FCL/src/main/java/com/mio/Main.kt
+/LWJGL-Pojav/bin
+LWJGL-Pojav/compileOnly/jspecify-1.0.0.jar
+AGENTS.md
+/.zcode/
