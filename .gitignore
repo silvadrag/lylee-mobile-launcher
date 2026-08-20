@@ -1,0 +1,29 @@
+## Android / Gradle build output
+*.iml
+.gradle/
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+local.properties
+.idea/
+*.apk
+*.aab
+*.ap_
+*.dex
+
+## NDK / native toolchain download cache (nếu build script tự tải về máy)
+.ndk/
+
+## Runtime JDK/JRE build cho ARM (build tay/tải sẵn, không commit binary lớn)
+runtime/*.tar.xz
+runtime/*.zip
+
+## Tài liệu không liên quan tới project này (slide môn học đại học của
+## người dùng, gửi nhầm lúc trao đổi — xem docs/ để biết tài liệu THẬT
+## đang dùng cho project). Giữ lại trên máy cục bộ, không commit.
+1.LTWEB.pdf
+
+## macOS / Windows
+.DS_Store
+Thumbs.db
