@@ -27,7 +27,17 @@ Tầng 3-4 (build lại OpenJDK cho ARM, dịch Desktop OpenGL sang OpenGL ES/Vu
 
 **Cả 2 đều copyleft** — nếu fork + phát hành app cho người chơi dùng, **bắt buộc giữ mã nguồn mở** (không thể âm thầm đóng gói lại thành closed-source). Cần đọc kỹ LICENSE của đúng version/tag định fork trước khi quyết định — LGPLv3 (Pojav bản mới) lỏng hơn GPLv3 (FCL) một chút về việc link thư viện, nhưng cả 2 đều yêu cầu công khai source code bản đã sửa.
 
-**Cách quyết định**: dựng thử CẢ 2 qua 2 nhánh riêng (`explore/pojavlauncher-fork` và `explore/fcl-fork`, xem mục 4) — build thành công, chạy thử trên máy/emulator, đọc code thật để đánh giá "dễ tùy biến" tới đâu — rồi mới chọn 1 nhánh để đi tiếp làm `main`. Tránh chốt theo cảm tính SỚM khi corn chưa build thử.
+⚠️ **Phát hiện lúc clone thử (2026-08-21)**: repo PojavLauncher (nhánh mặc định `v3_openjdk`) **không có file `LICENSE` ở gốc repo** — badge LGPLv3 trong README trỏ tới file đó nhưng GitHub API (`gh api repos/.../license`) cũng không nhận diện được license nào. Cần tự mở thẳng trang GitHub xác nhận lại (không tin riêng badge) trước khi coi LGPLv3 là chính thức.
+
+**Cách quyết định**: dựng thử CẢ 2 qua 2 nhánh riêng (`explore/pojavlauncher-fork` và `explore/fcl-fork`, xem mục 4) — build thành công, chạy thử trên máy/emulator, đọc code thật để đánh giá "dễ tùy biến" tới đâu — rồi mới chọn 1 nhánh để đi tiếp làm `main`. Tránh chốt theo cảm tính sớm khi chưa build thử.
+
+### Cấu trúc thật của PojavLauncher (đã clone + đọc, khác research doc ban đầu)
+
+Research doc (mục 1) mô tả đơn giản hóa 5 package (`authenticator/customcontrols/fragments/tasks/utils`) — thực tế package `net.kdt.pojavlaunch` có **~28 package con** (thêm `colorselector, contracts, downloader, extra, game, imgcropper, instances, lifecycle, mirrors, modloaders, multirt, plugins, prefs, profiles, progresskeeper, render, scoped, services, value`...) — dự án trưởng thành/phức tạp hơn nhiều so với mô tả tóm lược. Dùng git submodule thật (không phải thư mục thường) cho 5 phần native: `glfw`, `mojoexec`, `sdl` (từ org `MojoLauncher`), `MobileGlues`, `NG-GL4ES` (từ `MobileGL-Dev`/`TeamPojavLauncher`) — bắt buộc `git submodule update --init --recursive` sau khi clone, không tự có sẵn.
+
+**Thông số build xác nhận từ `app_pojavlauncher/build.gradle` thật** (không đoán):
+- `compileSdk = 36`, `targetSdkVersion 36`, `minSdkVersion 21`
+- `ndkVersion "29.0.14206865"` (khớp đúng 1 bản NDK có sẵn qua `android sdk list --all "ndk*"`, không phải bản mới nhất)
 
 ## 3. Mô hình tích hợp dự tính (Cách 2 trong nghiên cứu — Xây UI riêng + gọi Core)
 
@@ -59,12 +69,17 @@ Tầng 3-4 (build lại OpenJDK cho ARM, dịch Desktop OpenGL sang OpenGL ES/Vu
 
 ## 5. Môi trường dev
 
-Máy dev (Windows) **trước đây chưa có** Android Studio/SDK/NDK/Gradle (chỉ có sẵn JDK cho phần mod Java backend). Đã cài Android Studio (kèm SDK Manager) qua `winget install Google.AndroidStudio` ngày 2026-08-21 — cần tự mở Android Studio ít nhất 1 lần để hoàn tất cài SDK/NDK components qua wizard (winget chỉ cài IDE, chưa tự động tải SDK/NDK components).
+Máy dev (Windows) **trước đây chưa có** Android Studio/SDK/NDK/Gradle (chỉ có sẵn JDK cho phần mod Java backend). Đã cài **2026-08-21**:
+- Android Studio qua `winget install Google.AndroidStudio` — chỉ cài IDE, KHÔNG tự có SDK/NDK.
+- `poppler` (qua winget, id `oschwartz10612.Poppler`) — công cụ phụ để đọc PDF dạng ảnh/scan (không liên quan trực tiếp launcher, nhưng cần để đọc tài liệu tham khảo dạng slide).
+- Android SDK Command-line Tools (tải trực tiếp từ `dl.google.com`, đã verify SHA-256) — cài vào `%LOCALAPPDATA%\Android\Sdk\cmdline-tools\latest`, đặt `ANDROID_HOME`/`ANDROID_SDK_ROOT` (user-level env var).
+- Qua công cụ mới `android` CLI (thay thế `sdkmanager` cũ, cú pháp gói dùng `/` thay vì `;`, VD `ndk/29.0.14206865` không phải `ndk;29.0.14206865`): `platform-tools`, `platforms/android-36`, `ndk/29.0.14206865` (khớp đúng yêu cầu thật của PojavLauncher, xem mục 2).
 
 ## 6. Việc cần làm tiếp
 
-- [ ] Mở Android Studio lần đầu, hoàn tất SDK/NDK setup wizard.
-- [ ] Clone PojavLauncher vào `explore/pojavlauncher-fork`, thử build APK rỗng.
-- [ ] Clone FCL vào `explore/fcl-fork`, thử build APK rỗng.
-- [ ] Đọc kỹ LICENSE đúng tag sẽ fork của cả 2 (xác nhận nghĩa vụ copyleft cụ thể).
+- [x] Cài Android Studio + SDK cmdline-tools + đúng platform/NDK PojavLauncher cần.
+- [x] Clone PojavLauncher (`--recurse-submodules`) vào scratch, đọc cấu trúc thật — xem mục 2.
+- [ ] Clone FCL (`--recurse-submodules`), đọc cấu trúc thật, so `build.gradle` lấy đúng SDK/NDK version cần (khác Pojav, chưa cài).
+- [ ] Build thử APK rỗng cho CẢ 2 (đang làm dở PojavLauncher trước, xem log build thật thay vì đoán).
+- [ ] Đọc kỹ LICENSE đúng tag sẽ fork của cả 2 (xác nhận nghĩa vụ copyleft cụ thể) — Pojav cần xác minh lại trực tiếp trên GitHub vì không thấy file LICENSE thật.
 - [ ] So sánh, chốt hướng — cập nhật mục 2 + 4 tài liệu này.
