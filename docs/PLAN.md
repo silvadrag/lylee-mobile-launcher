@@ -78,8 +78,23 @@ Máy dev (Windows) **trước đây chưa có** Android Studio/SDK/NDK/Gradle (c
 
 ## 6. Trạng thái build thật (cập nhật liên tục)
 
-- ✅ **PojavLauncher: BUILD SUCCESSFUL (2026-08-21)** — `./gradlew :app_pojavlauncher:assembleDebug` chạy sạch, ra 2 file APK thật (`app_pojavlauncher-full-debug.apk` 106MB, `app_pojavlauncher-noruntime-debug.apk` 78MB) tại `app_pojavlauncher/build/outputs/apk/`. Chưa cài lên máy/emulator thật để chạy thử (chỉ mới xác nhận BUILD được, chưa xác nhận CHẠY được).
-- ⏳ **Fold Craft Launcher: đang thử build lần đầu**, xem log thật khi xong thay vì đoán trước.
+- ✅ **PojavLauncher: BUILD SUCCESSFUL (2026-08-21)** — `./gradlew :app_pojavlauncher:assembleDebug` chạy sạch trong **4m12s**, ra 2 file APK thật (`app_pojavlauncher-full-debug.apk` 106MB, `app_pojavlauncher-noruntime-debug.apk` 78MB) tại `app_pojavlauncher/build/outputs/apk/`.
+- ✅ **Fold Craft Launcher: BUILD SUCCESSFUL (2026-08-21)** — biến thể `debug` mặc định FAIL vì cần khóa ký thật (`SigningConfig "FCLKey" is missing required property "storePassword"` — file `../key-store.jks` cần mật khẩu ngoài, không có trong repo, đúng như vậy vì đó phải là khóa release thật của team FCL). Repo có sẵn 1 biến thể riêng cho việc build/test không cần khóa thật: `./gradlew :FCL:assembleFordebug` (dùng `debug-key.jks` kèm mật khẩu hardcode `"FCL-Debug"` ngay trong `build.gradle.kts`) — chạy `1m06s` (tái dùng cache compile native từ lần chạy `debug` bị fail), ra `FCL-fordebug-1.3.2.7-all.apk` **341MB** (biến thể "all" gộp mọi kiến trúc CPU — bản release thật chắc chắn có APK tách riêng theo ABI nhỏ hơn nhiều, chưa kiểm tra).
+- ⚠️ Cả 2 mới xác nhận **BUILD được**, CHƯA cài lên máy/emulator thật để xác nhận **CHẠY được** — đó là bước tiếp theo cho bên nào được chọn.
+
+### So sánh sau khi build thật cả 2 (khác hẳn so với chỉ đọc mô tả)
+
+| | PojavLauncher | Fold Craft Launcher |
+|---|---|---|
+| Thời gian build sạch (máy này) | 4m12s | 6m24s (lần đầu, có compile native) |
+| Kích thước APK debug | 78-106MB (2 biến thể full/noruntime) | 341MB (biến thể "all", chưa tối ưu theo ABI) |
+| LICENSE thật trong repo | **Không thấy** — badge README claim LGPLv3 nhưng không có file LICENSE ở gốc, cần tự xác minh trên GitHub | **Có** file `LICENSE` thật, nội dung GPLv3 đầy đủ, rõ ràng |
+| Trở ngại build gặp phải | Symlink Unix bị hỏng khi checkout trên Windows (xem mục 7 mục 6) — phải tự sửa bằng NTFS junction | Không gặp lỗi kiến trúc nào — chỉ nhầm biến thể build (lỗi thao tác của mình, không phải lỗi project) |
+| Ngôn ngữ/code | Java + C/C++ thuần, 1 file `CMakeLists.txt` gọn | Kotlin + Java + C, dùng Gradle version catalog (`libs.versions.toml`) — cách tổ chức hiện đại hơn |
+| Ghi chú code | Tiếng Anh | 1 phần comment tiếng Trung (team maintain chính có vẻ là người Trung Quốc) — cần lưu ý khi đọc sâu/báo issue upstream |
+| Biến thể build sẵn có | `full` (kèm runtime) / `noruntime` | `release` (khóa thật) / `debug` (khóa thật) / **`fordebug`** (khóa giả lập, dành đúng cho việc này) |
+
+**Nhận xét sơ bộ** (chưa phải quyết định cuối — cần chạy thử thật trên máy/emulator trước): FCL có tổ chức Gradle hiện đại hơn (version catalog, tách biến thể build rõ ràng có sẵn "fordebug" cho đúng nhu cầu dev) và license rõ ràng hơn hẳn (có file LICENSE thật). PojavLauncher có build nhanh hơn, APK gọn hơn, nhưng vướng license chưa xác minh + lỗi symlink phải tự vá. Cả 2 đều đủ trưởng thành để cân nhắc nghiêm túc.
 
 ## 7. Nhật ký dựng môi trường build thật (2026-08-21) — các lỗi gặp + cách sửa
 
@@ -97,10 +112,10 @@ Loạt lỗi thật gặp phải khi build lần đầu trên máy Windows chưa
 
 ## 8. Việc cần làm tiếp
 
-- [x] Cài Android Studio + SDK cmdline-tools + đúng platform/NDK PojavLauncher cần.
-- [x] Clone PojavLauncher (`--recurse-submodules`) vào scratch, đọc cấu trúc thật — xem mục 2.
-- [x] Build thành công APK debug cho PojavLauncher — xem mục 6.
-- [ ] Build thử FCL (đang chạy) — cập nhật mục 6 khi có kết quả thật.
-- [ ] Cài APK PojavLauncher lên máy/emulator thật, xác nhận CHẠY được (mở app, không crash) — build thành công chỉ là bước đầu.
-- [ ] Đọc kỹ LICENSE đúng tag sẽ fork của cả 2 (xác nhận nghĩa vụ copyleft cụ thể) — Pojav cần xác minh lại trực tiếp trên GitHub vì không thấy file LICENSE thật.
-- [ ] So sánh, chốt hướng — cập nhật mục 2 + 4 tài liệu này.
+- [x] Cài Android Studio + SDK cmdline-tools + đúng platform/NDK cả 2 project cần.
+- [x] Clone PojavLauncher + FCL (`--recurse-submodules`) vào scratch, đọc cấu trúc thật — xem mục 2.
+- [x] Build thành công APK debug cho CẢ 2 (`app_pojavlauncher-full-debug.apk` + `FCL-fordebug-1.3.2.7-all.apk`) — xem mục 6.
+- [ ] Cài cả 2 APK lên máy/emulator thật, xác nhận CHẠY được (mở app, không crash, thấy màn hình chính) — build thành công chỉ là bước đầu, đây mới là phép thử thật để chọn hướng.
+- [ ] Đọc kỹ LICENSE đúng tag sẽ fork của cả 2 (xác nhận nghĩa vụ copyleft cụ thể) — Pojav cần xác minh lại trực tiếp trên GitHub vì không thấy file LICENSE thật, FCL đã có sẵn LICENSE rõ ràng.
+- [ ] **Chốt hướng** (cần quyết định của người dùng, không tự chọn) — dựa trên mục 6 (so sánh) + kết quả chạy thử thật.
+- [ ] Sau khi chốt: đưa mã nguồn fork thật vào đúng nhánh `explore/...` tương ứng (hiện source chỉ đang nằm ở `D:\dev\pojav`/`D:\dev\fcl` ngoài git, chưa commit) — cân nhắc giữ lịch sử git gốc (thêm remote + merge) thay vì copy phẳng, để dễ kéo update từ upstream sau này.
