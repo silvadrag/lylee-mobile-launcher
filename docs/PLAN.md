@@ -348,8 +348,24 @@ hồng `#EC5990` CHỈ dùng cho CTA/trạng thái active, bo góc chuẩn 4/6/8
     5 tab con: Cài đặt Trò chơi/Quản lý/Trình tải Mod/Quản lý Mods/Thế giới) —
     tất cả nền tối đúng, không còn mảng hồng đặc nào ngoài ý muốn.
 
+## 14. Nâng "Lylee Cobblemon" từ nút góc màn hình lên tab riêng (2026-08-21)
+
+- [x] Thêm icon mới (biểu tượng server) vào thanh nav trái, ngay dưới Home —
+  `activity_main.xml`. Thêm vào cuối danh sách UI trong `UIManager.kt` (vị trí
+  8, KHÔNG chèn giữa để tránh phải đánh số lại `accountUI`(6)/`versionUI`(7)
+  đang viết chết ở nhiều chỗ trong `MainActivity.kt`).
+- [x] `LyleeCobblemonUI.java` (mới) + `ui_lylee_cobblemon.xml` (mới) — trang
+  riêng kiểu "hero + CTA" giống PC: tiêu đề, mô tả, dòng trạng thái (đã cài hay
+  chưa), 1 nút CTA đổi nhãn theo trạng thái ("Kết nối ngay"/"Cập nhật modpack").
+  CHỦ Ý không viết lại logic — nút gọi thẳng `LyleeCobblemonConnector.connect()`
+  đã kiểm chứng hoạt động từ mục 11, đây chỉ là lớp trình bày mới.
+- [x] Dọn nút cũ khỏi `ui_main.xml`/`MainUI.java` (field, findViewById,
+  listener, import) — không còn trùng lặp với tab mới.
+- [x] **Xác minh trên máy thật**: icon server hiện đúng vị trí, bấm vào hiện
+  đúng trang riêng với text "Đã cài đặt trên máy này." + nút "Cập nhật modpack"
+  (đúng vì Cobblemon đã cài từ lúc test mục 11), icon nav tô hồng đúng khi được
+  chọn, nút cũ trên trang chủ đã biến mất.
+
 ### Việc cần làm tiếp
 
 - [ ] Xử lý vấn đề thông báo hiện mã XAML thô trên mobile (xem mục 12).
-- [ ] Nâng nút "Lylee Cobblemon" từ 1 nút góc màn hình chính lên thành
-  tab/màn hình riêng (đúng tinh thần "2 tab Cobblemon + Instances tự do" bên PC).
