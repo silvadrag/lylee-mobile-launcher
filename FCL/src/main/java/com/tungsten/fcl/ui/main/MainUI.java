@@ -23,6 +23,7 @@ import com.tungsten.fcllibrary.component.dialog.FCLAlertDialog;
 import com.tungsten.fcllibrary.component.theme.ThemeEngine;
 import com.tungsten.fcllibrary.component.ui.FCLCommonUI;
 import com.tungsten.fcllibrary.component.view.FCLButton;
+import com.tungsten.fcllibrary.component.view.FCLImageButton;
 import com.tungsten.fcllibrary.component.view.FCLTextView;
 import com.tungsten.fcllibrary.skin.SkinRenderer;
 import com.tungsten.fcllibrary.skin.SkinViewer;
@@ -40,12 +41,18 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
     public static final String ANNOUNCEMENT_URL = "https://lylee-launcher-api.lyleelauncher.workers.dev/api/mobile/announcement";
     public static final String ANNOUNCEMENT_URL_CN = ANNOUNCEMENT_URL;
 
+    // Danh sách nhiều thông báo gần đây (khác ANNOUNCEMENT_URL chỉ trả 1 cái mới
+    // nhất) — dùng cho AnnouncementHistoryDialog mở từ nút chuông, xem
+    // ApiServer.getMobileAnnouncements bên mod.
+    public static final String ANNOUNCEMENT_LIST_URL = "https://lylee-launcher-api.lyleelauncher.workers.dev/api/mobile/announcements";
+
     private LinearLayoutCompat announcementContainer;
     private LinearLayoutCompat announcementLayout;
     private FCLTextView title;
     private FCLTextView announcementView;
     private FCLTextView date;
     private FCLButton hide;
+    private FCLImageButton announcementHistory;
     private Announcement announcement = null;
 
     private SkinViewer skinViewer;
@@ -66,10 +73,12 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
         announcementView = findViewById(R.id.announcement);
         date = findViewById(R.id.date);
         hide = findViewById(R.id.hide);
+        announcementHistory = findViewById(R.id.announcement_history);
         // Nền thẻ tối #252525 (đồng bộ launcher PC — "news card" không phủ đặc
         // màu hồng theme) thay vì tint theo màu accent như trước.
         announcementLayout.getBackground().setTint(ContextCompat.getColor(getContext(), R.color.card_bg));
         hide.setOnClickListener(this);
+        announcementHistory.setOnClickListener(this);
 
         skinViewer = findViewById(R.id.skin_viewer);
         renderer = new SkinRenderer(getContext());
@@ -193,6 +202,9 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
             } else {
                 hideAnnouncement();
             }
+        }
+        if (view == announcementHistory) {
+            new AnnouncementHistoryDialog(getContext()).show();
         }
     }
 }

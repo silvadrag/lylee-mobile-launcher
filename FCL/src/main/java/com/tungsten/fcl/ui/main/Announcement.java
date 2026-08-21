@@ -116,14 +116,22 @@ public class Announcement {
             if (cancel)
                 return false;
         }
+        // Ẩn kiểu "nhắc nhở mỗi ngày": bấm ẩn chỉ tắt card trong ngày hôm đó, hôm
+        // sau (còn hạn/còn active) sẽ tự hiện lại thay vì mất hẳn tới khi có
+        // thông báo mới — xem lại lịch sử đầy đủ qua AnnouncementListPage (nút
+        // chuông) nếu muốn đọc lại bất kể đã ẩn hôm nào.
         SharedPreferences sharedPreferences = context.getSharedPreferences("launcher", Context.MODE_PRIVATE);
-        return sharedPreferences.getInt("ignore_announcement", 0) < id;
+        int hiddenId = sharedPreferences.getInt("ignore_announcement", 0);
+        if (hiddenId != id) return true;
+        String hiddenDate = sharedPreferences.getString("ignore_announcement_date", "");
+        return !java.time.LocalDate.now().toString().equals(hiddenDate);
     }
 
     public void hide(Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences("launcher", Context.MODE_PRIVATE);
         @SuppressLint("CommitPrefEdits") SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putInt("ignore_announcement", id);
+        editor.putString("ignore_announcement_date", java.time.LocalDate.now().toString());
         editor.apply();
     }
 

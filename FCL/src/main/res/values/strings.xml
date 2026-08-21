@@ -140,6 +140,10 @@
     <string name="lylee_cobblemon_cta_install">Connect now</string>
     <string name="lylee_cobblemon_cta_update">Update modpack</string>
 
+    <string name="announcement_history">Notification history</string>
+    <string name="announcement_history_title">News</string>
+    <string name="announcement_history_empty">No news yet.</string>
+
     <string name="archive_author">Author(s)</string>
     <string name="archive_date">Publish Date</string>
     <string name="archive_game_version">Game Version</string>

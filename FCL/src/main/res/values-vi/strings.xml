@@ -125,6 +125,10 @@
     <string name="lylee_cobblemon_cta_install">Kết nối ngay</string>
     <string name="lylee_cobblemon_cta_update">Cập nhật modpack</string>
 
+    <string name="announcement_history">Lịch sử thông báo</string>
+    <string name="announcement_history_title">Tin tức</string>
+    <string name="announcement_history_empty">Chưa có tin tức nào.</string>
+
     <string name="archive_author">Tác giả</string>
     <string name="archive_date">Ngày xuất bản</string>
     <string name="archive_game_version">Phiên bản trò chơi</string>
