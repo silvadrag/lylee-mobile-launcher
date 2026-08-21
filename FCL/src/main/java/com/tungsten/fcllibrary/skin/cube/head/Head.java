@@ -3,9 +3,9 @@ package com.tungsten.fcllibrary.skin.cube.head;
 import com.tungsten.fcllibrary.skin.cube.MainCube;
 
 /**
- * 头部立方体 - 继承自MainCube
- * 尺寸：8x8x8（Minecraft标准头部尺寸）
- * 位置：Y轴偏移12（位于身体上方）
+ * Khối lập phương đầu - kế thừa từ MainCube
+ * Kích thước: 8x8x8 (kích thước đầu chuẩn Minecraft)
+ * Vị trí: lệch trục Y 12 (phía trên thân)
  */
 public class Head extends MainCube {
 
@@ -14,47 +14,47 @@ public class Head extends MainCube {
     public Head(float scale) {
         super(8.0f * scale, 8.0f * scale, 8.0f * scale, 0.0f * scale, 12.0f * scale, 0.0f * scale);
         
-        // 纹理坐标数组（UV坐标，归一化0-1）
-        // Minecraft皮肤纹理格式：64x64像素
-        // 头部区域：左上角8x8像素块（对应UV 0.125-0.25范围）
-        // 每个面4个顶点，每个顶点2个坐标(u, v)，顶点顺序与faceVertices对应
-        // 面顺序：前(Face 0)、上(Face 1)、下(Face 2)、右(Face 3)、左(Face 4)、后(Face 5)
+        // Mảng tọa độ texture (tọa độ UV, chuẩn hóa 0-1)
+        // Định dạng texture skin Minecraft: 64x64 pixel
+        // Vùng đầu: khối 8x8 pixel góc trên trái (ứng phạm vi UV 0.125-0.25)
+        // Mỗi mặt 4 đỉnh, mỗi đỉnh 2 tọa độ (u, v), thứ tự đỉnh khớp với faceVertices
+        // Thứ tự mặt: trước (Face 0), trên (Face 1), dưới (Face 2), phải (Face 3), trái (Face 4), sau (Face 5)
         this.headTexCoordinates = new float[] {
-                // Face 0: 前面 - 皮肤左上角第二行 (8-16像素)
-                0.125f, 0.25f,    // 左下 uv(8,16)
-                0.125f, 0.125f,   // 左上 uv(8,8)
-                0.25f, 0.125f,    // 右上 uv(16,8)
-                0.25f, 0.25f,     // 右下 uv(16,16)
+                // Face 0: mặt trước - dòng thứ 2 góc trên trái skin (8-16px)
+                0.125f, 0.25f,    // dưới trái uv(8,16)
+                0.125f, 0.125f,   // trên trái uv(8,8)
+                0.25f, 0.125f,    // trên phải uv(16,8)
+                0.25f, 0.25f,     // dưới phải uv(16,16)
 
-                // Face 1: 上面 - 皮肤左上角第一行 (0-8像素)
-                0.125f, 0.125f,   // 后左 uv(8,8)
-                0.125f, 0.0f,     // 前左 uv(8,0)
-                0.25f, 0.0f,      // 前右 uv(16,0)
-                0.25f, 0.125f,    // 后右 uv(16,8)
+                // Face 1: mặt trên - dòng thứ 1 góc trên trái skin (0-8px)
+                0.125f, 0.125f,   // trái sau uv(8,8)
+                0.125f, 0.0f,     // trái trước uv(8,0)
+                0.25f, 0.0f,      // phải trước uv(16,0)
+                0.25f, 0.125f,    // phải sau uv(16,8)
 
-                // Face 2: 下面 - 皮肤顶部中间区域
-                0.25f, 0.125f,    // 后右
-                0.25f, 0.0f,      // 前右
-                0.375f, 0.0f,     // 前左
-                0.375f, 0.125f,   // 后左
+                // Face 2: mặt dưới - vùng giữa phía trên skin
+                0.25f, 0.125f,    // phải sau
+                0.25f, 0.0f,      // phải trước
+                0.375f, 0.0f,     // trái trước
+                0.375f, 0.125f,   // trái sau
 
-                // Face 3: 右面 - 皮肤顶部右侧区域
-                0.25f, 0.25f,     // 后下
-                0.25f, 0.125f,    // 后上
-                0.375f, 0.125f,   // 前上
-                0.375f, 0.25f,    // 前下
+                // Face 3: mặt phải - vùng phải phía trên skin
+                0.25f, 0.25f,     // dưới sau
+                0.25f, 0.125f,    // trên sau
+                0.375f, 0.125f,   // trên trước
+                0.375f, 0.25f,    // dưới trước
 
-                // Face 4: 左面 - 皮肤顶部左侧区域
-                0.0f, 0.25f,      // 前下
-                0.0f, 0.125f,     // 前上
-                0.125f, 0.125f,   // 后上
-                0.125f, 0.25f,    // 后下
+                // Face 4: mặt trái - vùng trái phía trên skin
+                0.0f, 0.25f,      // dưới trước
+                0.0f, 0.125f,     // trên trước
+                0.125f, 0.125f,   // trên sau
+                0.125f, 0.25f,    // dưới sau
 
-                // Face 5: 后面 - 皮肤顶部中右区域
-                0.375f, 0.25f,    // 左下
-                0.375f, 0.125f,   // 左上
-                0.5f, 0.125f,     // 右上
-                0.5f, 0.25f       // 右下
+                // Face 5: mặt sau - vùng giữa-phải phía trên skin
+                0.375f, 0.25f,    // dưới trái
+                0.375f, 0.125f,   // trên trái
+                0.5f, 0.125f,     // trên phải
+                0.5f, 0.25f       // dưới phải
         };
         addTextures(this.headTexCoordinates);
     }

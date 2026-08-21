@@ -3,9 +3,9 @@ package com.tungsten.fcllibrary.skin.cube.leg;
 import com.tungsten.fcllibrary.skin.cube.LimbCube;
 
 /**
- * 左腿外套/覆盖层立方体 - 继承自LimbCube
- * 尺寸：略大于左腿（4.24x12.71x4.24），形成靴子效果
- * 位置：与左腿重合，渲染在左腿上方
+ * Khối lập phương áo khoác/lớp phủ chân trái - kế thừa từ LimbCube
+ * Kích thước: lớn hơn chân trái 1 chút (4.24x12.71x4.24), tạo hiệu ứng giày
+ * Vị trí: trùng với chân trái, vẽ đè lên trên chân trái
  */
 public class LeftLegOverlay extends LimbCube {
 
@@ -13,13 +13,13 @@ public class LeftLegOverlay extends LimbCube {
     
     public LeftLegOverlay(float scale) {
         super(4.2352943f * scale, 12.705883f * scale, 4.2352943f * scale, 2.0f * scale, -10.0f * scale, 0.0f * scale,
-                1.0f, 0.0f, 0.0f,    // 主旋转轴：X轴
-                1.5f, 30.0f, -30.0f,  // 主角度参数
-                0.0f, 1.0f, 0.0f,    // 副旋转轴：Y轴
-                -0.5f, 30.0f, -30.0f); // 副角度参数
+                1.0f, 0.0f, 0.0f,    // Trục xoay chính: trục X
+                1.5f, 30.0f, -30.0f,  // Tham số góc chính
+                0.0f, 1.0f, 0.0f,    // Trục xoay phụ: trục Y
+                -0.5f, 30.0f, -30.0f); // Tham số góc phụ
         
-        // 纹理坐标数组（UV坐标，归一化0-1）
-        // 左腿外套区域：皮肤底部左侧区域（对应UV 0-0.25水平，0.75-1.0垂直）
+        // Mảng tọa độ texture (tọa độ UV, chuẩn hóa 0-1)
+        // Vùng áo khoác chân trái: vùng dưới bên trái skin (ứng UV ngang 0-0.25, dọc 0.75-1.0)
         this.leftLegOverlayTexCoordinates = new float[] {
                 0.0625f, 1.0f, 0.0625f, 0.90625f, 0.125f, 0.90625f, 0.125f, 1.0f,
                 0.0625f, 0.90625f, 0.0625f, 0.8125f, 0.125f, 0.8125f, 0.125f, 0.90625f,

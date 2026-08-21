@@ -30,26 +30,27 @@ public class LimbCube {
     protected ArrayList<FloatBuffer> textureBuffers;
 
     /**
-     * 可旋转肢体立方体 - 用于手臂、腿部等需要动画的肢体部位
+     * Khối lập phương chi thể có thể xoay - dùng cho tay, chân và các bộ phận
+     * cần hoạt ảnh khác.
      *
-     * @param scaleX        X轴缩放尺寸
-     * @param scaleY        Y轴缩放尺寸（肢体长度方向）
-     * @param scaleZ        Z轴缩放尺寸
-     * @param offsetX       场景中的X轴偏移
-     * @param offsetY       场景中的Y轴偏移
-     * @param offsetZ       场景中的Z轴偏移
-     * @param mainAxisX     主旋转轴X分量
-     * @param mainAxisY     主旋转轴Y分量
-     * @param mainAxisZ     主旋转轴Z分量
-     * @param mainStepValue 主角度步进值（每帧旋转增量）
-     * @param mainMaxAngle  主角度最大值
-     * @param mainMinAngle  主角度最小值
-     * @param subAxisX      副旋转轴X分量
-     * @param subAxisY      副旋转轴Y分量
-     * @param subAxisZ      副旋转轴Z分量
-     * @param subStepValue  副角度步进值
-     * @param subMaxAngle   副角度最大值
-     * @param subMinAngle   副角度最小值
+     * @param scaleX        Kích thước tỉ lệ theo trục X
+     * @param scaleY        Kích thước tỉ lệ theo trục Y (hướng chiều dài chi thể)
+     * @param scaleZ        Kích thước tỉ lệ theo trục Z
+     * @param offsetX       Độ lệch trục X trong khung cảnh
+     * @param offsetY       Độ lệch trục Y trong khung cảnh
+     * @param offsetZ       Độ lệch trục Z trong khung cảnh
+     * @param mainAxisX     Thành phần X của trục xoay chính
+     * @param mainAxisY     Thành phần Y của trục xoay chính
+     * @param mainAxisZ     Thành phần Z của trục xoay chính
+     * @param mainStepValue Bước tăng góc chính (mỗi khung hình)
+     * @param mainMaxAngle  Góc chính tối đa
+     * @param mainMinAngle  Góc chính tối thiểu
+     * @param subAxisX      Thành phần X của trục xoay phụ
+     * @param subAxisY      Thành phần Y của trục xoay phụ
+     * @param subAxisZ      Thành phần Z của trục xoay phụ
+     * @param subStepValue  Bước tăng góc phụ
+     * @param subMaxAngle   Góc phụ tối đa
+     * @param subMinAngle   Góc phụ tối thiểu
      */
     public LimbCube(float scaleX, float scaleY, float scaleZ, float offsetX, float offsetY, float offsetZ,
                     float mainAxisX, float mainAxisY, float mainAxisZ,
@@ -65,7 +66,7 @@ public class LimbCube {
         this.offset[1] = offsetY;
         this.offset[2] = offsetZ;
 
-        // 主旋转轴 - 用于肢体摆动（如手臂前后摆动）
+        // Trục xoay chính - dùng để chi thể vung (VD tay vung trước sau)
         this.mainAngleAxis = new float[3];
         this.mainAngleAxis[0] = mainAxisX;
         this.mainAngleAxis[1] = mainAxisY;
@@ -75,7 +76,7 @@ public class LimbCube {
         this.mainMaxAngle = mainMaxAngle;
         this.mainMinAngle = mainMinAngle;
 
-        // 副旋转轴 - 用于次要摆动（如手臂内外摆动）
+        // Trục xoay phụ - dùng cho chuyển động phụ (VD tay vung trong ngoài)
         this.subAngleAxis = new float[3];
         this.subAngleAxis[0] = subAxisX;
         this.subAngleAxis[1] = subAxisY;
@@ -85,74 +86,74 @@ public class LimbCube {
         this.subMaxAngle = subMaxAngle;
         this.subMinAngle = subMinAngle;
 
-        // 基础顶点坐标（归一化）- 12个顶点
-        // 前4个：前面4顶点 (Z=+1)
-        // 中间4个：后面4顶点 (Z=-1)
-        // 后4个：中间层4顶点 (Y=0) - 用于连接身体的关节点
+        // Tọa độ đỉnh cơ bản (đã chuẩn hóa) - 12 đỉnh
+        // 4 đỉnh đầu: mặt trước (Z=+1)
+        // 4 đỉnh giữa: mặt sau (Z=-1)
+        // 4 đỉnh cuối: lớp giữa (Y=0) - điểm khớp nối với thân người
         this.vertices = new float[]{
-                -1.0f, -1.0f, 1.0f,  // 顶点0: 前下左
-                1.0f, -1.0f, 1.0f,   // 顶点1: 前下右
-                1.0f, 1.0f, 1.0f,    // 顶点2: 前上右
-                -1.0f, 1.0f, 1.0f,   // 顶点3: 前上左
+                -1.0f, -1.0f, 1.0f,  // đỉnh 0: trước-dưới-trái
+                1.0f, -1.0f, 1.0f,   // đỉnh 1: trước-dưới-phải
+                1.0f, 1.0f, 1.0f,    // đỉnh 2: trước-trên-phải
+                -1.0f, 1.0f, 1.0f,   // đỉnh 3: trước-trên-trái
 
-                -1.0f, -1.0f, -1.0f, // 顶点4: 后下左
-                1.0f, -1.0f, -1.0f,  // 顶点5: 后下右
-                1.0f, 1.0f, -1.0f,   // 顶点6: 后上右
-                -1.0f, 1.0f, -1.0f,  // 顶点7: 后上左
+                -1.0f, -1.0f, -1.0f, // đỉnh 4: sau-dưới-trái
+                1.0f, -1.0f, -1.0f,  // đỉnh 5: sau-dưới-phải
+                1.0f, 1.0f, -1.0f,   // đỉnh 6: sau-trên-phải
+                -1.0f, 1.0f, -1.0f,  // đỉnh 7: sau-trên-trái
 
-                -1.0f, 0.0f, 1.0f,   // 顶点8: 中前左（关节点）
-                1.0f, 0.0f, 1.0f,    // 顶点9: 中前右（关节点）
-                1.0f, 0.0f, -1.0f,   // 顶点10: 中后右（关节点）
-                -1.0f, 0.0f, -1.0f   // 顶点11: 中后左（关节点）
+                -1.0f, 0.0f, 1.0f,   // đỉnh 8: giữa-trước-trái (điểm khớp)
+                1.0f, 0.0f, 1.0f,    // đỉnh 9: giữa-trước-phải (điểm khớp)
+                1.0f, 0.0f, -1.0f,   // đỉnh 10: giữa-sau-phải (điểm khớp)
+                -1.0f, 0.0f, -1.0f   // đỉnh 11: giữa-sau-trái (điểm khớp)
         };
 
-        // 面索引数组 - 通过索引引用vertices数组构建10个面
-        // 每个面4个顶点索引，按顺时针顺序排列
+        // Mảng chỉ số mặt - dựng 10 mặt bằng cách tham chiếu vào mảng vertices
+        // Mỗi mặt gồm 4 chỉ số đỉnh, xếp theo chiều kim đồng hồ
         this.faceIndecies = new int[]{
-                0, 8, 9, 1,   // 面0: 下前侧
-                8, 3, 2, 9,   // 面1: 上前侧
-                3, 7, 6, 2,   // 面2: 上后侧
-                0, 4, 5, 1,   // 面3: 下后侧
-                1, 9, 10, 5,  // 面4: 右下侧
-                9, 2, 6, 10,  // 面5: 右上侧
-                4, 11, 8, 0,  // 面6: 左下侧
-                11, 7, 3, 8,  // 面7: 左上侧
-                5, 10, 11, 4, // 面8: 后端面（连接身体）
-                10, 6, 7, 11  // 面9: 后端面上部
+                0, 8, 9, 1,   // mặt 0: cạnh dưới-trước
+                8, 3, 2, 9,   // mặt 1: cạnh trên-trước
+                3, 7, 6, 2,   // mặt 2: cạnh trên-sau
+                0, 4, 5, 1,   // mặt 3: cạnh dưới-sau
+                1, 9, 10, 5,  // mặt 4: cạnh dưới-phải
+                9, 2, 6, 10,  // mặt 5: cạnh trên-phải
+                4, 11, 8, 0,  // mặt 6: cạnh dưới-trái
+                11, 7, 3, 8,  // mặt 7: cạnh trên-trái
+                5, 10, 11, 4, // mặt 8: mặt đầu sau (nối với thân)
+                10, 6, 7, 11  // mặt 9: mặt đầu sau phần trên
         };
 
         this.faceVertices = new float[this.faceIndecies.length * 3];
 
-        // 法向量数组 - 每个面4个法向量，共10个面
-        // 面0-1: 前面(Z=+1) - 法向量指向+Z
-        // 面2-3: 上面(Y=+1) - 法向量指向+Y
-        // 面4-5: 右面(X=+1) - 法向量指向+X
-        // 面6-7: 左面(X=-1) - 法向量指向-X
-        // 面8-9: 后面(Z=-1) - 法向量指向-Z（连接身体的端面）
+        // Mảng vector pháp tuyến - mỗi mặt 4 vector, tổng 10 mặt
+        // mặt 0-1: mặt trước (Z=+1) - pháp tuyến hướng +Z
+        // mặt 2-3: mặt trên (Y=+1) - pháp tuyến hướng +Y
+        // mặt 4-5: mặt phải (X=+1) - pháp tuyến hướng +X
+        // mặt 6-7: mặt trái (X=-1) - pháp tuyến hướng -X
+        // mặt 8-9: mặt sau (Z=-1) - pháp tuyến hướng -Z (mặt đầu nối thân)
         this.normalVertices = new float[]{
-                // 面0: 下前侧 (Z=+1)
+                // mặt 0: cạnh dưới-trước (Z=+1)
                 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-                // 面1: 上前侧 (Z=+1)
+                // mặt 1: cạnh trên-trước (Z=+1)
                 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
 
-                // 面2: 上后侧 (Y=+1)
+                // mặt 2: cạnh trên-sau (Y=+1)
                 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-                // 面3: 下后侧 (Y=-1)
+                // mặt 3: cạnh dưới-sau (Y=-1)
                 0.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f,
 
-                // 面4: 右下侧 (X=+1)
+                // mặt 4: cạnh dưới-phải (X=+1)
                 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-                // 面5: 右上侧 (X=+1)
+                // mặt 5: cạnh trên-phải (X=+1)
                 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
 
-                // 面6: 左下侧 (X=-1)
+                // mặt 6: cạnh dưới-trái (X=-1)
                 -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
-                // 面7: 左上侧 (X=-1)
+                // mặt 7: cạnh trên-trái (X=-1)
                 -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
 
-                // 面8: 后端面下部 (Z=-1) - 连接身体
+                // mặt 8: mặt đầu sau phần dưới (Z=-1) - nối với thân
                 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, -1.0f,
-                // 面9: 后端面上部 (Z=-1) - 连接身体
+                // mặt 9: mặt đầu sau phần trên (Z=-1) - nối với thân
                 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, -1.0f
         };
         final ByteBuffer allocateDirectFace = ByteBuffer.allocateDirect(this.faceVertices.length * 4);
@@ -201,12 +202,12 @@ public class LimbCube {
         gl10.glPushMatrix();
         gl10.glTranslatef(this.offset[0], this.offset[1], this.offset[2]);
         if (isRunning) {
-            // 应用主旋转（手臂前后摆动）
+            // Áp dụng xoay chính (tay vung trước sau)
             gl10.glTranslatef(0.0f, this.scale[1] / 4.0f * 3.0f, 0.0f);
             gl10.glRotatef(this.mainAngle, this.mainAngleAxis[0], this.mainAngleAxis[1], this.mainAngleAxis[2]);
             gl10.glTranslatef(0.0f, -this.scale[1] / 4.0f * 3.0f, 0.0f);
 
-            // 更新主角度
+            // Cập nhật góc chính
             this.mainAngle += this.mainStepValue;
             if (this.mainAngle >= this.mainMaxAngle) {
                 this.mainStepValue *= -1.0f;

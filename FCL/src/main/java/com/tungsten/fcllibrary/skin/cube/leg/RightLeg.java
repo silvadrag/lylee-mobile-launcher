@@ -3,10 +3,10 @@ package com.tungsten.fcllibrary.skin.cube.leg;
 import com.tungsten.fcllibrary.skin.cube.LimbCube;
 
 /**
- * 右腿立方体 - 继承自LimbCube
- * 尺寸：4x12x4（Minecraft标准腿部尺寸）
- * 位置：X轴偏移-2（身体右侧），Y轴偏移-10（身体下方）
- * 旋转：主旋转轴X轴，控制腿部摆动（行走动画）
+ * Khối lập phương chân phải - kế thừa từ LimbCube
+ * Kích thước: 4x12x4 (kích thước chân chuẩn Minecraft)
+ * Vị trí: lệch trục X -2 (bên phải thân), lệch trục Y -10 (dưới thân)
+ * Xoay: trục xoay chính là trục X, điều khiển chân vung (hoạt ảnh đi bộ)
  */
 public class RightLeg extends LimbCube {
 
@@ -14,13 +14,13 @@ public class RightLeg extends LimbCube {
     
     public RightLeg(float scale) {
         super(4.0f * scale, 12.0f * scale, 4.0f * scale, -2.0f * scale, -10.0f * scale, 0.0f * scale,
-                1.0f, 0.0f, 0.0f,    // 主旋转轴：X轴（腿部摆动）
-                -1.5f, 30.0f, -30.0f, // 主角度：步进-1.5（与左腿相反）
-                0.0f, 1.0f, 0.0f,    // 副旋转轴：Y轴（腿部内外摆动）
-                0.5f, 30.0f, -30.0f); // 副角度：步进0.5
+                1.0f, 0.0f, 0.0f,    // Trục xoay chính: trục X (chân vung)
+                -1.5f, 30.0f, -30.0f, // Góc chính: bước -1.5 (ngược chiều chân trái)
+                0.0f, 1.0f, 0.0f,    // Trục xoay phụ: trục Y (chân vung trong ngoài)
+                0.5f, 30.0f, -30.0f); // Góc phụ: bước 0.5
         
-        // 纹理坐标数组（UV坐标，归一化0-1）
-        // 右腿区域：皮肤左下角区域（对应UV 0-0.25水平，0.25-0.5垂直）
+        // Mảng tọa độ texture (tọa độ UV, chuẩn hóa 0-1)
+        // Vùng chân phải: vùng góc dưới trái skin (ứng UV ngang 0-0.25, dọc 0.25-0.5)
         this.rightLegTexCoordinates = new float[] {
                 0.0625f, 0.5f, 0.0625f, 0.40625f, 0.125f, 0.40625f, 0.125f, 0.5f,
                 0.0625f, 0.40625f, 0.0625f, 0.3125f, 0.125f, 0.3125f, 0.125f, 0.40625f,

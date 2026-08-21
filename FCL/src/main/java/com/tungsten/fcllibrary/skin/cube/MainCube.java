@@ -17,12 +17,12 @@ public class MainCube {
     protected ArrayList<FloatBuffer> textureBuffers;
 
     /**
-     * @param sizeX   立方体X轴尺寸
-     * @param sizeY   立方体Y轴尺寸
-     * @param sizeZ   立方体Z轴尺寸
-     * @param offsetX 立方体在场景中的X轴偏移
-     * @param offsetY 立方体在场景中的Y轴偏移
-     * @param offsetZ 立方体在场景中的Z轴偏移
+     * @param sizeX   Kích thước khối lập phương theo trục X
+     * @param sizeY   Kích thước khối lập phương theo trục Y
+     * @param sizeZ   Kích thước khối lập phương theo trục Z
+     * @param offsetX Độ lệch trục X của khối trong khung cảnh
+     * @param offsetY Độ lệch trục Y của khối trong khung cảnh
+     * @param offsetZ Độ lệch trục Z của khối trong khung cảnh
      */
     public MainCube(float sizeX, float sizeY, float sizeZ, float offsetX, float offsetY, float offsetZ) {
         this.offset = new float[3];
@@ -30,88 +30,88 @@ public class MainCube {
         this.offset[1] = offsetY;
         this.offset[2] = offsetZ;
 
-        // GL顶点坐标数组（右手坐标系）
-        // 每个面4个顶点，每个顶点由x, y, z三个分量组成
-        // 面顺序：前(Face 0)、上(Face 1)、下(Face 2)、右(Face 3)、左(Face 4)、后(Face 5)
-        // 顶点顺序：顺时针方向（从面的外侧观察）
+        // Mảng tọa độ đỉnh GL (hệ tọa độ thuận tay phải)
+        // Mỗi mặt 4 đỉnh, mỗi đỉnh gồm 3 thành phần x, y, z
+        // Thứ tự mặt: trước (Face 0), trên (Face 1), dưới (Face 2), phải (Face 3), trái (Face 4), sau (Face 5)
+        // Thứ tự đỉnh: theo chiều kim đồng hồ (nhìn từ phía ngoài mặt)
         this.faceVertices = new float[]{
-                // Face 0: 前面 (Z=+1) - 从前方看顺时针
-                -1.0f, -1.0f, 1.0f,  // 左下
-                -1.0f, 1.0f, 1.0f,   // 左上
-                1.0f, 1.0f, 1.0f,    // 右上
-                1.0f, -1.0f, 1.0f,   // 右下
+                // Face 0: mặt trước (Z=+1) - nhìn từ phía trước, theo chiều kim đồng hồ
+                -1.0f, -1.0f, 1.0f,  // dưới trái
+                -1.0f, 1.0f, 1.0f,   // trên trái
+                1.0f, 1.0f, 1.0f,    // trên phải
+                1.0f, -1.0f, 1.0f,   // dưới phải
 
-                // Face 1: 上面 (Y=+1) - 从上方看顺时针
-                -1.0f, 1.0f, 1.0f,   // 后左
-                -1.0f, 1.0f, -1.0f,  // 前左
-                1.0f, 1.0f, -1.0f,   // 前右
-                1.0f, 1.0f, 1.0f,    // 后右
+                // Face 1: mặt trên (Y=+1) - nhìn từ phía trên, theo chiều kim đồng hồ
+                -1.0f, 1.0f, 1.0f,   // sau trái
+                -1.0f, 1.0f, -1.0f,  // trước trái
+                1.0f, 1.0f, -1.0f,   // trước phải
+                1.0f, 1.0f, 1.0f,    // sau phải
 
-                // Face 2: 下面 (Y=-1) - 从下方看顺时针
-                1.0f, -1.0f, 1.0f,   // 后右
-                1.0f, -1.0f, -1.0f,  // 前右
-                -1.0f, -1.0f, -1.0f, // 前左
-                -1.0f, -1.0f, 1.0f,  // 后左
+                // Face 2: mặt dưới (Y=-1) - nhìn từ phía dưới, theo chiều kim đồng hồ
+                1.0f, -1.0f, 1.0f,   // sau phải
+                1.0f, -1.0f, -1.0f,  // trước phải
+                -1.0f, -1.0f, -1.0f, // trước trái
+                -1.0f, -1.0f, 1.0f,  // sau trái
 
-                // Face 3: 右面 (X=+1) - 从右面看顺时针
-                1.0f, -1.0f, 1.0f,   // 后下
-                1.0f, 1.0f, 1.0f,    // 后上
-                1.0f, 1.0f, -1.0f,   // 前上
-                1.0f, -1.0f, -1.0f,  // 前下
+                // Face 3: mặt phải (X=+1) - nhìn từ phía phải, theo chiều kim đồng hồ
+                1.0f, -1.0f, 1.0f,   // sau dưới
+                1.0f, 1.0f, 1.0f,    // sau trên
+                1.0f, 1.0f, -1.0f,   // trước trên
+                1.0f, -1.0f, -1.0f,  // trước dưới
 
-                // Face 4: 左面 (X=-1) - 从左面看顺时针
-                -1.0f, -1.0f, -1.0f, // 前下
-                -1.0f, 1.0f, -1.0f,  // 前上
-                -1.0f, 1.0f, 1.0f,   // 后上
-                -1.0f, -1.0f, 1.0f,  // 后下
+                // Face 4: mặt trái (X=-1) - nhìn từ phía trái, theo chiều kim đồng hồ
+                -1.0f, -1.0f, -1.0f, // trước dưới
+                -1.0f, 1.0f, -1.0f,  // trước trên
+                -1.0f, 1.0f, 1.0f,   // sau trên
+                -1.0f, -1.0f, 1.0f,  // sau dưới
 
-                // Face 5: 后面 (Z=-1) - 从后方看顺时针
-                1.0f, -1.0f, -1.0f,  // 左下
-                1.0f, 1.0f, -1.0f,   // 左上
-                -1.0f, 1.0f, -1.0f,  // 右上
-                -1.0f, -1.0f, -1.0f  // 右下
+                // Face 5: mặt sau (Z=-1) - nhìn từ phía sau, theo chiều kim đồng hồ
+                1.0f, -1.0f, -1.0f,  // dưới trái
+                1.0f, 1.0f, -1.0f,   // trên trái
+                -1.0f, 1.0f, -1.0f,  // trên phải
+                -1.0f, -1.0f, -1.0f  // dưới phải
         };
 
-        // 法向量数组 - 每个顶点对应一个法向量，用于光照计算
-        // 法向量方向：指向面的外侧，与面垂直
+        // Mảng vector pháp tuyến - mỗi đỉnh ứng với 1 vector pháp tuyến, dùng để tính ánh sáng
+        // Hướng vector pháp tuyến: chỉ ra phía ngoài mặt, vuông góc với mặt
         this.normalVertices = new float[]{
-                // Face 0: 前面 - 法向量指向+Z方向
+                // Face 0: mặt trước - pháp tuyến hướng +Z
                 0.0f, 0.0f, 1.0f,
                 0.0f, 0.0f, 1.0f,
                 0.0f, 0.0f, 1.0f,
                 0.0f, 0.0f, 1.0f,
 
-                // Face 1: 上面 - 法向量指向+Y方向
+                // Face 1: mặt trên - pháp tuyến hướng +Y
                 0.0f, 1.0f, 0.0f,
                 0.0f, 1.0f, 0.0f,
                 0.0f, 1.0f, 0.0f,
                 0.0f, 1.0f, 0.0f,
 
-                // Face 2: 下面 - 法向量指向-Y方向
+                // Face 2: mặt dưới - pháp tuyến hướng -Y
                 0.0f, -1.0f, 0.0f,
                 0.0f, -1.0f, 0.0f,
                 0.0f, -1.0f, 0.0f,
                 0.0f, -1.0f, 0.0f,
 
-                // Face 3: 右面 - 法向量指向+X方向
+                // Face 3: mặt phải - pháp tuyến hướng +X
                 1.0f, 0.0f, 0.0f,
                 1.0f, 0.0f, 0.0f,
                 1.0f, 0.0f, 0.0f,
                 1.0f, 0.0f, 0.0f,
 
-                // Face 4: 左面 - 法向量指向-X方向
+                // Face 4: mặt trái - pháp tuyến hướng -X
                 -1.0f, 0.0f, 0.0f,
                 -1.0f, 0.0f, 0.0f,
                 -1.0f, 0.0f, 0.0f,
                 -1.0f, 0.0f, 0.0f,
 
-                // Face 5: 后面 - 法向量指向-Z方向
+                // Face 5: mặt sau - pháp tuyến hướng -Z
                 0.0f, 0.0f, -1.0f,
                 0.0f, 0.0f, -1.0f,
                 0.0f, 0.0f, -1.0f,
                 0.0f, 0.0f, -1.0f
         };
-        // 将归一化顶点坐标缩放到实际尺寸
+        // Nhân tọa độ đỉnh đã chuẩn hóa lên kích thước thật
         for (int i = 0; i < 24; ++i) {
             this.faceVertices[i * 3] = this.faceVertices[i * 3] * sizeX / 2.0f;
             this.faceVertices[i * 3 + 1] = this.faceVertices[i * 3 + 1] * sizeY / 2.0f;

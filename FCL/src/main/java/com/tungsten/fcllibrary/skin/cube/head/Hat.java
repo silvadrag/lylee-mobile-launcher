@@ -3,9 +3,9 @@ package com.tungsten.fcllibrary.skin.cube.head;
 import com.tungsten.fcllibrary.skin.cube.MainCube;
 
 /**
- * 帽子立方体 - 继承自MainCube
- * 尺寸：9x9x9（比头部稍大，形成帽子效果）
- * 位置：与头部重合，渲染在头部上方
+ * Khối lập phương mũ - kế thừa từ MainCube
+ * Kích thước: 9x9x9 (lớn hơn đầu 1 chút, tạo hiệu ứng mũ)
+ * Vị trí: trùng với đầu, vẽ đè lên trên đầu
  */
 public class Hat extends MainCube {
 
@@ -14,45 +14,45 @@ public class Hat extends MainCube {
     public Hat(float scale) {
         super(9.0f * scale, 9.0f * scale, 9.0f * scale, 0.0f * scale, 12.0f * scale, 0.0f * scale);
         
-        // 纹理坐标数组（UV坐标，归一化0-1）
-        // 帽子区域：皮肤右上角8x8像素块（对应UV 0.5-0.75范围）
-        // 面顺序：前(Face 0)、上(Face 1)、下(Face 2)、右(Face 3)、左(Face 4)、后(Face 5)
+        // Mảng tọa độ texture (tọa độ UV, chuẩn hóa 0-1)
+        // Vùng mũ: khối 8x8 pixel góc trên phải skin (ứng phạm vi UV 0.5-0.75)
+        // Thứ tự mặt: trước (Face 0), trên (Face 1), dưới (Face 2), phải (Face 3), trái (Face 4), sau (Face 5)
         this.hatTexCoordinates = new float[] {
-                // Face 0: 前面 - 皮肤右上区域第二行
-                0.625f, 0.25f,    // 左下 uv(40,16)
-                0.625f, 0.125f,   // 左上 uv(40,8)
-                0.75f, 0.125f,    // 右上 uv(48,8)
-                0.75f, 0.25f,     // 右下 uv(48,16)
+                // Face 0: mặt trước - dòng thứ 2 vùng trên phải của skin
+                0.625f, 0.25f,    // dưới trái uv(40,16)
+                0.625f, 0.125f,   // trên trái uv(40,8)
+                0.75f, 0.125f,    // trên phải uv(48,8)
+                0.75f, 0.25f,     // dưới phải uv(48,16)
 
-                // Face 1: 上面 - 皮肤右上区域第一行
-                0.625f, 0.125f,   // 后左 uv(40,8)
-                0.625f, 0.0f,     // 前左 uv(40,0)
-                0.75f, 0.0f,      // 前右 uv(48,0)
-                0.75f, 0.125f,    // 后右 uv(48,8)
+                // Face 1: mặt trên - dòng thứ 1 vùng trên phải của skin
+                0.625f, 0.125f,   // trái sau uv(40,8)
+                0.625f, 0.0f,     // trái trước uv(40,0)
+                0.75f, 0.0f,      // phải trước uv(48,0)
+                0.75f, 0.125f,    // phải sau uv(48,8)
 
-                // Face 2: 下面 - 皮肤顶部右中区域
-                0.75f, 0.125f,    // 后右
-                0.75f, 0.0f,      // 前右
-                0.875f, 0.0f,     // 前左
-                0.875f, 0.125f,   // 后左
+                // Face 2: mặt dưới - vùng phải-giữa phía trên skin
+                0.75f, 0.125f,    // phải sau
+                0.75f, 0.0f,      // phải trước
+                0.875f, 0.0f,     // trái trước
+                0.875f, 0.125f,   // trái sau
 
-                // Face 3: 右面 - 皮肤顶部最右侧区域
-                0.75f, 0.25f,     // 后下
-                0.75f, 0.125f,    // 后上
-                0.875f, 0.125f,   // 前上
-                0.875f, 0.25f,    // 前下
+                // Face 3: mặt phải - vùng ngoài cùng bên phải phía trên skin
+                0.75f, 0.25f,     // dưới sau
+                0.75f, 0.125f,    // trên sau
+                0.875f, 0.125f,   // trên trước
+                0.875f, 0.25f,    // dưới trước
 
-                // Face 4: 左面 - 皮肤顶部右侧区域
-                0.5f, 0.25f,      // 前下
-                0.5f, 0.125f,     // 前上
-                0.625f, 0.125f,   // 后上
-                0.625f, 0.25f,    // 后下
+                // Face 4: mặt trái - vùng phải phía trên skin
+                0.5f, 0.25f,      // dưới trước
+                0.5f, 0.125f,     // trên trước
+                0.625f, 0.125f,   // trên sau
+                0.625f, 0.25f,    // dưới sau
 
-                // Face 5: 后面 - 皮肤顶部最右侧边缘
-                0.875f, 0.25f,    // 左下
-                0.875f, 0.125f,   // 左上
-                1.0f, 0.125f,     // 右上
-                1.0f, 0.25f       // 右下
+                // Face 5: mặt sau - cạnh ngoài cùng bên phải phía trên skin
+                0.875f, 0.25f,    // dưới trái
+                0.875f, 0.125f,   // trên trái
+                1.0f, 0.125f,     // trên phải
+                1.0f, 0.25f       // dưới phải
         };
         addTextures(this.hatTexCoordinates);
     }

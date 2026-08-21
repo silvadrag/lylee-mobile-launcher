@@ -3,10 +3,10 @@ package com.tungsten.fcllibrary.skin.cube.arm.normal;
 import com.tungsten.fcllibrary.skin.cube.LimbCube;
 
 /**
- * 正常体型右臂立方体 - 继承自LimbCube
- * 尺寸：4x12x4（Minecraft标准手臂尺寸）
- * 位置：X轴偏移-6（身体右侧），Y轴偏移2（与身体底部对齐）
- * 旋转：主旋转轴X轴，控制手臂摆动
+ * Khối lập phương tay phải thể hình thường - kế thừa từ LimbCube
+ * Kích thước: 4x12x4 (kích thước tay chuẩn Minecraft)
+ * Vị trí: lệch trục X -6 (bên phải thân), lệch trục Y 2 (thẳng đáy thân)
+ * Xoay: trục xoay chính là trục X, điều khiển tay vung
  */
 public class RightArm extends LimbCube {
 
@@ -14,14 +14,14 @@ public class RightArm extends LimbCube {
 
     public RightArm(float scale) {
         super(4.0f * scale, 12.0f * scale, 4.0f * scale, -6.0f * scale, 2.0f * scale, 0.0f * scale,
-                1.0f, 0.0f, 0.0f,    // 主旋转轴：X轴（手臂前后摆动）
-                0.5f, 10.0f, -10.0f, // 主角度：步进0.5，范围-10到10度
-                0.0f, 1.0f, 0.0f,    // 副旋转轴：Y轴（手臂内外摆动）
-                -0.333f, 20.0f, -20.0f); // 副角度：步进-0.333，范围-20到20度
+                1.0f, 0.0f, 0.0f,    // Trục xoay chính: trục X (tay vung trước sau)
+                0.5f, 10.0f, -10.0f, // Góc chính: bước 0.5, phạm vi -10 đến 10 độ
+                0.0f, 1.0f, 0.0f,    // Trục xoay phụ: trục Y (tay vung trong ngoài)
+                -0.333f, 20.0f, -20.0f); // Góc phụ: bước -0.333, phạm vi -20 đến 20 độ
 
-        // 纹理坐标数组（UV坐标，归一化0-1）
-        // 右手臂区域：皮肤右半部分中间区域（对应UV 0.625-0.875水平，0.25-0.5垂直）
-        // LimbCube使用10个面，每个面4个顶点，每个顶点2个坐标(u, v)
+        // Mảng tọa độ texture (tọa độ UV, chuẩn hóa 0-1)
+        // Vùng tay phải: vùng giữa nửa phải skin (ứng UV ngang 0.625-0.875, dọc 0.25-0.5)
+        // LimbCube dùng 10 mặt, mỗi mặt 4 đỉnh, mỗi đỉnh 2 tọa độ (u, v)
         this.rightArmTexCoordinates = new float[]{
                 0.6875f, 0.5f, 0.6875f, 0.40625f, 0.75f, 0.40625f, 0.75f, 0.5f,
                 0.6875f, 0.40625f, 0.6875f, 0.3125f, 0.75f, 0.3125f, 0.75f, 0.40625f,
