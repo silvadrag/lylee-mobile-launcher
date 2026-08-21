@@ -127,6 +127,11 @@
     <string name="announcement">Announcement: %s</string>
     <string name="announcement_significant">This announcement is an important announcement. Please confirm that you have read this announcement before hiding it. Do you want to continue hiding it?</string>
 
+    <string name="lylee_cobblemon_button">Lylee Cobblemon</string>
+    <string name="lylee_cobblemon_connecting">Connecting to Lylee Cobblemon</string>
+    <string name="lylee_cobblemon_ready">Lylee Cobblemon is ready to play.</string>
+    <string name="lylee_cobblemon_launch">Play</string>
+
     <string name="archive_author">Author(s)</string>
     <string name="archive_date">Publish Date</string>
     <string name="archive_game_version">Game Version</string>

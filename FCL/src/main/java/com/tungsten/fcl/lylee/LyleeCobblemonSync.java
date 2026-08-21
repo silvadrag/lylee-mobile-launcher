@@ -45,13 +45,25 @@ public class LyleeCobblemonSync {
      *         các Task khác trong app để cập nhật UI lúc xong.
      */
     public static Task<?> sync(File gameDir) {
-        return Task.composeAsync(() -> {
+        return Task.composeAsync(() -> fetchManifest().thenComposeAsync(manifest -> syncFiles(gameDir, manifest)));
+    }
+
+    /** Chỉ lấy manifest, không tải file — dùng khi cần biết trước
+     *  minecraftVersion/loaderVersion (VD để tạo version mới) trước khi đồng bộ. */
+    public static Task<LyleeManifest> fetchManifest() {
+        return Task.supplyAsync(() -> {
             String json = NetworkUtils.doGet(NetworkUtils.toURL(MANIFEST_URL));
             LyleeManifest manifest = JsonUtils.GSON.fromJson(json, LyleeManifest.class);
             if (manifest == null || manifest.files == null || manifest.files.isEmpty()) {
                 throw new IOException("Không lấy được danh sách file modpack từ server Lylee (manifest rỗng hoặc sai định dạng).");
             }
+            return manifest;
+        });
+    }
 
+    /** Đồng bộ file theo 1 manifest đã có sẵn (đã fetch trước đó). */
+    public static Task<?> syncFiles(File gameDir, LyleeManifest manifest) {
+        return Task.supplyAsync(() -> {
             List<Task<?>> downloads = new ArrayList<>();
             for (LyleeManifest.FileEntry entry : manifest.files) {
                 if (entry.path == null || entry.url == null || entry.hash == null) continue;
@@ -63,8 +75,8 @@ public class LyleeCobblemonSync {
                         new FileDownloadTask.IntegrityCheck(normalizeHashAlgorithm(entry.hashType), entry.hash)
                 ));
             }
-            return Task.allOf(downloads);
-        });
+            return downloads;
+        }).thenComposeAsync(downloads -> Task.allOf(downloads));
     }
 
     /** So sánh kích thước trước (rẻ) rồi mới tính hash thật (tốn CPU) —

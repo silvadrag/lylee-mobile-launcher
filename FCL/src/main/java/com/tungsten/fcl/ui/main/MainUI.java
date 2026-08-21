@@ -9,7 +9,9 @@ import androidx.appcompat.widget.LinearLayoutCompat;
 
 import com.tungsten.fcl.R;
 import com.tungsten.fcl.game.TexturesLoader;
+import com.tungsten.fcl.lylee.LyleeCobblemonConnector;
 import com.tungsten.fcl.setting.Accounts;
+import com.tungsten.fcl.setting.Profiles;
 import com.tungsten.fcl.util.AndroidUtils;
 import com.tungsten.fclcore.auth.Account;
 import com.tungsten.fclcore.fakefx.beans.property.ObjectProperty;
@@ -45,6 +47,7 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
     private FCLTextView announcementView;
     private FCLTextView date;
     private FCLButton hide;
+    private FCLButton lyleeCobblemon;
     private Announcement announcement = null;
 
     private SkinViewer skinViewer;
@@ -65,8 +68,10 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
         announcementView = findViewById(R.id.announcement);
         date = findViewById(R.id.date);
         hide = findViewById(R.id.hide);
+        lyleeCobblemon = findViewById(R.id.lylee_cobblemon);
         ThemeEngine.getInstance().registerEvent(announcementLayout, () -> announcementLayout.getBackground().setTint(ThemeEngine.getInstance().getTheme().getColor()));
         hide.setOnClickListener(this);
+        lyleeCobblemon.setOnClickListener(this);
 
         skinViewer = findViewById(R.id.skin_viewer);
         renderer = new SkinRenderer(getContext());
@@ -190,6 +195,9 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
             } else {
                 hideAnnouncement();
             }
+        }
+        if (view == lyleeCobblemon) {
+            LyleeCobblemonConnector.connect(getContext(), Profiles.getSelectedProfile());
         }
     }
 }
