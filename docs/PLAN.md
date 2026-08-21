@@ -175,6 +175,31 @@ Người dùng gửi 7 ảnh chụp màn hình thật trên máy, phát hiện a
   mất mod người chơi tự thêm. Build `:FCL:assembleFordebug` qua sạch, nhưng **CHƯA
   gắn nút/màn hình nào gọi `LyleeCobblemonSync.sync()`** — mới chỉ là engine gọi
   được từ code, chưa có UI trigger thật.
+- [x] Quét lại toàn bộ source bằng grep (`discord.gg|afdian|fcl-team.github.io|
+  FCL-Team/FoldCraftLauncher|qq.com|Fold Craft Launcher|FoldCraftLauncher`) để bắt
+  hết chỗ sót lần 1 chưa thấy, tìm ra và sửa thêm:
+  - `UpdateDialog.java` — bỏ nút giữ-để-mở trang release GitHub thật của FCL-Team;
+    đổi tên file/tác vụ tải bản cập nhật từ `FoldCraftLauncher.apk` → `LyleeLauncher.apk`.
+  - `ControllerUploadPage.java` — ẩn nút "qq" (từng đưa thẳng vào group QQ thật của
+    FCL-Team khi chia sẻ controller layout), xóa hẳn `joinQQGroup()`/`QQ_GROUP_KEY`
+    không dùng nữa.
+  - `ShellActivity.java`, `LauncherSettingAdapter.kt` — 2 chỗ text nhỏ còn ghi "Fold
+    Craft Launcher" (dòng log shell, gợi ý placeholder ô nhập launcher name).
+  - CỐ Ý KHÔNG đổi: URL tải Java runtime thật (`VersionSettingPage.kt`) và plugin
+    ffmpeg thật (`ModChecker.kt`) — đây là dependency chức năng thật FCL-Team host,
+    đổi mà không có server Lylee thay thế sẽ làm hỏng tính năng; link tài liệu
+    hướng dẫn (`ArticleAdapter.java`, `fcl-team.github.io`) — nội dung hữu ích thật,
+    không phải link cộng đồng/donate gây hiểu lầm nên giữ; tên định danh nội bộ
+    (`Theme.FoldCraftLauncher`, socket name) không hiện ra người dùng; và chuỗi
+    string ở các locale zh/ru/uk/pt-rBR/de chưa đổi thương hiệu (ưu tiên thấp, app
+    dùng chính ở vi/en).
+- Phát hiện phụ trong đợt build lại lần 2: máy build đã tự chuyển `JAVA_HOME` mặc
+  định sang JDK 25 (Temurin) — AGP không hiểu, build lỗi mập mờ chỉ in ra
+  `"25.0.4"`. Có JDK 21 vẫn còn cài ở
+  `C:\Program Files\Eclipse Adoptium\jdk-21.0.9.10-hotspot` — build lại thành công
+  khi truyền `-Dorg.gradle.java.home="...jdk-21.0.9.10-hotspot"`. Chưa sửa cấu hình
+  project (`gradle.properties`) hay `JAVA_HOME` hệ thống — nếu build tay ở máy này
+  báo lỗi tương tự về sau, nhớ lại đúng nguyên nhân này trước khi mất công tìm chỗ khác.
 
 ### Việc cần làm tiếp (đợt này)
 
