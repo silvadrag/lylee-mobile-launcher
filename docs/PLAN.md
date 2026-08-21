@@ -377,13 +377,14 @@ hồng `#EC5990` CHỈ dùng cho CTA/trạng thái active, bo góc chuẩn 4/6/8
   Test tay bằng mẫu XAML giống hệt announcement thật đã thấy trên máy (ảnh bị
   bỏ đúng, xuống dòng đúng, entity `&lt;` giải mã đúng, input lỗi vẫn fallback
   ra được text đọc được) — xem `git log` commit liên quan.
-- [ ] **Chưa deploy**: giống mọi lần sửa `Database.java`/`ApiServer.java`
-  khác, cần build lại jar + upload lên Lilypad + Restart để có hiệu lực thật
-  (xem mục 12 hướng dẫn deploy cũ, quy trình giống hệt).
+- [x] **Đã deploy (2026-08-21)**: build `lyleelauncherapi-1.0.0.jar` (đã xác
+  nhận có `xamlToPlainText` trong `Database.class`), người dùng tự tay upload
+  lên Lilypad `mods/` và restart server. Server đã load bản mod mới.
 
 ### Việc cần làm tiếp
 
-- [ ] Deploy bản sửa thông báo XAML lên server thật (xem mục 15).
+- Không còn việc treo từ mục 15/16 — cả fix XAML lẫn đợt dịch comment đều đã
+  deploy/commit xong.
 
 ## 16. Dịch toàn bộ comment tiếng Trung sang tiếng Việt (2026-08-21)
 
