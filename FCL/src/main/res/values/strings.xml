@@ -127,13 +127,18 @@
     <string name="announcement">Announcement: %s</string>
     <string name="announcement_significant">This announcement is an important announcement. Please confirm that you have read this announcement before hiding it. Do you want to continue hiding it?</string>
 
-    <string name="lylee_cobblemon_button">Lylee Cobblemon</string>
     <string name="lylee_cobblemon_connecting">Connecting to Lylee Cobblemon</string>
     <string name="lylee_cobblemon_updating">Updating Lylee Cobblemon modpack</string>
     <string name="lylee_cobblemon_ready">Lylee Cobblemon is ready to play.</string>
     <string name="lylee_cobblemon_launch">Play</string>
     <string name="lylee_cobblemon_info_new">Tap to install Lylee Cobblemon: this creates a separate game version and downloads the modpack. It won\'t touch your other versions.</string>
     <string name="lylee_cobblemon_info_installed">Lylee Cobblemon is already installed. Tapping again only re-downloads new/changed mod files from the server — it won\'t reinstall from scratch or remove your own files.</string>
+    <string name="lylee_cobblemon_page_title">Lylee Cobblemon</string>
+    <string name="lylee_cobblemon_page_desc">Quick-connect to the Lylee Cobblemon server modpack. This creates a separate game version that won\'t touch your other instances.</string>
+    <string name="lylee_cobblemon_status_installed">Installed on this device.</string>
+    <string name="lylee_cobblemon_status_not_installed">Not installed yet.</string>
+    <string name="lylee_cobblemon_cta_install">Connect now</string>
+    <string name="lylee_cobblemon_cta_update">Update modpack</string>
 
     <string name="archive_author">Author(s)</string>
     <string name="archive_date">Publish Date</string>

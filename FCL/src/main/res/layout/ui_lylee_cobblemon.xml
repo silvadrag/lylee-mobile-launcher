@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp">
+
+    <com.tungsten.fcllibrary.component.view.FCLTextView
+        android:id="@+id/page_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/lylee_cobblemon_page_title"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        app:auto_text_tint="true"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.tungsten.fcllibrary.component.view.FCLLinearLayout
+        android:id="@+id/info_card"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/bg_container_white"
+        android:orientation="vertical"
+        android:padding="20dp"
+        app:auto_linear_background_tint="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/page_title"
+        app:layout_constraintWidth_percent="0.6">
+
+        <com.tungsten.fcllibrary.component.view.FCLTextView
+            android:id="@+id/page_desc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/lylee_cobblemon_page_desc"
+            android:textSize="14sp"
+            app:auto_text_tint="true" />
+
+        <com.tungsten.fcllibrary.component.view.FCLTextView
+            android:id="@+id/status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            app:auto_text_tint="true" />
+
+        <com.tungsten.fcllibrary.component.view.FCLButton
+            android:id="@+id/connect"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:paddingVertical="14dp"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:ripple="true" />
+
+    </com.tungsten.fcllibrary.component.view.FCLLinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
