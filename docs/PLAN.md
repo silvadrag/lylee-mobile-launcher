@@ -440,12 +440,27 @@ hồng `#EC5990` CHỈ dùng cho CTA/trạng thái active, bo góc chuẩn 4/6/8
   chọn "thêm ảnh vào mobile sau" — không làm ngay, ghi lại làm việc cần làm
   tiếp bên dưới.
 
+- [x] **Đã deploy (2026-08-22)**: jar mới (gộp fix XAML mục 15 + endpoint
+  danh sách mục 17) đã build → upload `mods/` → Restart. Xác minh sống:
+  `GET /api/mobile/announcements` trả đủ 4 thông báo (id 2-5) đúng shape.
+- [x] Sửa vị trí nút chuông (2026-08-22): tiêu đề thông báo dài (VD "RAID
+  BOSS ETERNAL FLOETTE") có thể lấn vào icon khi nó neo ở góc card — dời
+  nút chuông ra góc trên-phải TOÀN MÀN HÌNH (tách khỏi cột 40% của card),
+  không còn đè bất kể tiêu đề dài cỡ nào. Test lại trên máy thật, OK.
+
 ### Việc cần làm tiếp
 
-- [ ] **Deploy jar mới** lên Lilypad (build ở mục này đã gộp cả 2 thay đổi:
-  fix XAML mục 15 + endpoint danh sách mục 17) — build → upload `mods/` →
-  Restart, quy trình giống mọi lần trước.
 - [ ] Thêm hỗ trợ hiện ảnh trong thông báo mobile (card Trang chủ +
   `AnnouncementHistoryDialog`) — cần cả backend (trả kèm URL ảnh, XAML hiện
   đang bóc bỏ hẳn thẻ `<Image>`) lẫn mobile (tải + hiện `ImageView` trong
   card/dialog). Chưa bắt đầu, người dùng xác nhận làm sau.
+- [ ] **Ý tưởng mới (2026-08-22): kết bạn/chat mobile ↔ PC.** Backend đã có
+  sẵn gần như đầy đủ từ đợt làm PC launcher (`8d4d456`, `6083ee2`) —
+  `ApiServer.java` đã có nguyên bộ route friends (gửi/nhận lời mời, chặn,
+  xóa bạn — `/api/players/{username}/friends...`) và messages (gửi tin, thu
+  hồi, sửa, react, đang gõ, đính kèm file — `/api/players/{username}/messages...`).
+  Mobile hiện **chưa có gì** (không 1 file friend/chat nào trong repo mobile
+  — đã grep xác nhận). Việc chính khi làm là xây UI mobile mới (list bạn
+  bè, màn chat, polling/typing...) nối vào API có sẵn — không cần động
+  backend. Là feature lớn, người dùng xác nhận để dành làm riêng 1 phiên,
+  chưa bắt đầu.
