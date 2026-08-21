@@ -294,3 +294,46 @@ Người dùng gửi 7 ảnh chụp màn hình thật trên máy, phát hiện a
   server — không cài lại từ đầu, không xóa file bạn tự thêm."
 - [ ] Chưa có APK thật nào được host ở `_mobile/` trên server — bản test hiện tại
   chỉ xác nhận đường ống hoạt động (DB → API → app), chưa test tải/cài thật.
+
+## 13. Thiết kế lại UI — Bước 1+2+3(1 phần): đồng bộ màu với launcher PC (2026-08-21)
+
+Người dùng chọn hướng "giống phong cách PC launcher". Khảo sát code thật của PC
+(MainWindow.xaml, docs/UI_DESIGN_GUIDELINES.md) trước khi đổi, không đoán:
+nền phân 3 tầng `#141414` (sidebar) < `#1a1a1a` (nền chính) < `#252525` (card),
+hồng `#EC5990` CHỈ dùng cho CTA/trạng thái active, bo góc chuẩn 4/6/8px.
+
+- [x] **Bước 1 — Trang chủ**: sidebar đổi từ phủ đặc hồng (`ThemeEngine.color`)
+  sang nền tối `#141414` (`R.color.sidebar_bg`, mới thêm) — `MainActivity.kt`.
+  Đã kiểm tra kỹ cơ chế tint icon (`autoTint`/`dkColor` trong `ThemeData.kt`)
+  trước khi đổi, xác nhận không làm icon biến mất (tính toán độc lập với màu nền
+  thật, chỉ phụ thuộc độ sáng của màu accent). **Xác minh trên máy thật**: sidebar
+  tối, icon home đang chọn nổi bật đúng màu hồng.
+- [x] **Bước 2 — Thẻ thông báo trang chủ**: `MainUI.java` đổi tint từ
+  `ThemeEngine.color` sang `R.color.card_bg` (`#252525`, mới thêm). Không xác
+  minh lại được trực quan lần này (không có thông báo nào đang hiển thị lúc test,
+  không tự đăng thông báo giả vì bảng dùng chung thật với launcher PC) — code đã
+  soát kỹ, rủi ro thấp.
+- [x] **Bước 3 (1 phần) — Phát hiện pattern hệ thống**: cách phủ hồng đặc KHÔNG
+  chỉ ở trang chủ — lặp lại ở **~35 file layout khắp app** qua nhiều cơ chế khác
+  nhau. Thay vì sửa từng file, tìm và sửa tại gốc:
+  - `FCLLinearLayout.java` (`auto_linear_background_tint`) + `FCLTextView.java`
+    (`auto_text_background_tint`) — 2 thuộc tính XML dùng chung ở **23 file**
+    (About, Download, Controller, Modpack...) — sửa 1 lần ở class component,
+    không đụng từng file XML.
+  - `FCLTabLayout.java` (`follow_theme`) — nền thanh tab (VD 3 tab trong Cài đặt)
+    đổi từ hồng nhạt sang `card_bg`.
+  - `LauncherSettingAdapter.kt`/`VersionSettingAdapter.kt` — màu nền từng dòng
+    trong 2 RecyclerView cài đặt, đổi trực tiếp sang `card_bg` (không còn phụ
+    thuộc theme nên bỏ luôn cơ chế `registerEvent`/`unregisterEvent`).
+  - **Xác minh trên máy thật ở 2 màn khác nhau**: Cài đặt (cả 3 tab: Trò chơi
+    Toàn cục/Trình khởi chạy/Giới thiệu) và Tải mod — mọi card/tab/checkbox đều
+    nền tối, hồng chỉ còn ở toggle/checkbox/progress bar/tab đang chọn/nút CTA.
+  - **CHƯA đụng**: còn ~12 file dùng cơ chế tint khác (không qua 3 class trên) —
+    để dành, ưu tiên thấp hơn vì phần lớn app đã đồng bộ.
+
+### Việc cần làm tiếp
+
+- [ ] 12 file còn lại chưa đồng bộ màu (cơ chế tint riêng, chưa khảo sát kỹ).
+- [ ] Xử lý vấn đề thông báo hiện mã XAML thô trên mobile (xem mục 12).
+- [ ] Nâng nút "Lylee Cobblemon" từ 1 nút góc màn hình chính lên thành
+  tab/màn hình riêng (đúng tinh thần "2 tab Cobblemon + Instances tự do" bên PC).
