@@ -139,6 +139,8 @@
     <string name="lylee_cobblemon_status_not_installed">Not installed yet.</string>
     <string name="lylee_cobblemon_cta_install">Connect now</string>
     <string name="lylee_cobblemon_cta_update">Update modpack</string>
+    <string name="lylee_cobblemon_ram_warning">Your device has about %.1f GB of RAM. Cobblemon needs a lot of memory (6GB+ recommended) — devices below that may lag or freeze while loading in. Continue anyway?</string>
+    <string name="lylee_cobblemon_ram_warning_continue">Continue anyway</string>
 
     <string name="announcement_history">Notification history</string>
     <string name="announcement_history_title">News</string>

@@ -10,6 +10,7 @@ import com.tungsten.fcl.setting.Profile;
 import com.tungsten.fcl.ui.TaskDialog;
 import com.tungsten.fcl.ui.download.version.VersionInstallInfoPage;
 import com.tungsten.fcl.ui.version.Versions;
+import com.tungsten.fcl.util.AndroidUtils;
 import com.tungsten.fcl.util.TaskCancellationAction;
 import com.tungsten.fclcore.download.DownloadProvider;
 import com.tungsten.fclcore.download.GameBuilder;
@@ -19,6 +20,7 @@ import com.tungsten.fclcore.task.Schedulers;
 import com.tungsten.fclcore.task.Task;
 import com.tungsten.fclcore.task.TaskExecutor;
 import com.tungsten.fclcore.task.TaskListener;
+import com.tungsten.fclcore.util.platform.MemoryUtils;
 import com.tungsten.fcllibrary.component.dialog.FCLAlertDialog;
 
 import java.io.File;
@@ -39,10 +41,32 @@ public final class LyleeCobblemonConnector {
 
     public static final String VERSION_NAME = "LyleeCobblemon";
 
+    // Ngưỡng cảnh báo RAM trước khi tải — lấy đúng mốc 6144MB mà
+    // MemoryUtils.findBestRAMAllocation() dùng để nhảy từ mức cấp 1GB lên 2GB
+    // heap (thay vì bịa 1 con số mới): dưới mốc này launcher chỉ cấp tối đa
+    // 1GB cho Minecraft, đã test thật thấy KHÔNG đủ để Cobblemon tải xong
+    // animation (treo hẳn, RAM hệ thống cạn kiệt) — xem docs/PLAN.md mục 18.
+    private static final int RAM_WARNING_THRESHOLD_MB = 6144;
+
     private LyleeCobblemonConnector() {
     }
 
     public static void connect(Context context, Profile profile) {
+        int totalMemory = MemoryUtils.getTotalDeviceMemory(context);
+        if (totalMemory < RAM_WARNING_THRESHOLD_MB) {
+            FCLAlertDialog.Builder builder = new FCLAlertDialog.Builder(context);
+            builder.setAlertLevel(FCLAlertDialog.AlertLevel.ALERT);
+            builder.setCancelable(false);
+            builder.setMessage(AndroidUtils.getLocalizedText(context, "lylee_cobblemon_ram_warning", totalMemory / 1024.0));
+            builder.setPositiveButton(context.getString(R.string.lylee_cobblemon_ram_warning_continue), () -> doConnect(context, profile));
+            builder.setNegativeButton(null);
+            builder.create().show();
+            return;
+        }
+        doConnect(context, profile);
+    }
+
+    private static void doConnect(Context context, Profile profile) {
         // Tiêu đề khác nhau tuỳ đã có version hay chưa, để người chơi biết ngay
         // lần bấm này là cài mới hay chỉ đang tải lại mod mới nhất từ server
         // (không phải cài lại từ đầu) — xem thêm showInfo().
