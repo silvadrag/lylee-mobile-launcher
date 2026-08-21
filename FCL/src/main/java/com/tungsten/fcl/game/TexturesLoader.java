@@ -154,7 +154,7 @@ public final class TexturesLoader {
             Skin skin = account.getSkin();
             if (skin != null) {
                 Skin.LoadedSkin loadedSkin = skin.load().run();
-                // 离线皮肤可能没有 cape（ALEX/STEVE 默认皮肤、未配置本地披风时 cape 为 null）
+                // Skin offline có thể không có cape (skin mặc định ALEX/STEVE, cape là null khi chưa cấu hình áo choàng cục bộ)
                 if (loadedSkin != null && loadedSkin.cape() != null) {
                     return loadedSkin.cape().getImage();
                 }

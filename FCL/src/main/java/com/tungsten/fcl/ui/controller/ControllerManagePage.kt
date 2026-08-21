@@ -32,13 +32,13 @@ import java.io.IOException
 import java.util.logging.Level
 
 /**
- * 控制布局管理页：左侧布局列表 + 右侧布局信息。
- * 列表选择、信息修改均通过回调直接刷新右侧信息与列表，不使用 fakefx property。
+ * Trang quản lý layout điều khiển: list layout bên trái + thông tin layout bên phải.
+ * Chọn trong list, sửa thông tin đều qua callback làm mới trực tiếp thông tin bên phải và list, không dùng fakefx property.
  */
 class ControllerManagePage(context: Context, id: Int, resId: Int) :
     FCLPage(context, id, resId), View.OnClickListener {
 
-    /** 当前选中的布局 */
+    /** Layout đang chọn */
     var selectedController: Controller? = null
         private set
 
@@ -51,7 +51,7 @@ class ControllerManagePage(context: Context, id: Int, resId: Int) :
     }
 
     private fun setup() {
-        // 校验选中项：列表为空则清空，不在列表中则选第一个
+        // Kiểm tra mục đang chọn: list rỗng thì xóa, không có trong list thì chọn cái đầu
         val controllers = Controllers.getControllers()
         selectedController = when {
             controllers.isEmpty() -> null
@@ -85,7 +85,7 @@ class ControllerManagePage(context: Context, id: Int, resId: Int) :
         binding.progress.visibility = View.GONE
     }
 
-    /** 用选中布局的信息刷新右侧显示 */
+    /** Làm mới hiển thị bên phải bằng thông tin layout đang chọn */
     private fun refreshInfo() {
         val controller = selectedController
         binding.infoLayout.visibility = if (controller == null) View.GONE else View.VISIBLE
@@ -227,13 +227,13 @@ class ControllerManagePage(context: Context, id: Int, resId: Int) :
         }
     }
 
-    /** 直接分享原始 FCL 控制布局 JSON 文件 */
+    /** Chia sẻ trực tiếp file JSON layout điều khiển FCL gốc */
     private fun shareDirect() {
         val file = File(FCLPath.CONTROLLER_DIR, selectedController!!.fileName)
         shareFile(file, R.string.control_share, AndroidUtils.getMimeType(file.absolutePath))
     }
 
-    /** 转换为 ZL2 格式后分享 */
+    /** Chuyển sang định dạng ZL2 rồi chia sẻ */
     private fun shareAsZl2() {
         if (!LayoutConverter.isSupported()) {
             Toast.makeText(context, R.string.control_convert_unsupported, Toast.LENGTH_LONG).show()
@@ -243,7 +243,7 @@ class ControllerManagePage(context: Context, id: Int, resId: Int) :
         dialog.show()
         val controller = selectedController!!
         val input = File(FCLPath.CONTROLLER_DIR, controller.fileName)
-        // 输出到公共目录 FCL/share/，便于文件管理器定位
+        // Xuất ra thư mục công khai FCL/share/, tiện cho file manager tìm
         val output = File(FCLPath.SHARE_DIR, controller.id + "_zl2.json")
         output.delete()
         Task.supplyAsync {
@@ -274,7 +274,7 @@ class ControllerManagePage(context: Context, id: Int, resId: Int) :
         }.start()
     }
 
-    /** 通过系统分享面板分享指定文件 */
+    /** Chia sẻ file chỉ định qua bảng chia sẻ hệ thống */
     private fun shareFile(file: File, chooserTitleRes: Int, mimeType: String) {
         val intent = Intent(Intent.ACTION_SEND)
         val uri = FileProvider.getUriForFile(

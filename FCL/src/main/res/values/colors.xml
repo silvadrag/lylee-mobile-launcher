@@ -12,6 +12,6 @@
     <color name="sidebar_bg">#141414</color>
     <color name="card_bg">#252525</color>
     <color name="primary_text">#0E0E0E</color>
-    <!-- 原 FCLLibrary 模块颜色（模块已并入 FCL） -->
+    <!-- Màu của module FCLLibrary cũ (module đã gộp vào FCL) -->
     <color name="dialog_background">#F4F4F4</color>
 </resources>

@@ -108,8 +108,8 @@ public class FCLActivity extends AppCompatActivity {
         super.onConfigurationChanged(newConfig);
         LocaleUtils.setLanguage(this);
         DisplayUtil.refreshDisplayMetrics(this);
-        // configChanges 含 uiMode 时亮暗切换不重建 Activity，需手动刷新主题控件
-        // （颜色按当前 uiMode 动态计算，刷新后即切换到亮/暗配色）
+        // Khi configChanges có uiMode, đổi sáng/tối không tạo lại Activity, cần làm mới control theme thủ công
+        // (màu tính động theo uiMode hiện tại, làm mới xong sẽ chuyển sang bảng màu sáng/tối)
         ThemeEngine.getInstance().refreshTheme();
     }
 

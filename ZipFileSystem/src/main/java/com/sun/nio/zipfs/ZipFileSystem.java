@@ -1102,12 +1102,12 @@ public class ZipFileSystem extends FileSystem {
         return cen;
     }
 
-    // 将 CEN 中读取的条目名统一规范化为配置编码的字节表示：
-    // 条目带 EFS（UTF-8）flag 时，名字的原始字节是 UTF-8，若直接保留原始字节，
-    // 在配置编码（如 GBK）下解码-重编码后字节会与原始字节不一致（非法序列被
-    // REPLACE），导致 inodes 按字节查找失败（NoSuchFileException）。
-    // 这里把 EFS 条目的名字先按 UTF-8 解码、再按配置编码重编码，使 inodes 的
-    // key 与 ZipPath 的字节表示保持一致，从而正确支持混合编码的 zip 文件。
+    // Chuẩn hóa tên entry đọc từ CEN thống nhất về dạng byte theo bảng mã cấu hình:
+    // Khi entry có cờ EFS (UTF-8), byte gốc của tên là UTF-8, nếu giữ nguyên byte gốc,
+    // thì giải mã-mã hóa lại theo bảng mã cấu hình (VD GBK) sẽ cho byte khác với byte gốc (chuỗi không hợp lệ bị
+    // REPLACE), khiến inodes tìm theo byte bị lỗi (NoSuchFileException).
+    // Ở đây giải mã tên entry EFS theo UTF-8 trước, rồi mã hóa lại theo bảng mã cấu hình, để byte của inodes
+    // khớp với biểu diễn byte của ZipPath, từ đó hỗ trợ đúng file zip có bảng mã hỗn hợp.
     private byte[] decodeCenName(byte[] name, int flag) {
         if (zc.isUTF8() || (flag & FLAG_EFS) == 0)
             return name;

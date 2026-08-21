@@ -91,7 +91,7 @@ public class AndroidUtils {
     }
 
     /**
-     * 字符串资源 ID 存在性缓存（getIdentifier 查询开销大，key 集合有限）
+     * Cache kiểm tra tồn tại của resource ID chuỗi (getIdentifier tốn chi phí tra cứu, tập key có giới hạn)
      */
     private static final Map<String, Boolean> STRING_ID_CACHE = new ConcurrentHashMap<>();
 

@@ -70,7 +70,7 @@ public class VersionInstallInfoPage extends FCLPage implements View.OnClickListe
         this.gameVersion = gameVersion;
         onCreate(gameVersion);
 
-        // 原 onRestart 逻辑：页面构造即加载当前安装器版本
+        // Logic onRestart cũ: trang khởi tạo là tải version installer hiện tại luôn
         reload();
     }
 

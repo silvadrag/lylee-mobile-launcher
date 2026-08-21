@@ -10,7 +10,7 @@
         <attr name="save_key" format="string"/>
     </declare-styleable>
 
-    <!-- 原 FCLLibrary 模块属性（模块已并入 FCL） -->
+    <!-- Thuộc tính của module FCLLibrary cũ (module đã gộp vào FCL) -->
     <attr name="use_theme_color" format="boolean" />
     <attr name="auto_tint" format="boolean" />
     <attr name="text_use_theme_color" format="boolean" />

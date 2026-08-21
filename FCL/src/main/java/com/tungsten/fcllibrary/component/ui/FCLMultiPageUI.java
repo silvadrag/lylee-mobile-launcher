@@ -17,27 +17,30 @@ import java.util.ArrayList;
 import java.util.function.Consumer;
 
 /**
- * 多页面 UI 基类：内层 ViewPager2 承载普通页面（tab 点击平滑滑动切换），
- * 覆盖层承载临时页（导航栈）。
+ * Lớp cơ sở UI nhiều trang: ViewPager2 bên trong chứa các trang thường (bấm tab
+ * trượt mượt để chuyển), lớp phủ chứa trang tạm (ngăn xếp điều hướng).
  * <p>
- * 页面无生命周期，随 ViewPager2 创建/销毁（不保留状态）：
- * 子类实现 {@link #getPageCount()} / {@link #createPage(int)} 提供页面工厂，
- * 在 onCreate 中调用 {@link #setupPages(ViewGroup, TabLayout)} 挂载页面容器。
+ * Trang không có vòng đời riêng, tạo/hủy theo ViewPager2 (không giữ trạng thái):
+ * lớp con hiện thực {@link #getPageCount()} / {@link #createPage(int)} làm
+ * factory trang, gọi {@link #setupPages(ViewGroup, TabLayout)} trong onCreate
+ * để gắn container trang.
  */
 public abstract class FCLMultiPageUI extends FCLCommonUI {
 
     /**
-     * 临时页切换动画时长（毫秒）
+     * Thời lượng hoạt ảnh chuyển trang tạm (mili giây)
      */
     private static final int TEMP_PAGE_ANIM_DURATION = 200;
 
     /**
-     * 上次 onPageSelected 的页面位置，用于过滤 ViewPager2 重复 dispatch 当前页（如软键盘弹出等布局变化）
+     * Vị trí trang lần onPageSelected trước đó, dùng để lọc bỏ việc ViewPager2
+     * dispatch lại trang hiện tại (VD khi bàn phím ảo bật lên làm đổi layout)
      */
     private int lastSelectedPosition = -1;
 
     /**
-     * 页面位置 → 页面实例注册表，页面被回收时清出（不保留状态）
+     * Bảng đăng ký vị trí trang → instance trang, xóa khỏi bảng khi trang bị
+     * thu hồi (không giữ trạng thái)
      */
     private final ArrayList<FCLPage> pageRegistry = new ArrayList<>();
 
@@ -51,14 +54,16 @@ public abstract class FCLMultiPageUI extends FCLCommonUI {
     }
 
     /**
-     * 子类在 onCreate 中调用：把内层 ViewPager2 与临时页覆盖层装入 container，
-     * 若提供 tabLayout 则用 TabLayoutMediator 联动（tab 点击平滑滑动切换）。
+     * Lớp con gọi trong onCreate: gắn ViewPager2 bên trong và lớp phủ trang tạm
+     * vào container; nếu có tabLayout thì liên kết qua TabLayoutMediator (bấm
+     * tab trượt mượt để chuyển).
      */
     protected void setupPages(ViewGroup container, TabLayout tabLayout) {
         pagePager = new ViewPager2(getContext());
         pagePager.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         pagePager.setOffscreenPageLimit(ViewPager2.OFFSCREEN_PAGE_LIMIT_DEFAULT);
-        // 禁用滑动手势：页面内滚动内容与滑动切换冲突，仅通过 tab / showPage 切换
+        // Tắt cử chỉ vuốt: nội dung cuộn trong trang xung đột với vuốt chuyển trang,
+        // chỉ chuyển qua tab / showPage
         pagePager.setUserInputEnabled(false);
         pagePager.setAdapter(new PageAdapter());
         container.addView(pagePager);
@@ -69,8 +74,9 @@ public abstract class FCLMultiPageUI extends FCLCommonUI {
         container.addView(overlay);
 
         if (tabLayout != null) {
-            // tab 由布局 XML 静态定义（TabItem），此处仅接管点击：瞬时切换（不创建中间页），
-            // 过渡动画由 onPageSelected 处理
+            // tab được định nghĩa tĩnh trong layout XML (TabItem), ở đây chỉ tiếp
+            // quản sự kiện bấm: chuyển tức thì (không tạo trang trung gian),
+            // hoạt ảnh chuyển cảnh xử lý trong onPageSelected
             tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
                 @Override
                 public void onTabSelected(TabLayout.Tab tab) {
@@ -89,23 +95,26 @@ public abstract class FCLMultiPageUI extends FCLCommonUI {
             });
         }
 
-        // 切换页面时清空临时页（临时页属于当前页面上下文）
+        // Xóa hết trang tạm khi chuyển trang (trang tạm thuộc ngữ cảnh trang hiện tại)
         pagePager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
                 dismissAllTempPages();
-                // tab 高亮同步
+                // đồng bộ tab đang sáng
                 if (tabLayout != null) {
                     TabLayout.Tab tab = tabLayout.getTabAt(position);
                     if (tab != null && tabLayout.getSelectedTabPosition() != position) {
                         tab.select();
                     }
                 }
-                // 页面切换过渡动画：不创建中间页（瞬时跳转），直接对目标页做淡入 + 上滑进入。
-                // 同步执行（不 post）：onPageSelected 时页面已挂载但尚未绘制，置透明发生在首帧绘制前，
-                // 不会出现先显示后消失的闪烁。
-                // 仅在页面位置真正变化时播放：ViewPager2 在布局变化（如软键盘弹出、页面内容刷新）
-                // 后会重新 dispatch 当前页，此时不播放动画避免页面闪烁
+                // Hoạt ảnh chuyển trang: không tạo trang trung gian (nhảy tức thì),
+                // chỉ làm mờ dần + trượt lên cho trang đích.
+                // Chạy đồng bộ (không post): lúc onPageSelected trang đã gắn nhưng
+                // chưa vẽ, đặt trong suốt trước khung hình đầu nên không bị chớp
+                // hiện-rồi-mất.
+                // Chỉ phát khi vị trí trang thực sự đổi: ViewPager2 dispatch lại
+                // trang hiện tại khi layout đổi (VD bàn phím ảo bật, nội dung trang
+                // làm mới) — lúc đó không phát hoạt ảnh để tránh chớp hình
                 if (position != lastSelectedPosition) {
                     FCLPage page = getPage(position);
                     if (page != null) {
@@ -122,24 +131,24 @@ public abstract class FCLMultiPageUI extends FCLCommonUI {
     }
 
     /**
-     * 页面数量（对应 tab 数或 ViewPager2 页数）
+     * Số lượng trang (khớp số tab hoặc số trang ViewPager2)
      */
     public abstract int getPageCount();
 
     /**
-     * 按位置创建页面（页面 id 由子类页面常量决定）
+     * Tạo trang theo vị trí (id trang do hằng số trang của lớp con quyết định)
      */
     public abstract FCLPage createPage(int position);
 
     /**
-     * tab 标题，无 tab 的 UI 返回 null
+     * Tiêu đề tab, UI không có tab thì trả về null
      */
     public String[] getTabTitles() {
         return null;
     }
 
     /**
-     * 获取指定位置的页面，不存在则创建（页面创建即完成初始化）
+     * Lấy trang tại vị trí, chưa có thì tạo mới (tạo trang là khởi tạo xong luôn)
      */
     public FCLPage getPage(int position) {
         while (pageRegistry.size() <= position) {
@@ -154,14 +163,15 @@ public abstract class FCLMultiPageUI extends FCLCommonUI {
     }
 
     /**
-     * 页面创建后回调，子类可分发版本等上下文数据
+     * Callback sau khi trang được tạo, lớp con có thể truyền dữ liệu ngữ cảnh
+     * (VD version) tại đây
      */
     protected void onPageCreated(FCLPage page) {
 
     }
 
     /**
-     * 遍历已创建的页面（不触发创建）
+     * Duyệt qua các trang đã tạo (không kích hoạt tạo mới)
      */
     public void forEachCreatedPage(Consumer<FCLPage> action) {
         for (FCLPage page : pageRegistry) {
@@ -172,7 +182,7 @@ public abstract class FCLMultiPageUI extends FCLCommonUI {
     }
 
     /**
-     * 切换到指定位置页面（替代原 switchPage）
+     * Chuyển tới trang tại vị trí chỉ định (thay cho switchPage cũ)
      */
     public void showPage(int position) {
         if (pagePager != null) {
@@ -189,18 +199,21 @@ public abstract class FCLMultiPageUI extends FCLCommonUI {
     }
 
     /**
-     * 在覆盖层上显示临时页并压入导航栈（隐藏下层页面，临时页独占显示）
+     * Hiện trang tạm trên lớp phủ và đẩy vào ngăn xếp điều hướng (ẩn trang dưới,
+     * trang tạm chiếm toàn bộ hiển thị)
      */
     public void showTempPage(FCLPage page) {
         if (overlay == null) return;
-        // 隐藏当前栈顶临时页与内层页面，避免透明背景下层内容透出（原 PageManager 机制隐藏当前页与栈顶临时页）
+        // Ẩn trang tạm đang ở đỉnh ngăn xếp và trang bên trong, tránh lộ nội dung
+        // qua nền trong suốt (giữ đúng cơ chế PageManager cũ: ẩn trang hiện tại
+        // và trang tạm đỉnh ngăn xếp)
         if (!tempPageStack.isEmpty()) {
             tempPageStack.get(tempPageStack.size() - 1).getContentView().setVisibility(View.GONE);
         }
         if (pagePager != null) {
             pagePager.setVisibility(View.GONE);
         }
-        // 新临时页淡入
+        // Trang tạm mới hiện mờ dần vào
         View view = page.getContentView();
         view.setAlpha(0f);
         overlay.setVisibility(View.VISIBLE);
@@ -210,7 +223,7 @@ public abstract class FCLMultiPageUI extends FCLCommonUI {
     }
 
     /**
-     * 弹栈顶临时页（淡出后移除并恢复下层）
+     * Đóng trang tạm ở đỉnh ngăn xếp (mờ dần rồi gỡ, khôi phục trang dưới)
      */
     public void dismissCurrentTempPage() {
         if (tempPageStack.isEmpty()) return;
@@ -219,12 +232,12 @@ public abstract class FCLMultiPageUI extends FCLCommonUI {
         view.animate().alpha(0f).setDuration(TEMP_PAGE_ANIM_DURATION).withEndAction(() -> {
             overlay.removeView(view);
             if (!tempPageStack.isEmpty()) {
-                // 恢复下层临时页显示
+                // Khôi phục hiển thị trang tạm bên dưới
                 tempPageStack.get(tempPageStack.size() - 1).getContentView().setVisibility(View.VISIBLE);
             }
             if (tempPageStack.isEmpty()) {
                 overlay.setVisibility(View.GONE);
-                // 临时页全部关闭后恢复内层页面显示
+                // Đóng hết trang tạm thì khôi phục hiển thị trang bên trong
                 if (pagePager != null) {
                     pagePager.setVisibility(View.VISIBLE);
                 }
@@ -233,7 +246,7 @@ public abstract class FCLMultiPageUI extends FCLCommonUI {
     }
 
     /**
-     * 清空全部临时页
+     * Đóng hết mọi trang tạm
      */
     public void dismissAllTempPages() {
         while (!tempPageStack.isEmpty()) {
@@ -259,7 +272,7 @@ public abstract class FCLMultiPageUI extends FCLCommonUI {
     }
 
     /**
-     * 内层 ViewPager2 适配器：页面随创建/销毁（不保留状态）
+     * Adapter ViewPager2 bên trong: trang tạo/hủy theo vòng đời (không giữ trạng thái)
      */
     private class PageAdapter extends RecyclerView.Adapter<PageAdapter.Holder> {
 
@@ -286,7 +299,7 @@ public abstract class FCLMultiPageUI extends FCLCommonUI {
         @NonNull
         @Override
         public Holder onCreateViewHolder(ViewGroup parent, int viewType) {
-            // ViewPager2 要求页面直接子 View 必须 MATCH_PARENT
+            // ViewPager2 yêu cầu View con trực tiếp của trang phải MATCH_PARENT
             FrameLayout container = new FrameLayout(parent.getContext());
             container.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             return new Holder(container);
@@ -297,8 +310,9 @@ public abstract class FCLMultiPageUI extends FCLCommonUI {
             holder.boundPosition = position;
             holder.container.removeAllViews();
             View contentView = getPage(position).getContentView();
-            // 防御：GapWorker 预取可能将同一页面实例挂到其他容器（预取 bind 与正式 bind 竞争），
-            // 先解除旧 parent，避免 addView 抛 "child already has a parent"
+            // Phòng ngừa: GapWorker prefetch có thể gắn cùng 1 instance trang vào
+            // container khác (bind prefetch và bind chính thức tranh chấp nhau) —
+            // gỡ parent cũ trước để tránh addView ném lỗi "child already has a parent"
             if (contentView.getParent() != null) {
                 ((ViewGroup) contentView.getParent()).removeView(contentView);
             }
@@ -307,7 +321,7 @@ public abstract class FCLMultiPageUI extends FCLCommonUI {
 
         @Override
         public void onViewRecycled(Holder holder) {
-            // 页面被回收即销毁（不保留状态），下次进入全新创建
+            // Trang bị thu hồi là hủy luôn (không giữ trạng thái), lần sau vào lại sẽ tạo mới hoàn toàn
             if (holder.boundPosition >= 0 && holder.boundPosition < pageRegistry.size()) {
                 pageRegistry.set(holder.boundPosition, null);
             }

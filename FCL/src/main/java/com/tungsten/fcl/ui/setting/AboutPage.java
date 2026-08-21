@@ -16,7 +16,7 @@ import com.tungsten.fclcore.task.Task;
 import com.tungsten.fcllibrary.component.ui.FCLPage;
 
 /**
- * 关于页：RecyclerView 行级复用，说明（about_desc）置顶，下方为链接行。
+ * Trang giới thiệu: tái dùng dòng kiểu RecyclerView, mô tả (about_desc) ghim trên đầu, bên dưới là các dòng link.
  */
 public class AboutPage extends FCLPage {
 

@@ -5,7 +5,7 @@ import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 
 /**
- * 列表行间垂直间距装饰器（替代手工分隔线），最后一行不添加间距。
+ * Decorator khoảng cách dọc giữa các dòng list (thay cho đường phân cách thủ công), dòng cuối không thêm khoảng cách.
  */
 class SpacingItemDecoration(private val spacingPx: Int) : RecyclerView.ItemDecoration() {
     override fun getItemOffsets(

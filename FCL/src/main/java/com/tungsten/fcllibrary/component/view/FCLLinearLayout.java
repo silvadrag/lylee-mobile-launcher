@@ -20,9 +20,9 @@ public class FCLLinearLayout extends LinearLayoutCompat {
     private boolean autoTint;
     private BooleanProperty visibilityProperty;
 
-    /** 主题刷新回调（registerEvent 注册，主题变化时全量执行）。
-     *  改用深色卡片色（对齐 PC 版设计语言）取代主题强调色淡色变体 —
-     *  大面积容器不应铺满强调色，只有 CTA/激活态才用强调色。 */
+    /** Callback làm mới theme (đăng ký qua registerEvent, chạy toàn bộ khi theme đổi).
+     *  Đổi sang màu card tối (đồng bộ ngôn ngữ thiết kế PC) thay cho biến thể màu nhạt của accent theme —
+     *  container diện tích lớn không nên phủ đặc màu accent, chỉ CTA/trạng thái kích hoạt mới dùng màu accent. */
     private void refreshTheme() {
             if (autoTint) {
                 setBackgroundTintList(new ColorStateList(new int[][] { { } }, new int[] { getResources().getColor(R.color.card_bg, null) }));

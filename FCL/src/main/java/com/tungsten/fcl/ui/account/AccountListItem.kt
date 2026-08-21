@@ -135,8 +135,8 @@ class AccountListItem(
     }
 
     /**
-     * 上传皮肤。确认选择皮肤文件后通过 [onUploading]（主线程）通知调用方显示进度，
-     * 整个上传流程结束（成功或失败）后返回。
+     * Tải lên skin. Sau khi xác nhận chọn file skin, thông báo bên gọi hiện tiến trình qua [onUploading] (luồng chính),
+     * trả về sau khi toàn bộ quá trình tải lên kết thúc (thành công hoặc thất bại).
      */
     suspend fun uploadSkin(onUploading: () -> Unit) {
         when (account) {

@@ -11,8 +11,8 @@ import com.tungsten.fcllibrary.browser.options.LibMode
 import com.tungsten.fcllibrary.browser.options.SelectionMode
 
 /**
- * 现代化的文件浏览器启动器，使用 Activity Result API
- * 替代传统的 onActivityResult 和 ResultListener
+ * Trình khởi chạy file browser kiểu hiện đại, dùng Activity Result API
+ * Thay thế cho onActivityResult và ResultListener truyền thống
  */
 class FileBrowserLauncher(val activity: AppCompatActivity) {
     private val launcher: ActivityResultLauncher<Intent?>
@@ -34,8 +34,8 @@ class FileBrowserLauncher(val activity: AppCompatActivity) {
     }
 
     /**
-     * 启动文件浏览器
-     * @param fileBrowser 配置好的 FileBrowser 实例
+     * Khởi chạy trình duyệt file
+     * @param fileBrowser Instance FileBrowser đã cấu hình sẵn
      */
     fun launch(fileBrowser: FileBrowser) {
         this.currentFileBrowser = fileBrowser
@@ -48,7 +48,7 @@ class FileBrowserLauncher(val activity: AppCompatActivity) {
     }
 
     /**
-     * 便捷方法：直接创建并启动文件选择器
+     * Phương thức tiện lợi: tạo và khởi chạy bộ chọn file trực tiếp
      */
     fun launch(
         libMode: LibMode, selectionMode: SelectionMode,

@@ -22,45 +22,45 @@ import java.io.File
 import java.util.WeakHashMap
 
 /**
- * 主题单例（Repository）：持有 [ThemeData] 的 StateFlow，
- * 控件/页面通过 [registerEvent] 注册刷新回调（全量刷新，替代原 fakefx 属性绑定）。
+ * Singleton theme (Repository): giữ StateFlow của [ThemeData],
+ * control/trang đăng ký callback làm mới qua [registerEvent] (làm mới toàn bộ, thay cho binding thuộc tính fakefx cũ).
  */
 object ThemeEngine {
 
     private val _theme = MutableStateFlow<ThemeData?>(null)
 
-    /** 当前主题（StateFlow，初始化前为 null，新代码可 collect 感知主题变化）。
-     *  getter 命名为 getThemeFlow 避免与 getTheme()（返回 ThemeData）在 Java 侧签名冲突 */
+    /** Theme hiện tại (StateFlow, null trước khi khởi tạo, code mới có thể collect để nhận biết theme đổi).
+     *  getter đặt tên getThemeFlow để tránh xung đột chữ ký với getTheme() (trả về ThemeData) phía Java */
     @get:JvmName("getThemeFlow")
     val theme: StateFlow<ThemeData?> = _theme.asStateFlow()
 
     val handler = Handler(Looper.getMainLooper())
 
-    // 弱键：页面随 ViewPager2 回收销毁后（无 onDestroy 生命周期）视图不再被强引用，
-    // 未注销的 registerEvent 条目随 GC 自动清除，避免页面视图树累积泄漏
+    // Khóa yếu: sau khi trang bị ViewPager2 thu hồi/hủy (không có vòng đời onDestroy), view không còn bị giữ tham chiếu mạnh,
+    // các mục registerEvent chưa hủy đăng ký sẽ tự bị GC dọn, tránh rò rỉ tích lũy theo view tree của trang
     private val runnables = WeakHashMap<View, Runnable>()
     private val refreshListeners = ArrayList<Runnable>()
 
-    /** Java 兼容：返回单例自身（替代原 getInstance()） */
+    /** Tương thích Java: trả về chính singleton (thay cho getInstance() cũ) */
     @JvmStatic
     fun getInstance(): ThemeEngine = this
 
-    /** 初始化主题（幂等，FCLActivity.onCreate 首行调用） */
+    /** Khởi tạo theme (idempotent, gọi ở dòng đầu FCLActivity.onCreate) */
     fun setupThemeEngine(context: Context) {
         if (_theme.value != null) return
         _theme.value = ThemeData.getTheme(context)
     }
 
-    /** 当前主题（调用方遵循先 setup 的约定；未初始化时抛异常，与原 getTheme() 返回 null 后使用崩等价）。
-     *  非 @JvmStatic：Java 侧经 getInstance().getTheme() 实例调用（@JvmStatic 会同时生成静态方法导致链式调用歧义） */
+    /** Theme hiện tại (bên gọi phải tuân thủ quy ước setup trước; chưa khởi tạo thì ném exception, tương đương việc getTheme() cũ trả null rồi dùng sẽ crash).
+     *  không @JvmStatic: phía Java gọi qua instance getInstance().getTheme() (@JvmStatic sẽ sinh thêm hàm static gây mơ hồ khi gọi chuỗi) */
     fun getTheme(): ThemeData = _theme.value!!
 
-    /** 注册控件/页面的主题刷新回调（注册后立即执行一次） */
+    /** Đăng ký callback làm mới theme cho control/trang (chạy ngay 1 lần sau khi đăng ký) */
     fun registerEvent(view: View, runnable: Runnable) {
         runnables[view] = runnable
-        // 同步执行：新控件立即应用主题色。异步 post 会延迟到下一帧，
-        // 快速滑动/切换页面时新 inflate 的控件（如 bg_container_white + tint）首帧露出白色背景。
-        // 主题未初始化时退回异步（控件可能在 setupThemeEngine 前创建，如 Splash 布局）
+        // Chạy đồng bộ: control mới áp màu theme ngay. Post bất đồng bộ sẽ trễ tới khung hình sau,
+        // khi vuốt/chuyển trang nhanh thì control mới inflate (VD bg_container_white + tint) sẽ lộ nền trắng ở khung hình đầu.
+        // Theme chưa khởi tạo thì lùi về bất đồng bộ (control có thể được tạo trước setupThemeEngine, VD layout Splash)
         if (_theme.value != null) {
             runnable.run()
         } else {
@@ -80,7 +80,7 @@ object ThemeEngine {
         refreshListeners.remove(runnable)
     }
 
-    /** 全量刷新：控件回调 + 全局刷新监听（主题未初始化时跳过，与原实现一致） */
+    /** Làm mới toàn bộ: callback control + listener làm mới toàn cục (theme chưa khởi tạo thì bỏ qua, giống hiện thực cũ) */
     fun refreshTheme() {
         if (_theme.value == null) return
         notifyThemeChanged()
@@ -95,14 +95,14 @@ object ThemeEngine {
         }
     }
 
-    /** 更新主题数据并全量刷新 */
+    /** Cập nhật dữ liệu theme rồi làm mới toàn bộ */
     private fun updateTheme(transform: (ThemeData) -> ThemeData) {
         val current = _theme.value ?: return
         _theme.value = transform(current)
         notifyThemeChanged()
     }
 
-    /** 亮暗判断：FCL 自身主题模式（0 跟随系统 / 1 强制亮 / 2 强制暗）优先于 uiMode */
+    /** Xác định sáng/tối: chế độ theme riêng của FCL (0 theo hệ thống / 1 ép sáng / 2 ép tối) ưu tiên hơn uiMode */
     @JvmStatic
     fun isNightMode(context: Context): Boolean {
         val themeMode =
@@ -201,12 +201,12 @@ object ThemeEngine {
         ThemeData.saveTheme(context, getTheme())
     }
 
-    /** 关闭皮肤模型开关（替代原 Theme.setiIgnoreSkinContainer 字段直改） */
+    /** Công tắc tắt mô hình skin (thay cho việc sửa trực tiếp field Theme.setiIgnoreSkinContainer cũ) */
     fun setCloseSkinModel(closeSkinModel: Boolean) {
         updateTheme { it.copy(closeSkinModel = closeSkinModel) }
     }
 
-    /** 动画速度（替代原 animationSpeedProperty().set 字段直改） */
+    /** Tốc độ hoạt ảnh (thay cho việc sửa trực tiếp field animationSpeedProperty().set cũ) */
     fun setAnimationSpeed(animationSpeed: Int) {
         updateTheme { it.copy(animationSpeed = animationSpeed) }
     }

@@ -88,7 +88,7 @@ public final class ModManager {
     private final String id;
     private final TreeSet<LocalModFile> localModFiles = new TreeSet<>();
     private final HashMap<Pair<String, ModLoaderType>, LocalMod> localMods = new HashMap<>();
-    /** 本次扫描中损坏（无法打开）的模组文件 */
+    /** File mod hỏng (không mở được) trong lần quét này */
     private final List<Path> brokenFiles = new ArrayList<>();
     private LibraryAnalyzer analyzer;
 
@@ -125,9 +125,9 @@ public final class ModManager {
     }
 
     /**
-     * 解析并加入一个模组文件。
+     * Phân tích và thêm 1 file mod.
      *
-     * @return 成功加入 localModFiles 的模组信息；非模组文件或旧版模组（isOld）返回 null
+     * @return Thông tin mod thêm thành công vào localModFiles; không phải file mod hoặc mod bản cũ (isOld) thì trả về null
      */
     private LocalModFile addModInfo(Path file) {
         String fileName = StringUtils.removeSuffix(FileUtils.getName(file), DISABLED_EXTENSION, OLD_EXTENSION);
@@ -175,8 +175,8 @@ public final class ModManager {
                 }
             }
         } catch (Throwable e) {
-            // 损坏的压缩文件（如 zip 结构损坏时 zipfs 抛 ZipError）无法打开，
-            // 记录并跳过该文件，避免导致整个模组列表加载失败
+            // File nén hỏng (VD cấu trúc zip hỏng thì zipfs ném ZipError) không mở được,
+            // ghi lại và bỏ qua file đó, tránh làm hỏng cả việc tải list mod
             LOG.warning("Failed to open mod file " + file + e);
             brokenFiles.add(file);
             return null;
@@ -211,10 +211,10 @@ public final class ModManager {
     }
 
     /**
-     * 扫描模组目录。每解析成功一个模组（加入 localModFiles）都会同步调用 onScanned 回调，
-     * 供调用方实现增量展示；回调在扫描线程触发，线程安全由调用方保证。
+     * Quét thư mục mod. Mỗi lần phân tích thành công 1 mod (thêm vào localModFiles) đều gọi đồng bộ callback onScanned,
+     * để bên gọi hiện dần theo từng đợt; callback kích hoạt ở luồng quét, an toàn luồng do bên gọi tự đảm bảo.
      *
-     * @param onScanned 每个模组解析成功后的回调，可为 null
+     * @param onScanned Callback sau khi mỗi mod phân tích thành công, có thể là null
      */
     public void refreshMods(Consumer<LocalModFile> onScanned) throws IOException {
         localModFiles.clear();
@@ -250,7 +250,7 @@ public final class ModManager {
         return List.copyOf(localModFiles);
     }
 
-    /** 本次扫描中损坏（无法打开）的模组文件 */
+    /** File mod hỏng (không mở được) trong lần quét này */
     public List<Path> getBrokenFiles() {
         return List.copyOf(brokenFiles);
     }

@@ -23,14 +23,14 @@ public final class MinecraftKeyBindingMapper {
         if (key == null) return defaultKeycode;
 
         if (key.startsWith("key.")) {
-            //新版MC键绑定映射
+            //Bảng ánh xạ phím bind của MC bản mới
             Short glfwKeycode = MinecraftKeyBindingMapper.getGlfwKeycode(key);
             if (glfwKeycode == null) return defaultKeycode;
             return (int) glfwKeycode;
         } else {
             int lwjgl2Keycode;
             try {
-                //MC旧版本直接存了LWJGL2的键值
+                //Phiên bản MC cũ lưu trực tiếp giá trị phím LWJGL2
                 lwjgl2Keycode = Integer.parseInt(key);
             } catch (NumberFormatException e) {
                 return defaultKeycode;
@@ -40,10 +40,10 @@ public final class MinecraftKeyBindingMapper {
     }
 
     /**
-     * Minecraft 绑定按键映射表
+     * Bảng ánh xạ phím bind của Minecraft
      *
-     * @param keybinding 绑定的按键
-     * @return 对应的GLFW按键
+     * @param keybinding Phím đã bind
+     * @return Phím GLFW tương ứng
      */
     public static @Nullable Short getGlfwKeycode(String keybinding) {
         switch (keybinding) {

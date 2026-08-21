@@ -44,7 +44,7 @@ object NativeLibPlugin {
     }
 
     /**
-     * 获取所有未禁用的原生库插件的 JVM 环境参数
+     * Lấy tham số môi trường JVM của tất cả plugin thư viện native chưa bị vô hiệu hóa
      */
     @JvmStatic
     fun getJVMEnv(): Map<String, String> {
@@ -159,10 +159,10 @@ object NativeLibPlugin {
             if (resolvedPath.startsWith(basePath)) {
                 resolvedPath
             } else {
-                null //阻止路径穿越
+                null //Chặn path traversal
             }
         } catch (_: Exception) {
-            null //无效的路径
+            null //Đường dẫn không hợp lệ
         }
     }
 }

@@ -77,7 +77,7 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
         checkAnnouncement();
         setupSkinDisplay();
 
-        // 皮肤渲染随页面挂载/回收恢复与暂停（替代原 onStart/onStop 生命周期）
+        // Vẽ skin phục hồi/tạm dừng theo lúc trang gắn/thu hồi (thay cho vòng đời onStart/onStop cũ)
         getContentView().addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
             public void onViewAttachedToWindow(@NonNull View v) {

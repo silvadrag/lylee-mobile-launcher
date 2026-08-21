@@ -131,7 +131,7 @@ public enum ModTranslations {
     }
 
     /**
-     * 预加载全部解析数据（应在后台线程调用，避免首次使用时在主线程解析大文件造成卡顿）
+     * Tải trước toàn bộ dữ liệu đã phân tích (nên gọi ở luồng nền, tránh lần dùng đầu phân tích file lớn trên luồng chính gây giật)
      */
     public void preload() {
         getMods();

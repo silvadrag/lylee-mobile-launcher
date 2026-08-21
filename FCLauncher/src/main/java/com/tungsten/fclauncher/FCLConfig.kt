@@ -5,7 +5,7 @@ import com.mio.data.Renderer
 import java.io.Serializable
 
 /**
- * FCL 启动配置，由启动器构建后传给 FCLauncher
+ * Cấu hình khởi chạy FCL, do launcher xây dựng rồi truyền cho FCLauncher
  */
 class FCLConfig(
     val context: Context,
@@ -25,7 +25,7 @@ class FCLConfig(
     var lwjglVersion: String = "3.3.3"
 
     /**
-     * 已安装的模组加载器信息
+     * Thông tin mod loader đã cài
      */
     data class InstalledModLoaders(
         val installForge: Boolean,

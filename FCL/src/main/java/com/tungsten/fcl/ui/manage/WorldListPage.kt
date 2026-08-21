@@ -106,7 +106,7 @@ class WorldListPage(context: Context?, id: Int, resId: Int) : FCLPage(context, i
             binding.add -> add()
             binding.refresh -> refresh()
             binding.fixPrivate -> {
-                // use 关闭 Files.walk 的目录流，避免文件描述符泄漏
+                // use để đóng luồng thư mục của Files.walk, tránh rò rỉ file descriptor
                 Files.walk(savesDir).use { stream ->
                     stream.forEach { path ->
                         Files.setAttribute(

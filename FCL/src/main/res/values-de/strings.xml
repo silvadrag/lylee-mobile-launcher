@@ -911,7 +911,7 @@
     <string name="modloader">Mod-Loader</string>
     <string name="message_warn_renderer_global_setting">Die von Ihnen gewählte Version hat separate Einstellungen für jedes Profil, daher kann der hier angegebene Renderer nicht auf die aktuelle Version angewendet werden. Es wird empfohlen, die "Starten"-Taste lange zu drücken, um den Renderer auszuwählen.</string>
 
-    <!-- 原 FCLLibrary 模块字符串（模块已并入 FCL） -->
+    <!-- Chuỗi của module FCLLibrary cũ (module đã gộp vào FCL) -->
     <string name="file_browser_title">Datei-Browser</string>
     <string name="file_browser_back">Zurück</string>
     <string name="file_browser_close">Beenden</string>

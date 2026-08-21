@@ -54,8 +54,8 @@ import java.util.Locale
 import java.util.logging.Level
 
 /**
- * 版本设置页。设置项由 [VersionSettingAdapter] 以 RecyclerView 行级复用渲染，
- * 页面只负责模型操作与对话框。
+ * Trang cài đặt version. Mục cài đặt do [VersionSettingAdapter] render kiểu RecyclerView tái dùng dòng,
+ * trang chỉ lo thao tác model và dialog.
  */
 class VersionSettingPage(
     context: Context?,
@@ -71,7 +71,7 @@ class VersionSettingPage(
     private lateinit var binding: PageVersionSettingBinding
     private lateinit var adapter: VersionSettingAdapter
 
-    /** 当前版本设置的变更监听（loadVersion 时切换注册对象） */
+    /** Listener thay đổi của cài đặt version hiện tại (chuyển đối tượng đăng ký khi loadVersion) */
     private var settingsChangeListener: Runnable? = null
     private var lastIsolateGameDir = true
     private var profileCollectJob: Job? = null
@@ -89,13 +89,13 @@ class VersionSettingPage(
         binding = PageVersionSettingBinding.bind(contentView)
         adapter = VersionSettingAdapter(context, globalSetting, this)
         binding.settingList.layoutManager = LinearLayoutManager(context)
-        // 行间用间距分隔（ItemDecoration），最后一行不加
+        // Dòng cách nhau bằng khoảng trống (ItemDecoration), dòng cuối không thêm
         binding.settingList.addItemDecoration(
             SpacingItemDecoration((8 * context.resources.displayMetrics.density).toInt())
         )
         binding.settingList.adapter = adapter
 
-        // 切换 Profile 时刷新设置（Repository 单例 StateFlow，attach 时收集、detach 取消避免泄漏）
+        // Làm mới cài đặt khi đổi Profile (Repository StateFlow đơn lẻ, thu thập lúc attach, hủy lúc detach để tránh rò rỉ)
         contentView.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
             override fun onViewAttachedToWindow(v: View) {
                 profileCollectJob = activity.lifecycleScope.launch {
@@ -107,8 +107,8 @@ class VersionSettingPage(
 
             override fun onViewDetachedFromWindow(v: View) {
                 profileCollectJob?.cancel()
-                // 移除挂到单例上的监听，避免页面销毁后仍被回调
-                // （attach 时 collect 立即发射当前值，会重新 loadVersion 注册）
+                // Gỡ listener gắn trên singleton, tránh bị gọi lại sau khi trang đã hủy
+                // (lúc attach collect sẽ phát ngay giá trị hiện tại, sẽ đăng ký lại loadVersion)
                 profileVersionListener?.let {
                     if (::profile.isInitialized) profile.removeSelectedVersionListener(it)
                 }
@@ -151,7 +151,7 @@ class VersionSettingPage(
         }
     }
 
-    /** 安装插件的下载来源选择（Github / 网盘） */
+    /** Chọn nguồn tải để cài loader (Github / ổ mạng) */
     private fun installDialog(githubUrl: String, netdiskUrl: String) {
         showItemSelectionDialog(
             context,
@@ -179,7 +179,7 @@ class VersionSettingPage(
 
         if (versionId == null) {
             enableSpecificSettings.set(true)
-            // 监听 profile 版本变化（替代 fakefx property 监听）
+            // Lắng nghe version của profile đổi (thay cho việc lắng nghe fakefx property cũ)
             profileVersionListener?.let { profile.removeSelectedVersionListener(it) }
             val listener = Runnable { this.selectedVersion.value = profile.selectedVersion }
             profileVersionListener = listener
@@ -192,16 +192,16 @@ class VersionSettingPage(
         modpack.set(versionId != null && profile.repository.isModpack(versionId))
         usedMemory.set(MemoryUtils.getUsedDeviceMemory(context))
 
-        // 切换监听对象：旧实例移除，新实例注册（属性变化时按需刷新）
+        // Đổi đối tượng lắng nghe: gỡ instance cũ, đăng ký instance mới (làm mới khi thuộc tính đổi)
         settingsChangeListener?.let { lastVersionSetting.removeOnChangeListener(it) }
         lastIsolateGameDir = versionSetting.isIsolateGameDir
         val listener = Runnable {
-            // 隔离目录变化时刷新模组/世界列表（仅游戏设置页）
+            // Làm mới list mod/world khi đổi thư mục cô lập (chỉ trang cài đặt game)
             if (id == ManageUI.PAGE_ID_MANAGE_SETTING && lastIsolateGameDir != versionSetting.isIsolateGameDir) {
                 lastIsolateGameDir = versionSetting.isIsolateGameDir
                 UIManager.instance.manageUI.onRunDirectoryChange(profile, versionId)
             }
-            // usesGlobal 变化时刷新设置项
+            // Làm mới mục cài đặt khi usesGlobal đổi
             if (enableSpecificSettings.get() != !versionSetting.isUsesGlobal) {
                 enableSpecificSettings.set(!versionSetting.isUsesGlobal)
                 Schedulers.androidUIThread().execute {
@@ -217,7 +217,7 @@ class VersionSettingPage(
         settingsChangeListener = listener
         versionSetting.addOnChangeListener(listener)
 
-        // 驱动校验：非法驱动回退为 Turnip
+        // Kiểm tra driver: driver không hợp lệ thì lùi về Turnip
         if (versionSetting.driver != "Turnip") {
             var isSelected = false
             for (driver in driverList) {
@@ -468,32 +468,32 @@ class VersionSettingPage(
         lines.forEachIndexed { _, rawLine ->
             val line = rawLine.trim()
 
-            // 跳过空行
+            // Bỏ qua dòng trống
             if (line.isEmpty()) {
                 return@forEachIndexed
             }
 
-            // 检查是否包含 '='
+            // Kiểm tra có chứa '=' không
             val firstEq = line.indexOf('=')
             if (firstEq == -1) {
                 return@forEachIndexed
             }
 
             val name = line.substring(0, firstEq).trim()
-            val value = line.substring(firstEq + 1).trim() // 值可以为空
+            val value = line.substring(firstEq + 1).trim() // giá trị có thể để trống
 
-            // 变量名不能为空
+            // Tên biến không được để trống
             if (name.isEmpty()) {
                 return@forEachIndexed
             }
 
-            // 变量名规则：字母、数字、下划线，且不能以数字开头
+            // Quy tắc tên biến: chữ, số, gạch dưới, không bắt đầu bằng số
             val validNameRegex = Regex("^[a-zA-Z_][a-zA-Z0-9_]*$")
             if (!validNameRegex.matches(name)) {
                 return@forEachIndexed
             }
 
-            // 长度检查（通常环境变量名不超过 255 字符）
+            // Kiểm tra độ dài (tên biến môi trường thường không quá 255 ký tự)
             if (name.length > 255) {
                 return@forEachIndexed
             }

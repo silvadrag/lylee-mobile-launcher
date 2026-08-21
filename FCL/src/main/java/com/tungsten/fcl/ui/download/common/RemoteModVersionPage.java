@@ -35,7 +35,7 @@ public class RemoteModVersionPage extends FCLPage {
         this.version = version;
         this.callback = callback;
 
-        // 原 onStart 逻辑：页面构造即初始化列表
+        // Logic onStart cũ: trang khởi tạo là list khởi tạo luôn
         ListView listView = findViewById(R.id.list);
         ModVersionAdapter adapter = new ModVersionAdapter(getContext(), list, modVersion -> {
             if (downloadPage.getPageId() == DownloadUI.PAGE_ID_DOWNLOAD_MOD) {

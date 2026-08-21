@@ -39,7 +39,7 @@ public class ManageUI extends FCLMultiPageUI {
     public FCLTabLayout tabLayout;
 
     /**
-     * 切换 Profile 时重新加载版本设置（页面保留时不经过 onSelect/setVersion 的兜底）
+     * Tải lại cài đặt version khi đổi Profile (dự phòng khi trang được giữ lại không đi qua onSelect/setVersion)
      */
     private final Runnable profileListener = () -> {
         Profile profile = Profiles.getSelectedProfile();
@@ -59,12 +59,12 @@ public class ManageUI extends FCLMultiPageUI {
 
         listenerHolder.add(EventBus.EVENT_BUS.channel(RefreshedVersionsEvent.class).registerWeak(event -> checkSelectedVersion(), EventPriority.HIGHEST));
 
-        // 切换 Profile 时刷新版本设置页（基于 StateFlow），UI 被 ViewPager 回收时注销监听
+        // Làm mới trang cài đặt version khi đổi Profile (dựa trên StateFlow), hủy đăng ký listener khi UI bị ViewPager thu hồi
         Profiles.addSelectedProfileListener(profileListener);
         getContentView().addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
             public void onViewAttachedToWindow(@NonNull View v) {
-                // 页面切走再切回时恢复监听并立即刷新（后台可能已切换 Profile）
+                // Khôi phục listener và làm mới ngay khi trang chuyển đi rồi quay lại (có thể đã đổi Profile ở nền)
                 Profiles.removeSelectedProfileListener(profileListener);
                 Profiles.addSelectedProfileListener(profileListener);
                 profileListener.run();
@@ -110,7 +110,7 @@ public class ManageUI extends FCLMultiPageUI {
 
     @Override
     protected void onPageCreated(FCLPage page) {
-        // 未 setVersion 时跳过（版本校验由 RefreshedVersionsEvent 事件兜底）
+        // Bỏ qua khi chưa setVersion (việc kiểm tra version đã có sự kiện RefreshedVersionsEvent dự phòng)
         if (page instanceof VersionLoadable && getProfile() != null) {
             ((VersionLoadable) page).loadVersion(getProfile(), getVersion());
         }
@@ -138,7 +138,7 @@ public class ManageUI extends FCLMultiPageUI {
 
     public void setVersion(String version, Profile profile) {
         this.version.set(new Profile.ProfileVersion(profile, version));
-        // 分发版本到已创建页面
+        // Phân phối version tới trang đã tạo
         forEachCreatedPage(page -> {
             if (page instanceof VersionLoadable) {
                 ((VersionLoadable) page).loadVersion(profile, version);
@@ -159,7 +159,7 @@ public class ManageUI extends FCLMultiPageUI {
     }
 
     /**
-     * 游戏目录变更时刷新模组/世界列表（原 ManagePageManager.onRunDirectoryChange）
+     * Làm mới list mod/world khi thư mục game đổi (ManagePageManager.onRunDirectoryChange cũ)
      */
     public void onRunDirectoryChange(Profile profile, String version) {
         FCLPage modPage = getPage(3);

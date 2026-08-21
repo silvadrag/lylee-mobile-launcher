@@ -123,12 +123,12 @@ public class FCLGameRepository extends DefaultGameRepository {
     }
 
     /**
-     * 已解析版本缓存（版本刷新时清空；resolve 基于内存版本对象，与文件修改时机一致）
+     * Cache version đã resolve (xóa khi version làm mới; resolve dựa trên object version trong bộ nhớ, khớp thời điểm file đổi)
      */
     private final ConcurrentHashMap<String, Version> resolvedVersionCache = new ConcurrentHashMap<>();
 
     /**
-     * 整合包配置缓存（版本刷新时清空；仅缓存存在的 modpack.json，避免重复文件读取）
+     * Cache cấu hình modpack (xóa khi version làm mới; chỉ cache modpack.json đang tồn tại, tránh đọc file lặp lại)
      */
     private final ConcurrentHashMap<String, ModpackConfiguration<?>> modpackConfigCache = new ConcurrentHashMap<>();
 
@@ -148,7 +148,7 @@ public class FCLGameRepository extends DefaultGameRepository {
                 return JsonUtils.GSON.fromJson(FileUtils.readText(file), new TypeToken<ModpackConfiguration<M>>() {
                 }.getType());
             } catch (IOException e) {
-                // 读取失败按无配置处理（与原调用方捕获异常的效果一致）
+                // Đọc lỗi thì xử lý như không có cấu hình (giống hiệu ứng bên gọi cũ bắt exception)
                 return null;
             }
         });
@@ -285,11 +285,11 @@ public class FCLGameRepository extends DefaultGameRepository {
     }
 
     public VersionSetting getVersionSetting(String id) {
-        // null id 表示全局设置（ConcurrentHashMap 不接受 null key，需先行短路）
+        // id null nghĩa là cài đặt toàn cục (ConcurrentHashMap không nhận null key, cần chặn sớm)
         VersionSetting vs = id == null ? null : getLocalVersionSetting(id);
         if (vs == null || vs.isUsesGlobal()) {
             VersionSetting global = profile.getGlobalVersionSetting();
-            // 仅在不满足时修正（读取路径不写值，避免列表滑动逐项读取时重复触发配置保存）
+            // Chỉ sửa khi không thỏa mãn (đường đọc không ghi giá trị, tránh vuốt list đọc từng dòng kích hoạt lưu cấu hình lặp lại)
             if (!global.isUsesGlobal())
                 global.setUsesGlobal(true);
             return global;
@@ -309,7 +309,7 @@ public class FCLGameRepository extends DefaultGameRepository {
     }
 
     /**
-     * 使用已解析的版本判断图标（避免列表加载时重复解析）
+     * Dùng version đã resolve để xác định icon (tránh resolve lặp lại khi tải list)
      */
     @SuppressLint("UseCompatLoadingForDrawables")
     public Drawable getVersionIconImage(Version version, String id) {
@@ -317,7 +317,7 @@ public class FCLGameRepository extends DefaultGameRepository {
     }
 
     /**
-     * 使用已有的库分析结果判断图标（避免列表加载时重复 analyze）
+     * Dùng kết quả analyze thư viện có sẵn để xác định icon (tránh analyze lặp lại khi tải list)
      */
     @SuppressLint("UseCompatLoadingForDrawables")
     public Drawable getVersionIconImage(LibraryAnalyzer analyze, String id) {
@@ -345,8 +345,8 @@ public class FCLGameRepository extends DefaultGameRepository {
     }
 
     /**
-     * 图标资源状态缓存：newDrawable 每次返回独立实例，避免共享 Drawable 的 bounds 被
-     * 其他控件（如版本列表 item 设置 background）修改后互相污染（主界面 icon 放大显示不完全）
+     * Cache trạng thái resource icon: newDrawable mỗi lần trả về instance độc lập, tránh bounds của Drawable dùng chung bị
+     * control khác (VD item list version set background) sửa đổi rồi ảnh hưởng chéo (icon màn hình chính phóng to hiện thiếu)
      */
     private static final Map<Integer, Drawable.ConstantState> DRAWABLE_CACHE = new ConcurrentHashMap<>();
 

@@ -5,15 +5,15 @@ import com.tungsten.fclcore.mod.RemoteMod
 import com.tungsten.fclcore.mod.RemoteModRepository
 
 /**
- * 下载页搜索状态：挂 Activity 的 ViewModelStore，与 Activity 同生命周期。
+ * Trạng thái tìm kiếm trang tải: gắn ViewModelStore của Activity, cùng vòng đời với Activity.
  *
- * 共享下载页在 5 个模式（Mod/整合包/资源包/世界/光影）间切换时，
- * 各模式的搜索条件与结果按页面 id 分别保存，切回时直接恢复，
- * 不重新搜索、不重新加载图片。
+ * Khi trang tải dùng chung chuyển giữa 5 chế độ (Mod/Modpack/Resource Pack/World/Shader),
+ * điều kiện và kết quả tìm kiếm mỗi chế độ lưu riêng theo id trang, chuyển về là khôi phục ngay,
+ * không tìm lại, không tải lại ảnh.
  */
 class DownloadSearchViewModel : ViewModel() {
 
-    /** 单个下载模式（按页面 id 区分）的搜索状态 */
+    /** Trạng thái tìm kiếm của 1 chế độ tải (phân biệt theo id trang) */
     class State {
         @JvmField
         var searchFilter: String = ""
@@ -25,17 +25,17 @@ class DownloadSearchViewModel : ViewModel() {
         var sortType: RemoteModRepository.SortType = RemoteModRepository.SortType.POPULARITY
         @JvmField
         var pageOffset: Int = 0
-        /** 下载源名称（Modrinth/CurseForge，仅 Localized 模式） */
+        /** Tên nguồn tải (Modrinth/CurseForge, chỉ chế độ Localized) */
         @JvmField
         var source: String? = null
         @JvmField
         var result: ArrayList<RemoteMod>? = null
         @JvmField
         var pageCount: Int = -1
-        /** Mod 模式的加载器筛选位置 */
+        /** Vị trí bộ lọc loader của chế độ Mod */
         @JvmField
         var modLoaderPosition: Int = 0
-        /** 该模式的列表 adapter（切换模式时复用，避免重建列表重播 item 动画） */
+        /** Adapter list của chế độ đó (tái dùng khi đổi chế độ, tránh tạo lại list phát lại hoạt ảnh item) */
         @JvmField
         var adapter: RemoteModListAdapter? = null
     }

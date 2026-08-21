@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- tab 随内容滚动收起/展开（AppBarLayout 效果） -->
+    <!-- Tab thu gọn/mở rộng theo cuộn nội dung (hiệu ứng AppBarLayout) -->
     <com.mio.ui.widget.FCLAppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

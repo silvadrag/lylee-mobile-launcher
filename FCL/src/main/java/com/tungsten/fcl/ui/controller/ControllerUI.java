@@ -42,7 +42,7 @@ public class ControllerUI extends FCLMultiPageUI {
         if (canReturn()) {
             dismissCurrentTempPage();
         } else if (getCurrentPagePosition() == 1) {
-            // 仓库页返回管理页
+            // Trang kho quay về trang quản lý
             showPage(0);
         } else {
             super.onBackPressed();

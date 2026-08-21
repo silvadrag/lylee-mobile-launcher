@@ -89,12 +89,12 @@ class LocalModListAdapter(
     private var fromSelf = false
 
     init {
-        this.listProperty.addListener(ListChangeListener { c -> // 增量插入只通知新条目（notifyItemRangeInserted），已显示条目不会重绘，
-            // 避免其跑马灯文字在每次增量刷新时被重置
+        this.listProperty.addListener(ListChangeListener { c -> // Thêm tăng dần chỉ thông báo mục mới (notifyItemRangeInserted), mục đã hiện không vẽ lại,
+            // tránh text chạy marquee bị reset mỗi lần làm mới tăng dần
             var replaced = false
             while (c.next()) {
                 if (c.wasReplaced()) {
-                    // 全量替换（搜索 / 勾选筛选）：整体刷新，远程查询与选中状态全部重置
+                    // Thay toàn bộ (tìm kiếm / lọc theo tick chọn): làm mới toàn bộ, truy vấn từ xa và trạng thái chọn đều reset
                     replaced = true
                 } else if (c.wasRemoved()) {
                     c.removed.forEach {
@@ -206,7 +206,7 @@ class LocalModListAdapter(
                 )
             }
         }
-        //必须先清除Listener
+        //Phải xóa Listener trước
         binding.check.setOnCheckedChangeListener(null)
         binding.check.isChecked = modInfoObject.active.get()
         binding.check.setOnCheckedChangeListener { _, checked ->

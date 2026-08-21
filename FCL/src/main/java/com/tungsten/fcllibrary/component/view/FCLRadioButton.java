@@ -22,7 +22,7 @@ public class FCLRadioButton extends AppCompatRadioButton {
     private BooleanProperty disableProperty;
     private boolean textWithThemeColor = false;
 
-    /** 主题刷新回调（registerEvent 注册，主题变化时全量执行） */
+    /** Callback làm mới theme (đăng ký qua registerEvent, chạy toàn bộ khi theme đổi) */
     private void refreshTheme() {
             int[][] state = {
                     {

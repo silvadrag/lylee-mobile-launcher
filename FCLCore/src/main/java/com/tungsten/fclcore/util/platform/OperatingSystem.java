@@ -52,7 +52,7 @@ public enum OperatingSystem {
 
     public static final Charset NATIVE_CHARSET;
 
-    // 非法字符正则：\ / : * ? " < > |
+    // Regex ký tự không hợp lệ: \ / : * ? " < > |
     private static final Pattern ILLEGAL_CHARS_PATTERN = Pattern.compile("[\\\\/:*?\"<>|]");
 
     static {
@@ -85,7 +85,7 @@ public enum OperatingSystem {
         // \0 and / are forbidden on all platforms
         if (name.indexOf('/') != -1 || name.indexOf('\0') != -1)
             return false;
-        // 在 FAT32/exFAT 规范中，以下字符不允许用于文件名：\ / : * ? " < > |
+        // Trong chuẩn FAT32/exFAT, các ký tự sau không được dùng cho tên file: \ / : * ? " < > |
         return !ILLEGAL_CHARS_PATTERN.matcher(name).find();
     }
 }

@@ -19,8 +19,8 @@ import org.junit.runner.RunWith
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * ThemeEngine 重构（Java 单例 → Kotlin object + StateFlow）的验证：
- * 初始化、亮暗判断、applyXxx 更新与刷新回调、监听注册/注销。
+ * Kiểm chứng việc tái cấu trúc ThemeEngine (singleton Java → object Kotlin + StateFlow):
+ * Khởi tạo, xác định sáng/tối, cập nhật applyXxx và callback làm mới, đăng ký/hủy đăng ký listener.
  */
 @RunWith(AndroidJUnit4::class)
 class ThemeEngineTest {
@@ -31,7 +31,7 @@ class ThemeEngineTest {
     fun setup() {
         context = ApplicationProvider.getApplicationContext()
         FCLPath.loadPaths(context)
-        // 清理 launcher 偏好中的主题模式，避免用例间相互影响
+        // Xóa chế độ theme trong tùy chọn launcher, tránh các test case ảnh hưởng lẫn nhau
         context.getSharedPreferences("launcher", Context.MODE_PRIVATE)
             .edit().remove("themeMode").apply()
     }
@@ -41,10 +41,10 @@ class ThemeEngineTest {
         ThemeEngine.setupThemeEngine(context)
         val first = ThemeEngine.getTheme()
         ThemeEngine.setupThemeEngine(context)
-        // 二次调用不覆盖（幂等）
+        // Gọi lần 2 không ghi đè (idempotent)
         assertEquals(first, ThemeEngine.getTheme())
         assertNotNull(first)
-        // StateFlow 同步持有当前主题
+        // StateFlow giữ đồng bộ theme hiện tại
         runBlocking { assertEquals(first, ThemeEngine.theme.first()) }
     }
 
@@ -57,19 +57,19 @@ class ThemeEngineTest {
     @Test
     fun isNightModeFollowsThemeModeSetting() {
         val prefs = context.getSharedPreferences("launcher", Context.MODE_PRIVATE)
-        // 强制亮色
+        // Ép buộc chế độ sáng
         prefs.edit().putInt("themeMode", 1).apply()
         assertFalse(ThemeEngine.isNightMode(context))
-        // 强制暗色
+        // Ép buộc chế độ tối
         prefs.edit().putInt("themeMode", 2).apply()
         assertTrue(ThemeEngine.isNightMode(context))
-        // 跟随系统（themeMode=0）：取系统 uiMode
+        // Theo hệ thống (themeMode=0): lấy uiMode hệ thống
         prefs.edit().putInt("themeMode", 0).apply()
         val systemNight = (context.resources.configuration.uiMode and
                 android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
                 android.content.res.Configuration.UI_MODE_NIGHT_YES
         assertEquals(systemNight, ThemeEngine.isNightMode(context))
-        // 清理
+        // Dọn dẹp
         prefs.edit().remove("themeMode").apply()
     }
 
@@ -80,12 +80,12 @@ class ThemeEngineTest {
         val view = View(context)
         ThemeEngine.registerEvent(view) { notified.incrementAndGet() }
         try {
-            // registerEvent 注册后立即执行一次（post 异步，等待主线程）
+            // Sau khi đăng ký registerEvent chạy ngay 1 lần (post bất đồng bộ, đợi luồng chính)
             waitForMainThread()
             assertEquals(1, notified.get())
             val oldColor = ThemeEngine.getTheme().color
             ThemeEngine.applyColor(0x123456)
-            // 立即执行（handler.post 异步——等待主线程）
+            // Chạy ngay (handler.post bất đồng bộ — đợi luồng chính)
             waitForMainThread()
             assertEquals(0x123456, ThemeEngine.getTheme().color)
             assertTrue(notified.get() >= 2)
@@ -104,7 +104,7 @@ class ThemeEngineTest {
         val theme = ThemeEngine.getTheme()
         assertEquals(0x111111, theme.color2)
         assertEquals(0x222222, theme.color2Dark)
-        // 主色不受影响
+        // Màu chính không bị ảnh hưởng
         assertTrue(theme.color != 0x111111)
     }
 
@@ -114,7 +114,7 @@ class ThemeEngineTest {
         val notified = AtomicInteger(0)
         val view = View(context)
         ThemeEngine.registerEvent(view) { notified.incrementAndGet() }
-        // 注册时立即执行一次（post 异步，等待主线程）
+        // Chạy ngay 1 lần khi đăng ký (post bất đồng bộ, đợi luồng chính)
         waitForMainThread()
         assertEquals(1, notified.get())
         ThemeEngine.unregisterEvent(view)
@@ -149,7 +149,7 @@ class ThemeEngineTest {
         val listener = Runnable { listenerNotified.incrementAndGet() }
         ThemeEngine.addRefreshListener(listener)
         try {
-            // 注册时各自立即执行一次（post 异步，等待主线程）
+            // Mỗi cái chạy ngay 1 lần khi đăng ký (post bất đồng bộ, đợi luồng chính)
             waitForMainThread()
             assertEquals(1, viewNotified.get())
             ThemeEngine.refreshTheme()
@@ -194,7 +194,7 @@ class ThemeEngineTest {
         prefs.edit().remove("themeMode").apply()
     }
 
-    /** 等待主线程执行完 handler.post 的回调 */
+    /** Đợi luồng chính thực thi xong callback của handler.post */
     private fun waitForMainThread() {
         Thread.sleep(100)
     }

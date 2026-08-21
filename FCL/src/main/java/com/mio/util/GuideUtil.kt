@@ -43,8 +43,8 @@ class GuideUtil {
         }
 
         private fun TapTargetSequence.defaultConfig() = this.apply {
-            considerOuterCircleCanceled(false) //点击空白区域不取消队列
-            continueOnCancel(true) // 点击空白区域时(TapTarget取消回调)，仍继续队列
+            considerOuterCircleCanceled(false) // Nhấn vào vùng trống không hủy hàng đợi
+            continueOnCancel(true) // Khi nhấn vào vùng trống (callback hủy TapTarget), vẫn tiếp tục hàng đợi
         }
 
         private fun addTag(tag: String) {

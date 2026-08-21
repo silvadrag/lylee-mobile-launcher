@@ -64,7 +64,7 @@ public class FCLEditText extends AppCompatEditText {
         });
     }
 
-    /** 主题刷新回调（registerEvent 注册，主题变化时全量执行） */
+    /** Callback làm mới theme (đăng ký qua registerEvent, chạy toàn bộ khi theme đổi) */
     private void refreshTheme() {
             int[][] state = {
                     {

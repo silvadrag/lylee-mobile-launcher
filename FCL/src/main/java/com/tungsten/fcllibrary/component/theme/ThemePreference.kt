@@ -13,7 +13,7 @@ import kotlinx.serialization.json.Json
 import java.io.InputStream
 import java.io.OutputStream
 
-/** 主题持久化数据（DataStore，替代原 SharedPreferences("theme")） */
+/** Dữ liệu theme lưu bền vững (DataStore, thay cho SharedPreferences("theme") cũ) */
 @OptIn(kotlinx.serialization.InternalSerializationApi::class)
 @Serializable
 data class ThemePreference(

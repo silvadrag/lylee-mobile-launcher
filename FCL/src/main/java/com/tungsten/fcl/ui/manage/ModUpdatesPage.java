@@ -62,7 +62,7 @@ public class ModUpdatesPage extends FCLPage implements View.OnClickListener {
         this.modManager = modManager;
         this.objects = FXCollections.observableList(list.stream().map(it -> new ModUpdateObject(getContext(), it)).collect(Collectors.toList()));
 
-        // 原 onStart 逻辑：页面构造即初始化列表
+        // Logic onStart cũ: trang khởi tạo là list khởi tạo luôn
         listView.setAdapter(new ModUpdateListAdapter(getContext(), objects));
     }
 

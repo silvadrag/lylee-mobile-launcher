@@ -25,13 +25,13 @@ import com.tungsten.fcl.util.AndroidUtils
 import com.tungsten.fclcore.util.platform.MemoryUtils
 import com.tungsten.fcllibrary.component.view.FCLTextView
 
-/** 设置行操作标签：按钮点击 / 特殊开关 / 编辑行长按按此分发 */
+/** Tag thao tác dòng cài đặt: bấm nút / công tắc đặc biệt / giữ dòng edit phân theo tag này */
 enum class VersionSettingTag {
-    // 特殊开关行
+    // Dòng công tắc đặc biệt
     SPECIAL,
     VULKAN,
     FORCE_RESOLUTION,
-    // 按钮行
+    // Dòng nút
     EDIT_ICON,
     DELETE_ICON,
     EDIT_JAVA,
@@ -44,15 +44,15 @@ enum class VersionSettingTag {
     EDIT_DRIVER,
     INSTALL_DRIVER,
     EDIT_ENV,
-    // 编辑行
+    // Dòng edit
     JVM_ARGS,
     MC_ARGS
 }
 
 /**
- * 版本设置页 RecyclerView 适配器。
- * 各行按类型复用，扁平列表、行间以分隔线区分；数据读写全部手动，
- * 不再使用 fakefx 绑定（值变化由页面调用 [refreshRow] 局部刷新）。
+ * Adapter RecyclerView của trang cài đặt version.
+ * Mỗi dòng tái dùng theo loại, list phẳng, các dòng phân cách bằng đường kẻ; đọc/ghi dữ liệu toàn bộ thủ công,
+ * không còn dùng binding fakefx (giá trị đổi thì trang gọi [refreshRow] để làm mới cục bộ).
  */
 class VersionSettingAdapter(
     private val context: Context,
@@ -60,7 +60,7 @@ class VersionSettingAdapter(
     private val listener: Listener
 ) : RecyclerView.Adapter<VersionSettingAdapter.Holder>() {
 
-    /** 页面回调：按钮点击 / 特殊开关 / 编辑行长按 */
+    /** Callback trang: bấm nút / công tắc đặc biệt / giữ dòng edit */
     interface Listener {
         fun onButtonClick(tag: VersionSettingTag)
         fun onSpecialSwitch(tag: VersionSettingTag, checked: Boolean)
@@ -81,7 +81,7 @@ class VersionSettingAdapter(
     private var iconDrawable: Drawable? = null
     private var rows: List<Row> = emptyList()
 
-    /** 版本/状态变化时全量重建行列表 */
+    /** Dựng lại toàn bộ list dòng khi version/trạng thái đổi */
     fun update(versionSetting: VersionSetting, modpack: Boolean, enableSpecific: Boolean, usedMemory: Int) {
         this.versionSetting = versionSetting
         this.modpack = modpack
@@ -95,13 +95,13 @@ class VersionSettingAdapter(
         notifyDataSetChanged()
     }
 
-    /** 对话框修改属性后局部刷新对应行（行未显示时下次 bind 自然读到新值） */
+    /** Làm mới cục bộ dòng tương ứng sau khi dialog sửa thuộc tính (dòng chưa hiện thì lần bind sau tự đọc giá trị mới) */
     fun refreshRow(tag: VersionSettingTag) {
         val index = rows.indexOfFirst { it.rowTag == tag }
         if (index >= 0) notifyItemChanged(index)
     }
 
-    /** 版本图标异步加载完成后更新图标行 */
+    /** Cập nhật dòng icon sau khi icon version tải bất đồng bộ xong */
     fun setIcon(drawable: Drawable?) {
         iconDrawable = drawable
         val index = rows.indexOfFirst { it is Row.IconRow }
@@ -255,7 +255,7 @@ class VersionSettingAdapter(
 
     private sealed class Row {
         open val rowTag: VersionSettingTag? = null
-        /** 行下方的作用描述文案资源，0 表示无描述 */
+        /** Resource text mô tả tác dụng bên dưới dòng, 0 nghĩa là không có mô tả */
         open val descriptionRes: Int = 0
 
         data class SwitchRow(
@@ -296,7 +296,7 @@ class VersionSettingAdapter(
     }
 
     class Holder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        // 编辑行复用时先移除旧 TextWatcher，避免监听累积
+        // Tái dùng dòng edit thì gỡ TextWatcher cũ trước, tránh tích lũy listener
         var textWatcher: TextWatcher? = null
     }
 
@@ -323,11 +323,11 @@ class VersionSettingAdapter(
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
-        // 行背景为圆角形状（item 布局中定义）；颜色改为深色卡片色（对齐 PC 版设计
-        // 语言，色块不再铺满主题强调色），静态色值不必再随主题刷新监听
+        // Nền dòng là hình bo góc (định nghĩa trong layout item); màu đổi sang màu card tối (đồng bộ thiết kế
+        // PC, không phủ đặc màu accent theme lên khối màu nữa), màu tĩnh không cần theo dõi theme làm mới nữa
         holder.itemView.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.card_bg))
         val row = rows[position]
-        // 行下方的作用描述
+        // Mô tả tác dụng bên dưới dòng
         holder.itemView.findViewById<FCLTextView>(R.id.description)?.let { description ->
             if (row.descriptionRes != 0) {
                 description.text = context.getString(row.descriptionRes)
@@ -403,7 +403,7 @@ class VersionSettingAdapter(
         binding.barMemory.max = totalMemory
         binding.memoryBar.max = totalMemory
 
-        // 勾选框/滑条变化时重算进度条与文本（原 fakefx 绑定表达式的等价逻辑）
+        // Checkbox/thanh trượt đổi thì tính lại progress bar và text (tương đương logic biểu thức binding fakefx cũ)
         fun updateDisplay() {
             val auto = binding.checkAutoAllocate.isChecked
             val maxMemory = binding.barMemory.progress

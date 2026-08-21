@@ -35,7 +35,7 @@
         <item name="android:color">#FFF</item>
     </style>
 
-    <!-- 原 FCLLibrary 模块样式（模块已并入 FCL） -->
+    <!-- Style của module FCLLibrary cũ (module đã gộp vào FCL) -->
     <style name="FCLCrashButton">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>

@@ -37,9 +37,9 @@ public class LocaleUtils {
         if ("Asia/Shanghai".equals(ZoneId.systemDefault().getId()))
             return true;
 
-        // 手动计算 8 小时对应的秒数（兼容 API 26）
+        // Tự tính số giây tương ứng 8 tiếng (tương thích API 26)
         long offsetSeconds = ZonedDateTime.now().getOffset().getTotalSeconds();
-        long eightHoursInSeconds = 8 * 3600; // 8 小时 = 8 * 3600 秒
+        long eightHoursInSeconds = 8 * 3600; // 8 tiếng = 8 * 3600 giây
         if (offsetSeconds == eightHoursInSeconds) {
             return "CN".equals(Locale.getDefault().getCountry());
         }

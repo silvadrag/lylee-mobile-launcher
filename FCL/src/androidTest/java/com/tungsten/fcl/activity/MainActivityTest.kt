@@ -17,8 +17,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * 主界面 ViewPager2 重构与右菜单双指手势的验证：
- * UIManager 8 个页面、switchUI 切换、right_menu 双指滑动区域判定与显隐。
+ * Kiểm chứng việc tái cấu trúc ViewPager2 màn hình chính và cử chỉ 2 ngón của right menu:
+ * 8 trang của UIManager, chuyển đổi switchUI, xác định vùng vuốt 2 ngón của right_menu và hiện/ẩn.
  */
 @RunWith(AndroidJUnit4::class)
 class MainActivityTest {
@@ -28,7 +28,7 @@ class MainActivityTest {
         FCLPath.loadPaths(ApplicationProvider.getApplicationContext<Context>())
     }
 
-    /** 启动 MainActivity 并等待 uiManager 初始化，block 在测试线程执行 */
+    /** Khởi chạy MainActivity và đợi uiManager khởi tạo, block chạy ở luồng test */
     private fun withMainActivity(block: (MainActivity) -> Unit) {
         val scenario = ActivityScenario.launch(MainActivity::class.java)
         scenario.use {
@@ -36,7 +36,7 @@ class MainActivityTest {
         }
     }
 
-    /** 在主线程执行 UI 操作（runOnMainSync 内抛出的断言异常会传播到测试线程） */
+    /** Thực thi thao tác UI ở luồng chính (exception assertion ném trong runOnMainSync sẽ lan sang luồng test) */
     private fun onMain(action: () -> Unit) {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(action)
     }
@@ -50,7 +50,7 @@ class MainActivityTest {
             if (a != null) {
                 var ready = false
                 InstrumentationRegistry.getInstrumentation().runOnMainSync {
-                    // lateinit 属性外部无法用 ::isInitialized，访问失败即未初始化
+                    // Không thể dùng ::isInitialized cho thuộc tính lateinit từ bên ngoài, truy cập lỗi nghĩa là chưa khởi tạo
                     ready = runCatching {
                         a.uiManager
                         true
@@ -60,11 +60,11 @@ class MainActivityTest {
             }
             Thread.sleep(100)
         }
-        fail("MainActivity uiManager 未初始化")
+        fail("MainActivity uiManager chưa được khởi tạo")
         error("unreachable")
     }
 
-    /** 等待主线程条件满足（条件放最后，支持尾随 lambda） */
+    /** Đợi điều kiện ở luồng chính thỏa mãn (điều kiện đặt cuối cùng, hỗ trợ trailing lambda) */
     private fun waitForCondition(timeoutMs: Long = 8000, condition: () -> Boolean) {
         val deadline = SystemClock.uptimeMillis() + timeoutMs
         while (SystemClock.uptimeMillis() < deadline) {
@@ -75,10 +75,10 @@ class MainActivityTest {
             if (result) return
             Thread.sleep(100)
         }
-        fail("等待条件超时")
+        fail("Đợi điều kiện quá thời gian")
     }
 
-    /** 注入双指水平滑动事件序列（不经过真实触摸输入，直接分发） */
+    /** Chèn chuỗi sự kiện vuốt ngang 2 ngón (không qua input chạm thật, phân phối trực tiếp) */
     private fun swipe(activity: MainActivity, startX: Float, endX: Float, y: Float) {
         val downTime = SystemClock.uptimeMillis()
         fun obtain(action: Int, pointerCount: Int, x: Float, eventTime: Long): MotionEvent {
@@ -124,9 +124,9 @@ class MainActivityTest {
                 assertNotNull(ui.settingUI)
                 assertNotNull(ui.accountUI)
                 assertNotNull(ui.versionUI)
-                // 初始页为主界面
+                // Trang ban đầu là màn hình chính
                 assertEquals(ui.mainUI, ui.currentUI)
-                // 右菜单初始可见
+                // Right menu hiển thị ban đầu
                 assertEquals(View.VISIBLE, activity.binding.rightMenu.visibility)
             }
         }
@@ -153,7 +153,7 @@ class MainActivityTest {
                 val width = activity.binding.root.width
                 val y = activity.binding.root.height * 0.5f
                 val before = activity.binding.rightMenu.visibility
-                // 起点在屏幕左侧（right_menu 区域外），左滑不触发
+                // Điểm bắt đầu ở bên trái màn hình (ngoài vùng right_menu), vuốt trái không kích hoạt
                 swipe(activity, startX = width * 0.1f, endX = width * 0.01f, y = y)
                 assertEquals(before, activity.binding.rightMenu.visibility)
             }
@@ -166,17 +166,17 @@ class MainActivityTest {
             onMain {
                 val width = activity.binding.root.width
                 val y = activity.binding.root.height * 0.5f
-                // 初始可见：区域内右滑隐藏
+                // Hiển thị ban đầu: vuốt phải trong vùng sẽ ẩn
                 swipe(activity, startX = width * 0.9f, endX = width * 0.99f, y = y)
             }
             waitForCondition { activity.binding.rightMenu.visibility == View.GONE }
             onMain {
                 val width = activity.binding.root.width
                 val y = activity.binding.root.height * 0.5f
-                // 隐藏后区域内左滑重新显示
+                // Sau khi ẩn, vuốt trái trong vùng sẽ hiện lại
                 swipe(activity, startX = width * 0.9f, endX = width * 0.7f, y = y)
                 assertEquals(View.VISIBLE, activity.binding.rightMenu.visibility)
-                // 已显示时再左滑保持显示
+                // Khi đã hiển thị, vuốt trái tiếp tục giữ trạng thái hiển thị
                 swipe(activity, startX = width * 0.9f, endX = width * 0.7f, y = y)
                 assertEquals(View.VISIBLE, activity.binding.rightMenu.visibility)
             }

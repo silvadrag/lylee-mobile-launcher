@@ -23,14 +23,14 @@ import java.io.File
 import java.lang.reflect.Type
 
 /**
- * 游戏目录配置。使用普通类型字段，不再依赖 fakefx property；
- * 选中版本变化通过 [addSelectedVersionListener] 通知。
+ * Cấu hình thư mục game. Dùng field kiểu thường, không còn phụ thuộc fakefx property;
+ * version đang chọn đổi thì thông báo qua [addSelectedVersionListener].
  */
 @JsonAdapter(Profile.Serializer::class)
 class Profile {
     private val listenerHolder = WeakListenerHolder()
 
-    /** 名称 */
+    /** Tên */
     var name: String = ""
         set(value) {
             if (field == value) return
@@ -38,7 +38,7 @@ class Profile {
             onChanged?.invoke()
         }
 
-    /** 游戏目录（变化时切换仓库目录） */
+    /** Thư mục game (đổi thì chuyển thư mục repository) */
     var gameDir: File = File("")
         set(value) {
             field = value
@@ -46,29 +46,29 @@ class Profile {
             onChanged?.invoke()
         }
 
-    /** 游戏仓库（构造时按初始目录创建，目录变化时切换） */
+    /** Repository game (tạo theo thư mục ban đầu lúc khởi tạo, đổi thư mục thì chuyển) */
     val repository: FCLGameRepository
 
-    /** 选中版本（变化时校验有效性并通知监听者） */
+    /** Version đang chọn (đổi thì kiểm tra hợp lệ và thông báo listener) */
     var selectedVersion: String? = null
         set(value) {
             if (field == value) return
             field = value
             checkSelectedVersion()
-            // 复制后遍历：回调内可能增删监听（如 DownloadUI 切换监听对象），避免并发修改
+            // Sao chép rồi duyệt: callback có thể thêm/xóa listener (VD DownloadUI đổi đối tượng lắng nghe), tránh sửa đổi đồng thời
             selectedVersionListeners.toList().forEach { it.run() }
             onChanged?.invoke()
         }
 
-    /** 全局设置（变化时触发 [onChanged]） */
+    /** Cài đặt toàn cục (đổi thì kích hoạt [onChanged]) */
     val globalVersionSetting: VersionSetting
 
-    /** 字段变化回调（由 Profiles 设置，用于触发配置保存） */
+    /** Callback khi field đổi (do Profiles đặt, dùng để kích hoạt lưu cấu hình) */
     var onChanged: (() -> Unit)? = null
 
     private val selectedVersionListeners = mutableListOf<Runnable>()
 
-    /** 选中版本的设置（Java 侧访问 getVersionSetting()） */
+    /** Cài đặt của version đang chọn (phía Java truy cập qua getVersionSetting()) */
     val versionSetting: VersionSetting
         get() = repository.getVersionSetting(selectedVersion)
 
@@ -86,7 +86,7 @@ class Profile {
         selectedVersion: String?
     ) {
         this.name = name
-        //必须放在gameDir前
+        //Bắt buộc đặt trước gameDir
         this.repository = FCLGameRepository(this, gameDir)
         this.gameDir = gameDir
         this.globalVersionSetting = globalVersionSetting ?: VersionSetting()
@@ -99,7 +99,7 @@ class Profile {
         )
     }
 
-    /** 注册选中版本变化监听（setter 同步通知，调用线程即回调线程） */
+    /** Đăng ký listener khi version đang chọn đổi (setter thông báo đồng bộ, luồng gọi cũng là luồng callback) */
     fun addSelectedVersionListener(listener: Runnable) {
         selectedVersionListeners.add(listener)
     }

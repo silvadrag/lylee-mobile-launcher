@@ -19,8 +19,8 @@ import org.junit.runner.RunWith
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * VersionSetting 重构（fakefx property → 普通类型字段 + 回调通知）的验证：
- * 默认值、setter 通知、clone 完整性、JSON 序列化/反序列化。
+ * Kiểm chứng việc tái cấu trúc VersionSetting (fakefx property → field kiểu thường + thông báo qua callback):
+ * Giá trị mặc định, thông báo của setter, tính toàn vẹn khi clone, serialize/deserialize JSON.
  */
 @RunWith(AndroidJUnit4::class)
 class VersionSettingTest {
@@ -58,7 +58,7 @@ class VersionSettingTest {
         assertFalse(vs.isForceResolution)
     }
 
-    /** 所有可写字段的 setter 都触发一次监听通知（值变化时） */
+    /** Setter của mọi field có thể ghi đều kích hoạt 1 lần thông báo listener (khi giá trị đổi) */
     @Test
     fun settersNotifyOnChangeListener() {
         val vs = VersionSetting()
@@ -93,7 +93,7 @@ class VersionSettingTest {
         }
     }
 
-    /** 同值写入不触发通知（避免读取路径的幂等赋值反复触发配置保存） */
+    /** Ghi giá trị giống nhau không kích hoạt thông báo (tránh gán idempotent ở đường đọc kích hoạt lưu cấu hình lặp lại) */
     @Test
     fun sameValueSetDoesNotNotify() {
         val vs = VersionSetting()
@@ -125,7 +125,7 @@ class VersionSettingTest {
         assertEquals(0, notified.get())
     }
 
-    /** 回调内移除自身监听不崩溃（遍历前复制列表） */
+    /** Tự xóa listener của mình trong callback không crash (sao chép list trước khi duyệt) */
     @Test
     fun listenerCanRemoveItselfDuringNotification() {
         val vs = VersionSetting()
@@ -139,14 +139,14 @@ class VersionSettingTest {
         vs.addOnChangeListener(selfRemoving)
         vs.addOnChangeListener(other)
         vs.java = "Java 17"
-        // selfRemoving 在遍历中被移除，不影响后续监听执行
+        // selfRemoving bị xóa trong lúc duyệt, không ảnh hưởng các listener chạy sau
         assertEquals(1, otherCount.get())
-        // 再次变更不再触发任何通知（selfRemoving 已移除、other 仍在）
+        // Đổi lần nữa không kích hoạt thông báo nào (selfRemoving đã bị xóa, other vẫn còn)
         vs.java = "Java 21"
         assertEquals(2, otherCount.get())
     }
 
-    /** 设置全部字段后 clone 完整复制且相互独立 */
+    /** Sau khi đặt hết field, clone sao chép đầy đủ và độc lập với nhau */
     @Test
     fun cloneCopiesAllFieldsAndIsIndependent() {
         val vs = VersionSetting().apply {
@@ -195,14 +195,14 @@ class VersionSettingTest {
         assertEquals(vs.isNotCheckMod, copy.isNotCheckMod)
         assertEquals(vs.isDebugLog, copy.isDebugLog)
         assertEquals(vs.isForceResolution, copy.isForceResolution)
-        // 修改副本不影响原对象
+        // Sửa bản sao không ảnh hưởng object gốc
         copy.java = "Changed"
         copy.maxMemory = 1
         assertEquals("Java 17", vs.java)
         assertEquals(2048, vs.maxMemory)
     }
 
-    /** 全部字段序列化往返保持一致（java 名称不识别时回退 Auto，单独用例覆盖） */
+    /** Serialize/deserialize khứ hồi toàn bộ field giữ nhất quán (tên java không nhận diện được thì về Auto, có test case riêng bao phủ) */
     @Test
     fun serializerRoundTripPreservesFields() {
         val vs = VersionSetting().apply {
@@ -252,11 +252,11 @@ class VersionSettingTest {
         assertTrue(restored.isForceResolution)
     }
 
-    /** 空对象反序列化：缺失字段使用反序列化默认值 */
+    /** Deserialize object rỗng: field thiếu dùng giá trị mặc định khi deserialize */
     @Test
     fun deserializeEmptyObjectUsesDefaults() {
         val restored = JsonUtils.GSON.fromJson<VersionSetting>("{}", VersionSetting::class.java)
-        // 反序列化默认值（与字段默认值不同处：usesGlobal/isolateGameDir 缺失时为 false）
+        // Giá trị mặc định khi deserialize (khác giá trị mặc định của field ở chỗ: usesGlobal/isolateGameDir thiếu thì là false)
         assertFalse(restored.isUsesGlobal)
         assertFalse(restored.isIsolateGameDir)
         assertTrue(restored.isAutoMemory)
@@ -271,7 +271,7 @@ class VersionSettingTest {
         assertEquals("", restored.minecraftArgs)
     }
 
-    /** 部分字段存在时其余字段使用默认值 */
+    /** Khi có 1 phần field, các field còn lại dùng giá trị mặc định */
     @Test
     fun deserializePartialJsonFillsDefaults() {
         val restored = JsonUtils.GSON.fromJson<VersionSetting>(
@@ -285,7 +285,7 @@ class VersionSettingTest {
         assertEquals("Auto", restored.java)
     }
 
-    /** maxMemory <= 0 时序列化与反序列化都回退为推荐内存 */
+    /** Khi maxMemory <= 0, cả serialize và deserialize đều về mức bộ nhớ khuyến nghị */
     @Test
     fun nonPositiveMaxMemoryFallsBack() {
         val vs = VersionSetting().apply { maxMemory = 0 }
@@ -295,14 +295,14 @@ class VersionSettingTest {
         assertEquals(defaultMemory(), restored.maxMemory)
     }
 
-    /** JSON 中 maxMemory 为字符串数字时也能解析 */
+    /** Vẫn phân tích được khi maxMemory trong JSON là số dạng chuỗi */
     @Test
     fun deserializeMaxMemoryAsStringNumber() {
         val restored = JsonUtils.GSON.fromJson<VersionSetting>("""{"maxMemory":"2048"}""", VersionSetting::class.java)
         assertEquals(2048, restored.maxMemory)
     }
 
-    /** 未知 java 名称回退为 Auto */
+    /** Tên java không rõ sẽ về Auto */
     @Test
     fun deserializeUnknownJavaFallsBackToAuto() {
         val restored = JsonUtils.GSON.fromJson<VersionSetting>("""{"java":"Not Installed JDK"}""", VersionSetting::class.java)

@@ -87,9 +87,9 @@ import java.util.stream.Collectors;
 import kotlin.Unit;
 
 /**
- * 下载页：5 个下载模式（Mod/整合包/资源包/世界/光影）共享同一个页面实例，
- * 通过 {@link #switchType(int)} 切换 repository、下载回调与特有控件，
- * 各模式的搜索状态由 ViewModel 按页面 id 保存，切回时直接恢复。
+ * Trang tải: 5 chế độ tải (Mod/Modpack/Resource Pack/World/Shader) dùng chung 1 instance trang,
+ * chuyển repository, callback tải và control riêng qua {@link #switchType(int)},
+ * trạng thái tìm kiếm của mỗi chế độ do ViewModel lưu theo id trang, chuyển về là khôi phục ngay.
  */
 public class DownloadPage extends FCLPage implements ManageUI.VersionLoadable, View.OnClickListener {
 
@@ -137,11 +137,11 @@ public class DownloadPage extends FCLPage implements ManageUI.VersionLoadable, V
     private ModManager modManager;
     private final DownloadProvider downloadProvider;
     /**
-     * 搜索状态（挂 Activity 的 ViewModel，模式切换与页面重建后恢复）
+     * Trạng thái tìm kiếm (gắn ViewModel của Activity, khôi phục sau khi đổi chế độ và trang tạo lại)
      */
     protected DownloadSearchViewModel.State searchState;
     /**
-     * 下载源变化时刷新分类并重新搜索（用户手动切换源时触发）
+     * Làm mới danh mục và tìm lại khi nguồn tải đổi (kích hoạt khi người dùng tự chuyển nguồn)
      */
     private final InvalidationListener sourceListener = observable -> refreshCategory(true);
 
@@ -160,15 +160,15 @@ public class DownloadPage extends FCLPage implements ManageUI.VersionLoadable, V
     }
 
     /**
-     * 切换到指定下载模式：更新数据源、下载回调与特有控件，
-     * 从 ViewModel 恢复该模式的搜索状态（有结果则不重新搜索）。
+     * Chuyển sang chế độ tải chỉ định: cập nhật nguồn dữ liệu, callback tải và control riêng,
+     * khôi phục trạng thái tìm kiếm của chế độ đó từ ViewModel (đã có kết quả thì không tìm lại).
      */
     public void switchType(int pageId) {
         this.pageId = pageId;
-        // 按模式获取搜索状态（各模式独立，避免恢复/写入到其他模式的状态）
+        // Lấy trạng thái tìm kiếm theo chế độ (mỗi chế độ độc lập, tránh khôi phục/ghi nhầm sang chế độ khác)
         searchState = new ViewModelProvider(getActivity()).get(DownloadSearchViewModel.class).getState(pageId);
 
-        // 数据源
+        // Nguồn dữ liệu
         switch (pageId) {
             case PAGE_ID_DOWNLOAD_MODPACK:
                 repository = new LocalizedRepository(ModrinthRemoteModRepository.MODPACKS, CurseForgeRemoteModRepository.MODPACKS, RemoteModRepository.Type.MODPACK);
@@ -187,7 +187,7 @@ public class DownloadPage extends FCLPage implements ManageUI.VersionLoadable, V
                 break;
         }
 
-        // 下载回调（按模式决定安装目录）
+        // Callback tải (thư mục cài đặt tùy theo chế độ)
         switch (pageId) {
             case PAGE_ID_DOWNLOAD_MODPACK:
                 callback = (profile, version, file) -> Versions.downloadModpackImpl(getContext(), profile, file);
@@ -206,8 +206,8 @@ public class DownloadPage extends FCLPage implements ManageUI.VersionLoadable, V
                 break;
         }
 
-        // 下载源（世界模式固定 CurseForge，无 Modrinth）。
-        // 恢复期间临时移除监听，避免 downloadSource 变化触发 refreshCategory 的重复搜索
+        // Nguồn tải (chế độ World cố định CurseForge, không có Modrinth).
+        // Tạm gỡ listener lúc khôi phục, tránh downloadSource đổi kích hoạt refreshCategory tìm lặp
         downloadSource.removeListener(sourceListener);
         boolean localized = pageId != PAGE_ID_DOWNLOAD_WORLD;
         if (localized) {
@@ -223,7 +223,7 @@ public class DownloadPage extends FCLPage implements ManageUI.VersionLoadable, V
         }
         downloadSource.addListener(sourceListener);
 
-        // 特有控件显隐
+        // Ẩn/hiện control riêng
         boolean mod = pageId == PAGE_ID_DOWNLOAD_MOD;
         binding.modloader.setVisibility(mod ? View.VISIBLE : View.GONE);
         binding.modloaderText.setVisibility(mod ? View.VISIBLE : View.GONE);
@@ -236,13 +236,13 @@ public class DownloadPage extends FCLPage implements ManageUI.VersionLoadable, V
             binding.modloader.setSelection(searchState.modLoaderPosition);
         }
 
-        // 恢复该模式的搜索条件（搜索框/游戏版本/排序；分类在分类列表就绪后恢复）
+        // Khôi phục điều kiện tìm kiếm của chế độ (ô tìm/version game/sắp xếp; danh mục khôi phục sau khi list danh mục sẵn sàng)
         nameEditText.setText(searchState.searchFilter);
         int versionIndex = versionList.indexOf(searchState.userGameVersion);
         gameVersionSpinner.setSelection(Math.max(versionIndex, 0));
         sortSpinner.setSelection(searchState.sortType.ordinal());
 
-        // 刷新分类并恢复搜索状态（有结果直接恢复，不重新搜索）
+        // Làm mới danh mục và khôi phục trạng thái tìm kiếm (có kết quả thì khôi phục luôn, không tìm lại)
         refreshCategory(false);
         if (searchState.result != null) {
             restoreResult();
@@ -252,7 +252,7 @@ public class DownloadPage extends FCLPage implements ManageUI.VersionLoadable, V
     }
 
     /**
-     * 下载源 spinner 初始化/刷新（数据与显隐随模式变化）
+     * Khởi tạo/làm mới spinner nguồn tải (dữ liệu và ẩn/hiện đổi theo chế độ)
      */
     private void initSourceSpinner() {
         sourceText.setVisibility(downloadSources.getSize() > 1 ? View.VISIBLE : View.GONE);
@@ -268,7 +268,7 @@ public class DownloadPage extends FCLPage implements ManageUI.VersionLoadable, V
     }
 
     /**
-     * 本地化仓库（Modrinth/CurseForge 双源，按模式指定仓库与类型）
+     * Repository nội bộ hóa (2 nguồn Modrinth/CurseForge, repository và loại theo chế độ)
      */
     private class LocalizedRepository extends LocalizedRemoteModRepository {
         private final RemoteModRepository modrinthRepository;
@@ -345,7 +345,7 @@ public class DownloadPage extends FCLPage implements ManageUI.VersionLoadable, V
         if (executor != null && !executor.isCancelled()) {
             executor.cancel();
         }
-        // 保存搜索条件，模式切换后据此恢复
+        // Lưu điều kiện tìm kiếm, dùng để khôi phục sau khi đổi chế độ
         searchState.userGameVersion = userGameVersion;
         searchState.category = category;
         searchState.pageOffset = pageOffset;
@@ -369,17 +369,17 @@ public class DownloadPage extends FCLPage implements ManageUI.VersionLoadable, V
                     return list;
                 })
                 .whenComplete(Schedulers.androidUIThread(), (list, exception) -> {
-                    // 模式已切换时跳过过期回调，避免旧模式结果覆盖当前页面
+                    // Đã đổi chế độ thì bỏ qua callback quá hạn, tránh kết quả chế độ cũ đè lên trang hiện tại
                     if (searchPageId != pageId) {
                         return;
                     }
                     if (exception instanceof CancellationException) {
-                        // 任务被取消（重新搜索/切换模式发起了新任务）：不改变界面状态
+                        // Task bị hủy (tìm lại/đổi chế độ đã phát task mới): không đổi trạng thái giao diện
                         return;
                     }
                     setLoading(false);
                     if (exception == null) {
-                        // 保存搜索结果与 adapter，切回该模式时直接恢复显示
+                        // Lưu kết quả tìm kiếm và adapter, chuyển về chế độ đó là hiện lại ngay
                         searchState.result = list;
                         searchState.pageCount = pageCount.get();
                         adapter = createAdapter(list);
@@ -405,8 +405,8 @@ public class DownloadPage extends FCLPage implements ManageUI.VersionLoadable, V
     }
 
     /**
-     * 恢复该模式上次的搜索结果（切换回时调用），不重新搜索；
-     * 复用该模式缓存的 adapter 时不重建列表，避免 item 滑入动画重播
+     * Khôi phục kết quả tìm kiếm lần trước của chế độ (gọi khi chuyển về), không tìm lại;
+     * Dùng lại adapter đã cache của chế độ thì không tạo lại list, tránh hoạt ảnh item trượt vào phát lại
      */
     private void restoreResult() {
         setLoading(false);
@@ -418,8 +418,8 @@ public class DownloadPage extends FCLPage implements ManageUI.VersionLoadable, V
             adapter = createAdapter(searchState.result);
             searchState.adapter = adapter;
         }
-        // DownloadUI 被 ViewPager2 回收重建后 RecyclerView 是全新视图（无 LayoutManager），
-        // 复用缓存的 adapter 时也要补上，否则列表不会渲染
+        // Sau khi DownloadUI bị ViewPager2 thu hồi rồi tạo lại, RecyclerView là view hoàn toàn mới (không có LayoutManager),
+        // Dùng lại adapter đã cache cũng cần bù lại, không thì list sẽ không render
         if (recyclerView.getLayoutManager() == null) {
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         }
@@ -528,7 +528,7 @@ public class DownloadPage extends FCLPage implements ManageUI.VersionLoadable, V
         pageOffset.addListener(observable -> getActivity().runOnUiThread(() -> page.setText(getContext().getString(R.string.search_page_n, pageOffset.get() + 1, pageCount.get() == -1 ? "-" : pageCount.getValue().toString()))));
         pageCount.addListener(observable -> getActivity().runOnUiThread(() -> page.setText(getContext().getString(R.string.search_page_n, pageOffset.get() + 1, pageCount.get() == -1 ? "-" : pageCount.getValue().toString()))));
 
-        // Mod 模式特有的加载器筛选
+        // Bộ lọc loader riêng của chế độ Mod
         List<String> modLoaderList = new ArrayList<>();
         modLoaderList.add(getContext().getString(R.string.curse_category_0));
         modLoaderList.add("Forge");
@@ -686,7 +686,7 @@ public class DownloadPage extends FCLPage implements ManageUI.VersionLoadable, V
         int refreshPageId = pageId;
         Task.supplyAsync(() -> repository.getCategories())
                 .thenAcceptAsync(Schedulers.androidUIThread(), categories -> {
-                    // 模式已切换时跳过过期回调，避免旧模式分类覆盖当前页面
+                    // Đã đổi chế độ thì bỏ qua callback quá hạn, tránh danh mục chế độ cũ đè lên trang hiện tại
                     if (refreshPageId != pageId) {
                         return;
                     }
@@ -704,7 +704,7 @@ public class DownloadPage extends FCLPage implements ManageUI.VersionLoadable, V
                     categorySpinner.setSelection(0);
                     category.set(result.get(0));
                     FXUtils.bindSelection(categorySpinner, category);
-                    // 恢复该模式上次的分类筛选（分类列表就绪后）
+                    // Khôi phục bộ lọc danh mục lần trước của chế độ (sau khi list danh mục sẵn sàng)
                     if (searchState.category != null) {
                         for (int i = 1; i < result.size(); i++) {
                             if (searchState.category.equals(result.get(i).category())) {

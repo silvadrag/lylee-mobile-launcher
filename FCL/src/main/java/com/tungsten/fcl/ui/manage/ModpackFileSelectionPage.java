@@ -70,14 +70,14 @@ public class ModpackFileSelectionPage extends FCLPage implements View.OnClickLis
         this.exportInfo = exportInfo;
         this.modpackFile = file;
 
-        // 原 onCreate 逻辑：绑定控件
+        // Logic onCreate cũ: gắn control
         progressBar = findViewById(R.id.progress);
         listView = findViewById(R.id.list);
         ThemeEngine.getInstance().registerEvent(listView, () -> listView.setBackgroundTintList(new ColorStateList(new int[][]{{}}, new int[]{getContext().getResources().getColor(R.color.card_bg, null)})));
         next = findViewById(R.id.next);
         next.setOnClickListener(this);
 
-        // 原 onStart 逻辑：页面构造即加载文件树
+        // Logic onStart cũ: trang khởi tạo là tải cây file luôn
         progressBar.setVisibility(View.VISIBLE);
         listView.setVisibility(View.GONE);
         next.setVisibility(View.GONE);

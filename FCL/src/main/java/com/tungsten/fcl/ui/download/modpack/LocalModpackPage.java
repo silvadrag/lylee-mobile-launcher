@@ -44,7 +44,7 @@ public class LocalModpackPage extends ModpackPage implements View.OnClickListene
         this.updateVersion = updateVersion;
         this.modpackFile = modpackFile;
 
-        // 原 onStart 逻辑：页面构造即读取模组包 manifest
+        // Logic onStart cũ: trang khởi tạo là đọc manifest modpack luôn
         if (updateVersion != null) {
             editText.setText(updateVersion);
             editText.setEnabled(false);

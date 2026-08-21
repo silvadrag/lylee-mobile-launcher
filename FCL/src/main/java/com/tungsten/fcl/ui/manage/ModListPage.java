@@ -78,14 +78,14 @@ import kotlin.Unit;
 public class ModListPage extends FCLPage implements ManageUI.VersionLoadable, View.OnClickListener {
 
     /**
-     * 增量加载时每解析多少个模组刷新一次列表
+     * Khi tải tăng dần, cứ phân tích được bao nhiêu mod thì làm mới list 1 lần
      */
     private static final int BATCH_SIZE = 16;
 
     private final BooleanProperty modded = new SimpleBooleanProperty(this, "modded", false);
     private final ListProperty<ModInfoObject> itemsProperty = new SimpleListProperty<>(FXCollections.observableArrayList());
     /**
-     * 已解析的全部模组（未过滤），勾选 enabled/disabled 时直接在其中筛选，仅在 UI 线程访问
+     * Toàn bộ mod đã phân tích (chưa lọc), tick enabled/disabled thì lọc thẳng trong này, chỉ truy cập ở luồng UI
      */
     private final List<ModInfoObject> allMods = new ArrayList<>();
 
@@ -164,7 +164,7 @@ public class ModListPage extends FCLPage implements ManageUI.VersionLoadable, Vi
         selectInvertButton.setOnClickListener(this);
         cancelButton.setOnClickListener(this);
         CompoundButton.OnCheckedChangeListener listener = (compoundButton, b) -> {
-            // 直接在已加载的模组列表中筛选，避免重新扫描磁盘
+            // Lọc thẳng trong list mod đã tải, tránh quét lại đĩa
             itemsProperty.setAll(filterMods(allMods));
             if (isSearching) {
                 search();
@@ -234,10 +234,10 @@ public class ModListPage extends FCLPage implements ManageUI.VersionLoadable, Vi
 
     @Override
     public void loadVersion(Profile profile, String version) {
-        // 同一版本重复加载（如从其他页面返回时 ManageUI.onStart 触发）直接跳过，
-        // 避免每次显示都全量重扫模组 zip：上百个模组时解析耗时长，
-        // 且与上一次扫描交错时 calculateMod 在主线程触发 getMods 会 ANR。
-        // 模组增删/更新/回滚等数据变更路径内部已有显式 loadMods 刷新。
+        // Cùng version tải lặp lại (VD quay lại từ trang khác kích hoạt ManageUI.onStart) thì bỏ qua luôn,
+        // tránh mỗi lần hiện đều quét lại toàn bộ zip mod: có hàng trăm mod thì phân tích rất lâu,
+        // và khi chồng chéo với lần quét trước, calculateMod gọi getMods trên luồng chính sẽ gây ANR.
+        // Các luồng đổi dữ liệu như thêm/xóa/cập nhật/rollback mod bên trong đã tự gọi loadMods làm mới rồi.
         if (profile == this.profile && Objects.equals(version, this.versionId) && modManager != null) {
             return;
         }
@@ -281,11 +281,11 @@ public class ModListPage extends FCLPage implements ManageUI.VersionLoadable, Vi
                 selectAllButton.setEnabled(false);
                 selectInvertButton.setEnabled(false);
                 cancelButton.setEnabled(false);
-                // 禁用筛选复选框，避免加载中勾选触发列表全量重绘（跑马灯文字重置）
+                // Tắt checkbox lọc, tránh tick lúc đang tải kích hoạt vẽ lại toàn bộ list (chữ chạy marquee bị reset)
                 enabled.setEnabled(false);
                 disabled.setEnabled(false);
-                // 加载期间保持列表可见，已解析的模组会分批显示出来
-                // 禁用 itemAnimator，避免逐条插入时动画堆积卡顿
+                // Giữ list hiển thị trong lúc tải, mod đã phân tích sẽ hiện dần theo từng đợt
+                // Tắt itemAnimator, tránh hoạt ảnh chèn từng dòng chồng chất gây giật
                 recyclerView.setItemAnimator(null);
                 progressBar.setVisibility(View.VISIBLE);
             } else {
@@ -328,12 +328,12 @@ public class ModListPage extends FCLPage implements ManageUI.VersionLoadable, Vi
             try {
                 synchronized (ModListPage.this) {
                     setLoading(true);
-                    // 清空旧列表，避免切换版本/刷新时旧内容与增量内容混合显示
+                    // Xóa list cũ, tránh nội dung cũ trộn lẫn nội dung tăng dần khi đổi version/làm mới
                     Schedulers.androidUIThread().execute(() -> {
                         allMods.clear();
                         itemsProperty.clear();
                     });
-                    // 边扫描边分批把已解析的模组追加到列表末尾显示，无需等待全部加载完成
+                    // Vừa quét vừa thêm mod đã phân tích vào cuối list theo từng đợt, không cần chờ tải xong hết
                     List<ModInfoObject> pending = new ArrayList<>();
                     modManager.refreshMods(mod -> {
                         pending.add(new ModInfoObject(getContext(), mod));
@@ -359,12 +359,12 @@ public class ModListPage extends FCLPage implements ManageUI.VersionLoadable, Vi
                 throw new UncheckedIOException(e);
             }
         }, Schedulers.defaultScheduler()).whenCompleteAsync((result, exception) -> {
-            // 已被更新的 loadMods 取代时跳过，避免旧扫描回调操作新状态（如主线程触发未加载实例的 getMods）
+            // Bị loadMods mới hơn thay thế thì bỏ qua, tránh callback quét cũ thao tác vào trạng thái mới (VD luồng chính gọi getMods của instance chưa tải)
             if (this.modManager != modManager) return;
             setLoading(false);
             if (exception == null)
                 try {
-                    // 增量阶段已把全部模组追加进列表，无需再整体刷新列表
+                    // Giai đoạn tăng dần đã thêm hết mod vào list rồi, không cần làm mới lại toàn bộ list
                     calculateMod();
                     showBrokenModsDialog();
                 } catch (Throwable e) {
@@ -376,7 +376,7 @@ public class ModListPage extends FCLPage implements ManageUI.VersionLoadable, Vi
     }
 
     /**
-     * 按 enabled/disabled 复选框过滤模组列表，仅在 UI 线程调用
+     * Lọc list mod theo checkbox enabled/disabled, chỉ gọi ở luồng UI
      */
     private List<ModInfoObject> filterMods(List<ModInfoObject> list) {
         return list.stream().filter(modInfoObject -> {
@@ -386,7 +386,7 @@ public class ModListPage extends FCLPage implements ManageUI.VersionLoadable, Vi
     }
 
     /**
-     * 加载完成后若有损坏的模组文件，弹对话框列出并询问是否删除（仅在 UI 线程调用）
+     * Tải xong nếu có file mod hỏng, hiện dialog liệt kê và hỏi có xóa không (chỉ gọi ở luồng UI)
      */
     private void showBrokenModsDialog() {
         List<Path> brokenFiles = modManager.getBrokenFiles();
@@ -404,7 +404,7 @@ public class ModListPage extends FCLPage implements ManageUI.VersionLoadable, Vi
     }
 
     /**
-     * 删除损坏的模组文件（UI 线程）
+     * Xóa file mod hỏng (luồng UI)
      */
     private void deleteBrokenMods(List<Path> brokenFiles) {
         try {
@@ -605,7 +605,7 @@ public class ModListPage extends FCLPage implements ManageUI.VersionLoadable, Vi
                 predicate = s -> s.toLowerCase(Locale.ROOT).contains(lowerQueryString);
             }
 
-            // 一次性 setAll 整体替换，避免逐条 add 触发多次列表通知
+            // setAll thay thế toàn bộ 1 lần, tránh add từng dòng kích hoạt list thông báo nhiều lần
             List<ModInfoObject> filtered = itemsProperty.get().stream().filter(item ->
                     predicate.test(item.getModInfo().getFileName()) || (item.getRemoteMod() != null && predicate.test(item.getRemoteMod().getTitle()))
             ).collect(Collectors.toList());

@@ -35,10 +35,10 @@ import com.tungsten.fclcore.util.platform.MemoryUtils
 import java.lang.reflect.Type
 
 /**
- * 版本设置数据模型。
+ * Model dữ liệu cài đặt version.
  *
- * 使用普通类型字段替代原 fakefx property，属性变化通过 [addOnChangeListener] 通知
- * （用于自动保存与页面刷新），不再依赖 fakefx 监听机制。
+ * Dùng field kiểu thường thay cho fakefx property cũ, thuộc tính đổi thì thông báo qua [addOnChangeListener]
+ * (dùng cho tự động lưu và làm mới trang), không còn phụ thuộc cơ chế lắng nghe của fakefx.
  */
 @JsonAdapter(VersionSetting.Serializer::class)
 class VersionSetting : Cloneable {
@@ -230,7 +230,7 @@ class VersionSetting : Cloneable {
 
     private val changeListeners = mutableListOf<Runnable>()
 
-    /** 注册属性变化监听（替代原 fakefx property 监听，用于自动保存与页面刷新） */
+    /** Đăng ký listener khi thuộc tính đổi (thay cho listener fakefx property cũ, dùng cho tự động lưu và làm mới trang) */
     fun addOnChangeListener(listener: Runnable) {
         changeListeners.add(listener)
     }
@@ -240,7 +240,7 @@ class VersionSetting : Cloneable {
     }
 
     private fun changed() {
-        // 复制后遍历：回调内可能增删监听，避免并发修改
+        // Sao chép rồi duyệt: callback có thể thêm/xóa listener, tránh sửa đổi đồng thời
         changeListeners.toList().forEach { it.run() }
     }
 

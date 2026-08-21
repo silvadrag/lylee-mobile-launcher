@@ -465,7 +465,7 @@ public final class ModrinthRemoteModRepository implements RemoteModRepository {
 
         @Override
         public List<RemoteMod.Screenshot> loadScreenshots(RemoteModRepository modRepository) throws IOException {
-            //由于直接搜索得到的截图信息只有链接，没有标题、描述等信息，所以需要直接获取这个Mod的详细信息
+            //Vì thông tin ảnh chụp lấy được từ tìm kiếm trực tiếp chỉ có link, không có tiêu đề/mô tả..., nên cần lấy thẳng thông tin chi tiết của Mod này
             return modRepository.getModById(projectId()).getData().loadScreenshots(modRepository);
         }
 

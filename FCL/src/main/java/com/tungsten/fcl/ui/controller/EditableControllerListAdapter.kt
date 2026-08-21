@@ -14,8 +14,8 @@ import com.tungsten.fcllibrary.component.view.FCLImageButton
 import com.tungsten.fcllibrary.component.view.FCLTextView
 
 /**
- * 控制布局列表适配器：列表项选择/删除通过回调交给页面处理，
- * 选中高亮由 [getSelected] 提供，不使用 fakefx property。
+ * Adapter list layout điều khiển: chọn/xóa item list giao cho trang xử lý qua callback,
+ * làm nổi bật mục đang chọn do [getSelected] cung cấp, không dùng fakefx property.
  */
 class EditableControllerListAdapter(
     context: Context,

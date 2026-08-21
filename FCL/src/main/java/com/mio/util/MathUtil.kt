@@ -9,17 +9,17 @@ fun Long.format(context: Context): String {
     val sign = if (this < 0) "-" else ""
 
     return when {
-        // 中文格式
+        // Định dạng tiếng Trung
         isChinese && absNum >= 100_000_000 -> {
             val value = absNum / 100_000_000.0
-            sign + formatNumber(value) + "亿"
+            sign + formatNumber(value) + "ức"
         }
 
         isChinese && absNum >= 10_000 -> {
             val value = absNum / 10_000.0
-            sign + formatNumber(value) + "万"
+            sign + formatNumber(value) + "vạn"
         }
-        // 英文格式
+        // Định dạng tiếng Anh
         !isChinese && absNum >= 1_000_000_000 -> {
             val value = absNum / 1_000_000_000.0
             sign + formatNumber(value) + "B"
@@ -42,7 +42,7 @@ fun Long.format(context: Context): String {
 fun Int.format(context: Context): String =
     toLong().format(context)
 
-/** 保留两位小数，去掉末尾无意义的零和小数点 */
+/** Giữ 2 chữ số thập phân, bỏ số 0 và dấu chấm vô nghĩa ở cuối */
 private fun formatNumber(value: Double): String {
     val formatted = "%.2f".format(value)
     return formatted.trimEnd('0').trimEnd('.')

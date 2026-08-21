@@ -18,8 +18,8 @@ import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * Profiles.selectedProfile 迁移为 Repository 单例 + StateFlow 的深度验证：
- * StateFlow 值更新、监听通知、选中项校验回退、collect 行为。
+ * Kiểm chứng chuyên sâu việc chuyển Profiles.selectedProfile sang Repository đơn lẻ + StateFlow:
+ * Cập nhật giá trị StateFlow, thông báo listener, kiểm tra và về mặc định mục đang chọn, hành vi collect.
  */
 @RunWith(AndroidJUnit4::class)
 class ProfilesTest {
@@ -38,15 +38,15 @@ class ProfilesTest {
     fun initSelectsConfiguredProfile() {
         val selected = Profiles.getSelectedProfile()
         assertNotNull(selected)
-        // StateFlow 当前值与 getSelectedProfile 一致
+        // Giá trị hiện tại của StateFlow khớp với getSelectedProfile
         assertEquals(selected, Profiles.selectedProfile.value)
-        // 选中项必须在 profiles 列表中
+        // Mục đang chọn phải nằm trong list profiles
         assertTrue(Profiles.profiles.contains(selected))
     }
 
     @Test
     fun setSelectedProfileUpdatesStateFlowAndNotifiesListeners() {
-        // 选择不同于当前值的 profile（StateFlow 相同值不重新发射）
+        // Chọn profile khác giá trị hiện tại (StateFlow không phát lại nếu giá trị giống nhau)
         val current = Profiles.selectedProfile.value
         val target = Profiles.profiles.first { it != current }
         val notified = AtomicInteger(0)
@@ -54,10 +54,10 @@ class ProfilesTest {
         Profiles.addSelectedProfileListener(listener)
         try {
             Profiles.setSelectedProfile(target)
-            // StateFlow 与读取 API 同步更新
+            // StateFlow cập nhật đồng bộ với API đọc
             assertEquals(target, Profiles.selectedProfile.value)
             assertEquals(target, Profiles.getSelectedProfile())
-            // 监听器收到一次通知（同步回调）
+            // Listener nhận 1 lần thông báo (callback đồng bộ)
             assertEquals(1, notified.get())
         } finally {
             Profiles.removeSelectedProfileListener(listener)
@@ -72,7 +72,7 @@ class ProfilesTest {
         Profiles.addSelectedProfileListener(listener)
         try {
             Profiles.setSelectedProfile(current)
-            // StateFlow 相同值不重新发射，监听器不重复通知
+            // StateFlow không phát lại giá trị giống nhau, listener không thông báo lặp lại
             assertEquals(0, notified)
         } finally {
             Profiles.removeSelectedProfileListener(listener)
@@ -83,7 +83,7 @@ class ProfilesTest {
     fun setSelectedProfileFallsBackToFirstWhenNotInList() {
         val ghost = Profile("ghost", File("/sdcard/ghost_dir"))
         Profiles.setSelectedProfile(ghost)
-        // 不在列表中的 profile 被回退为第一个
+        // Profile không có trong list sẽ về mặc định là cái đầu tiên
         assertEquals(Profiles.profiles[0], Profiles.getSelectedProfile())
         assertEquals(Profiles.profiles[0], Profiles.selectedProfile.value)
     }
@@ -93,7 +93,7 @@ class ProfilesTest {
         val first = Profiles.profiles[0]
         Profiles.removeProfile(first)
         try {
-            // 列表变化校验：选中项不在列表时回退第一个
+            // Kiểm tra khi list đổi: mục đang chọn không có trong list thì về cái đầu tiên
             assertEquals(Profiles.profiles[0], Profiles.getSelectedProfile())
         } finally {
             Profiles.profiles.add(0, first)
@@ -102,7 +102,7 @@ class ProfilesTest {
 
     @Test
     fun selectedProfileCanBeCollected() {
-        // 选择不同于当前值的 profile（StateFlow 相同值不重新发射）
+        // Chọn profile khác giá trị hiện tại (StateFlow không phát lại nếu giá trị giống nhau)
         val current = Profiles.selectedProfile.value
         val target = Profiles.profiles.first { it != current }
         val values = mutableListOf<Profile?>()
@@ -110,13 +110,13 @@ class ProfilesTest {
             val job = launch {
                 Profiles.selectedProfile.collect { values.add(it) }
             }
-            // 让 collect 协程先启动并收到初始值，再更新
+            // Để coroutine collect khởi động và nhận giá trị ban đầu trước, rồi mới cập nhật
             yield()
             Profiles.setSelectedProfile(target)
             delay(100)
             job.cancel()
         }
-        // 首次收集立即发出当前值，更新后再发一次
+        // Lần thu thập đầu phát ngay giá trị hiện tại, cập nhật xong phát thêm lần nữa
         assertEquals(2, values.size)
         assertEquals(target, values.last())
     }
@@ -125,14 +125,14 @@ class ProfilesTest {
     fun selectedVersionFollowsSelectedProfile() {
         val current = Profiles.selectedProfile.value
         val target = Profiles.profiles.first { it != current }
-        // bind 依赖 repository 已加载（isLoaded），先同步刷新
+        // bind phụ thuộc repository đã tải (isLoaded), làm mới đồng bộ trước
         target.repository.refreshVersions()
-        assertTrue("repository 未加载", target.repository.isLoaded)
+        assertTrue("repository chưa được tải", target.repository.isLoaded)
         Profiles.setSelectedProfile(target)
-        // bind 后 selectedVersion 等于目标 profile 的选中版本
+        // selectedVersion sau khi bind bằng version đang chọn của profile đích
         assertEquals(target.selectedVersion, Profiles.getSelectedVersion())
         assertEquals(target.selectedVersion, Profiles.selectedVersion.value)
-        // 仓库刷新事件重新触发 bind，保持一致
+        // Sự kiện làm mới repository kích hoạt lại bind, giữ nhất quán
         target.repository.refreshVersions()
         assertEquals(target.selectedVersion, Profiles.getSelectedVersion())
     }
@@ -156,7 +156,7 @@ class ProfilesTest {
         val newProfile = Profile("NewProfile_${System.nanoTime()}", File(selected.gameDir, "new_dir"))
         Profiles.addProfile(newProfile)
         try {
-            // 新增 profile 不影响当前选中
+            // Thêm profile mới không ảnh hưởng mục đang chọn hiện tại
             assertEquals(selected, Profiles.getSelectedProfile())
             assertEquals(selected, Profiles.selectedProfile.value)
         } finally {
@@ -169,7 +169,7 @@ class ProfilesTest {
         val first = Profiles.profiles[0]
         Profiles.removeProfile(first)
         try {
-            // 选中项被移除后 StateFlow 与读取 API 同步回退到第一个
+            // Sau khi mục đang chọn bị xóa, StateFlow và API đọc đồng bộ về cái đầu tiên
             assertEquals(Profiles.profiles[0], Profiles.getSelectedProfile())
             assertEquals(Profiles.profiles[0], Profiles.selectedProfile.value)
         } finally {
@@ -183,7 +183,7 @@ class ProfilesTest {
         val profile = Profiles.getSelectedProfile()
         profile.selectedVersion = null
         profile.repository.refreshVersions()
-        // 无选中版本时返回全局设置
+        // Trả về cài đặt toàn cục khi không có version đang chọn
         assertEquals(profile.globalVersionSetting, profile.versionSetting)
         assertEquals(profile.globalVersionSetting, profile.getVersionSetting(null))
     }

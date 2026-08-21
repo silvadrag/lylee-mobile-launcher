@@ -14,50 +14,50 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 /**
- * 主题数据（不可变 data class，替代原 fakefx 属性版 Theme）。
+ * Dữ liệu theme (data class bất biến, thay cho phiên bản Theme dùng thuộc tính fakefx cũ).
  *
- * 亮暗切换不改变数据本身，动态取色见 [getColor2] 与 [getBackground]；
- * ltColor/dkColor/autoTint 等由主色派生，随 [color] 变化自动重算。
+ * Chuyển sáng/tối không đổi dữ liệu gốc, lấy màu động xem [getColor2] và [getBackground];
+ * ltColor/dkColor/autoTint... đều suy ra từ màu chính, tự tính lại khi [color] đổi.
  */
 data class ThemeData(
     val color: Int,
-    /** 亮色模式次要色（原始值，Java 侧经 [getColor2] 动态取色或 [_getColor2] 取原始值） */
+    /** Màu phụ ở chế độ sáng (giá trị gốc, phía Java lấy màu động qua [getColor2] hoặc lấy giá trị gốc qua [_getColor2]) */
     @get:JvmName("_getColor2")
     val color2: Int,
     val color2Dark: Int,
-    /** Java getter 命名为 isFullscreen（Kotlin Boolean 属性默认 getFullscreen） */
+    /** Java getter đặt tên isFullscreen (thuộc tính Boolean Kotlin mặc định là getFullscreen) */
     @get:JvmName("isFullscreen")
     val fullscreen: Boolean,
-    /** Java getter 命名为 isCloseSkinModel */
+    /** Java getter đặt tên isCloseSkinModel */
     @get:JvmName("isCloseSkinModel")
     val closeSkinModel: Boolean,
     val animationSpeed: Int,
     val backgroundLt: BitmapDrawable,
     val backgroundDk: BitmapDrawable
 ) {
-    /** 主色的亮色变体（HSV 提亮，浅色背景/按压态用） */
+    /** Biến thể sáng của màu chính (tăng sáng HSV, dùng cho nền sáng/trạng thái nhấn) */
     val ltColor: Int
         get() = deriveColor(color, brighten = true)
 
-    /** 主色的暗色变体（HSV 压暗，选中态/进度条等用） */
+    /** Biến thể tối của màu chính (giảm sáng HSV, dùng cho trạng thái chọn/progress bar...) */
     val dkColor: Int
         get() = deriveColor(color, brighten = false)
 
-    /** 与主色对比的自动文字色（黑/白） */
+    /** Màu chữ tự động tương phản với màu chính (đen/trắng) */
     val autoTint: Int
         get() = if (ColorUtils.calculateLuminance(color) >= 0.5) Color.BLACK else Color.WHITE
 
-    /** 半透明自动文字色（提示文字用） */
+    /** Màu chữ tự động bán trong suốt (dùng cho text gợi ý) */
     val autoHintTint: Int
         get() = if (ColorUtils.calculateLuminance(color) >= 0.5) 0x99000000.toInt() else 0x99FFFFFF.toInt()
 
-    /** 按当前亮暗模式取次要色（亮色用 [color2]，暗色用 [color2Dark]） */
+    /** Lấy màu phụ theo chế độ sáng/tối hiện tại (sáng dùng [color2], tối dùng [color2Dark]) */
     fun getColor2(): Int {
         val activity = com.tungsten.fcl.FCLApplication.getCurrentActivity()
         return if (activity != null && ThemeEngine.isNightMode(activity)) color2Dark else color2
     }
 
-    /** 按当前亮暗模式取背景 */
+    /** Lấy nền theo chế độ sáng/tối hiện tại */
     fun getBackground(context: Context): BitmapDrawable {
         val dark = ThemeEngine.isNightMode(context)
         return if (dark) backgroundDk else backgroundLt
@@ -77,11 +77,11 @@ data class ThemeData(
     }
 
     companion object {
-        /** 从 DataStore 加载主题（背景缺失时回退内置默认图；首次迁移旧 SharedPreferences 配置） */
+        /** Tải theme từ DataStore (thiếu nền thì lùi về ảnh mặc định có sẵn; lần đầu di chuyển cấu hình SharedPreferences cũ) */
         @JvmStatic
         fun getTheme(context: Context): ThemeData {
             val pref = runBlocking { context.themeDataStore.data.first() }
-            // 一次性迁移：DataStore 尚未写入过且旧 SharedPreferences 有主题配置时迁移并回写
+            // Di chuyển 1 lần: DataStore chưa từng ghi mà SharedPreferences cũ có cấu hình theme thì di chuyển rồi ghi lại
             val migrated = pref == ThemePreference() &&
                     context.getSharedPreferences("theme", Context.MODE_PRIVATE)
                         .contains("theme_color")
@@ -98,7 +98,7 @@ data class ThemeData(
             )
         }
 
-        /** 读取旧 SharedPreferences 配置并写入 DataStore（一次性迁移） */
+        /** Đọc cấu hình SharedPreferences cũ rồi ghi vào DataStore (di chuyển 1 lần) */
         private fun migrateFromSharedPreferences(context: Context): ThemePreference {
             val old = context.getSharedPreferences("theme", Context.MODE_PRIVATE)
             val migrated = ThemePreference(
@@ -118,9 +118,9 @@ data class ThemeData(
             return migrated
         }
 
-        /** 持久化主题（仅持久化可配置字段，派生色与背景不保存）。
-         *  异步写入不阻塞调用线程（设置页回调在 UI 线程，同步等待会导致卡顿）；
-         *  写入失败静默忽略（与原 SharedPreferences.apply 语义一致） */
+        /** Lưu bền vững theme (chỉ lưu field có thể cấu hình, không lưu màu suy ra và nền).
+         *  Ghi bất đồng bộ không chặn luồng gọi (callback trang cài đặt ở luồng UI, chờ đồng bộ sẽ giật lag);
+         *  ghi lỗi thì bỏ qua âm thầm (giống ngữ nghĩa SharedPreferences.apply cũ) */
         @JvmStatic
         fun saveTheme(context: Context, theme: ThemeData) {
             CoroutineScope(Dispatchers.IO).launch {

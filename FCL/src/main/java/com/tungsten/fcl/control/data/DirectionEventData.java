@@ -233,7 +233,7 @@ public class DirectionEventData implements Cloneable, Observable {
         }
 
         /**
-         * 通用的方向键反序列化方法
+         * Phương thức deserialize phím hướng dùng chung
          */
         private void deserializeKeycodeList(JsonObject obj, String keyName, java.util.function.Consumer<ObservableList<Integer>> setter, int defaultKeycode) {
             if (obj.get(keyName).isJsonArray()) {

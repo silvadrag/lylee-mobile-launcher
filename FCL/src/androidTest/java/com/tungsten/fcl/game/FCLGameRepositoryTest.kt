@@ -20,8 +20,8 @@ import org.junit.runner.RunWith
 import java.io.File
 
 /**
- * FCLGameRepository 版本加载提速（解析缓存、modpack 配置缓存、图标缓存）的验证：
- * 缓存命中行为、版本刷新后缓存清空、版本设置持久化。
+ * Kiểm chứng việc tăng tốc tải version của FCLGameRepository (cache resolve, cache cấu hình modpack, cache icon):
+ * Hành vi hit cache, cache bị xóa sau khi làm mới version, lưu bền cài đặt version.
  */
 @RunWith(AndroidJUnit4::class)
 class FCLGameRepositoryTest {
@@ -76,18 +76,18 @@ class FCLGameRepositoryTest {
         assertEquals(listOf("1.0", "2.0"), repo.getDisplayVersions().map { it.id }.toList())
     }
 
-    /** 解析缓存：刷新前命中缓存，刷新后清空并反映文件新内容 */
+    /** Cache resolve: hit cache trước khi làm mới, xóa cache và phản ánh nội dung file mới sau khi làm mới */
     @Test
     fun resolvedVersionCacheClearedOnRefresh() {
         writeVersion("1.0", mainClass = "com.a.Main")
         val repo = newRepository()
         repo.refreshVersions()
-        // 普通版本（无 root 标记）原字段挂载为 patch，mainClass 保留在 patch 中
+        // Version thường (không có nhãn root) gắn field gốc thành patch, mainClass giữ trong patch
         assertEquals(
             "com.a.Main",
             repo.getResolvedPreservingPatchesVersion("1.0").getPatches()[0].mainClass
         )
-        // 修改 json 后刷新，缓存清空，解析结果更新
+        // Làm mới sau khi sửa json, cache bị xóa, kết quả resolve cập nhật
         writeVersion("1.0", mainClass = "com.b.Main")
         repo.refreshVersions()
         assertEquals(
@@ -105,7 +105,7 @@ class FCLGameRepositoryTest {
         }
     }
 
-    /** 无 modpack.cfg 时返回 null */
+    /** Trả về null khi không có modpack.cfg */
     @Test
     fun readModpackConfigurationReturnsNullWhenAbsent() {
         writeVersion("1.0")
@@ -114,7 +114,7 @@ class FCLGameRepositoryTest {
         assertNull(repo.readModpackConfiguration<String>("1.0"))
     }
 
-    /** 合法 modpack.cfg 解析成功（ModpackConfiguration 校验要求 manifest 存在） */
+    /** modpack.cfg hợp lệ resolve thành công (ModpackConfiguration yêu cầu manifest phải tồn tại) */
     @Test
     fun readModpackConfigurationParsesValidFile() {
         writeVersion("1.0")
@@ -131,7 +131,7 @@ class FCLGameRepositoryTest {
         assertEquals("1.0.0", config.version)
     }
 
-    /** 损坏的 modpack.cfg 抛出 JSON 解析异常（与基类行为一致，由调用方处理） */
+    /** modpack.cfg hỏng ném exception phân tích JSON (nhất quán với hành vi lớp cha, bên gọi tự xử lý) */
     @Test
     fun readModpackConfigurationBrokenFileThrows() {
         writeVersion("1.0")
@@ -143,7 +143,7 @@ class FCLGameRepositoryTest {
         }
     }
 
-    /** 不存在的版本读取 modpack 配置抛 VersionNotFoundException */
+    /** Đọc cấu hình modpack của version không tồn tại sẽ ném VersionNotFoundException */
     @Test
     fun readModpackConfigurationForMissingVersionThrows() {
         val repo = newRepository()
@@ -153,7 +153,7 @@ class FCLGameRepositoryTest {
         }
     }
 
-    /** modpack 配置缓存：刷新后清空并反映文件新内容 */
+    /** Cache cấu hình modpack: xóa và phản ánh nội dung file mới sau khi làm mới */
     @Test
     fun modpackConfigCacheClearedOnRefresh() {
         writeVersion("1.0")
@@ -166,31 +166,31 @@ class FCLGameRepositoryTest {
         assertEquals("modrinth", repo.readModpackConfiguration<String>("1.0")!!.type)
     }
 
-    /** 版本设置修改后持久化到 fclversion.cfg，重新加载的仓库读回一致 */
+    /** Cài đặt version sau khi sửa được lưu bền vào fclversion.cfg, repository tải lại đọc về nhất quán */
     @Test
     fun versionSettingPersistsAcrossRepositoryReload() {
         writeVersion("1.0")
         val repo = newRepository()
         repo.refreshVersions()
-        // specialize 创建本地设置并注册自动保存监听
+        // specialize tạo cài đặt cục bộ và đăng ký listener tự động lưu
         val vs = repo.specializeVersionSetting("1.0")
         assertNotNull(vs)
         vs.java = "Java 17"
         vs.serverIp = "10.0.0.1"
         vs.maxMemory = 4096
         assertTrue(File(tempDir, "versions/1.0/fclversion.cfg").exists())
-        // 新仓库从磁盘读回
+        // Repository mới đọc lại từ ổ đĩa
         val repo2 = newRepository()
         repo2.refreshVersions()
         val vs2 = repo2.getVersionSetting("1.0")
-        // JavaManager 未初始化时未知 java 名称回退 Auto（VersionSetting 反序列化行为）
+        // Khi JavaManager chưa khởi tạo, tên java không rõ sẽ về Auto (hành vi deserialize của VersionSetting)
         assertEquals("Auto", vs2.java)
         assertFalse(vs2.isUsesGlobal)
         assertEquals("10.0.0.1", vs2.serverIp)
         assertEquals(4096, vs2.maxMemory)
     }
 
-    /** getVersionSetting 对无本地设置的版本返回全局设置 */
+    /** getVersionSetting trả về cài đặt toàn cục cho version không có cài đặt cục bộ */
     @Test
     fun getVersionSettingFallsBackToGlobal() {
         writeVersion("1.0")
@@ -201,7 +201,7 @@ class FCLGameRepositoryTest {
         assertTrue(vs.isUsesGlobal)
     }
 
-    /** 版本图标获取不崩溃（无图标文件时返回默认资源） */
+    /** Lấy icon version không crash (trả về resource mặc định khi không có file icon) */
     @Test
     fun getVersionIconImageReturnsDrawable() {
         writeVersion("1.0")

@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.function.Consumer;
 
 /**
- * 下载 UI：游戏安装页与 5 个下载模式（Mod/整合包/资源包/世界/光影）共享一个
- * DownloadPage 实例，tab 切换只更新数据源与恢复状态，不重复创建页面。
+ * Download UI: trang cài game và 5 chế độ tải (Mod/Modpack/Resource Pack/World/Shader) dùng chung 1
+ * instance DownloadPage, chuyển tab chỉ cập nhật nguồn dữ liệu và khôi phục trạng thái, không tạo lại trang.
  */
 public class DownloadUI extends FCLCommonUI {
 
@@ -62,7 +62,7 @@ public class DownloadUI extends FCLCommonUI {
         tabLayout = findViewById(R.id.tab_layout);
         container = findViewById(R.id.container);
 
-        // 内容层：游戏安装页 + 共享下载页
+        // Lớp nội dung: trang cài game + trang tải dùng chung
         contentContainer = new FrameLayout(getContext());
         container.addView(contentContainer, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         versionInstallPage = new VersionInstallPage(getContext(), PAGE_ID_DOWNLOAD_GAME, R.layout.page_install_version);
@@ -71,13 +71,13 @@ public class DownloadUI extends FCLCommonUI {
         contentContainer.addView(downloadPage.getContentView(), new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         downloadPage.getContentView().setVisibility(View.GONE);
 
-        // 临时页覆盖层
+        // Lớp phủ trang tạm
         overlay = new FrameLayout(getContext());
         overlay.setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         overlay.setVisibility(View.GONE);
         container.addView(overlay);
 
-        // tab 切换：游戏页独立，5 个下载模式共享 DownloadPage
+        // Chuyển tab: trang game độc lập, 5 chế độ tải dùng chung DownloadPage
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
@@ -101,7 +101,7 @@ public class DownloadUI extends FCLCommonUI {
         selectedVersionListener = () -> loadVersions(Profiles.getSelectedProfile());
         listenerProfile.addSelectedVersionListener(selectedVersionListener);
 
-        // UI 被 ViewPager 回收时注销监听（替代原 onDestroy 生命周期），防止静态列表累积泄漏
+        // Hủy đăng ký listener khi UI bị ViewPager thu hồi (thay cho vòng đời onDestroy cũ), tránh rò rỉ tích lũy vào list tĩnh
         getContentView().addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
             public void onViewAttachedToWindow(@NonNull View v) {
@@ -119,7 +119,7 @@ public class DownloadUI extends FCLCommonUI {
     }
 
     private void switchTab(int position) {
-        // 切换 tab 时关闭临时页（临时页属于原页面上下文，避免覆盖层遮挡新页面）
+        // Đóng trang tạm khi chuyển tab (trang tạm thuộc ngữ cảnh trang gốc, tránh lớp phủ che trang mới)
         dismissAllTempPages();
         if (position == 0) {
             if (currentPageId == PAGE_ID_DOWNLOAD_GAME) return;
@@ -134,7 +134,7 @@ public class DownloadUI extends FCLCommonUI {
             downloadPage.getContentView().setVisibility(View.VISIBLE);
             versionInstallPage.getContentView().setVisibility(View.GONE);
             downloadPage.switchType(pageId);
-            // 5 个下载模式页共用同一视图，内容更新后播放过渡动画（游戏页 ↔ 模式页、模式页之间均适用）
+            // 5 trang chế độ tải dùng chung 1 view, cập nhật nội dung xong thì phát hoạt ảnh chuyển cảnh (áp dụng cả trang game ↔ trang chế độ và giữa các trang chế độ)
             playEnterAnimation(downloadPage.getContentView());
         }
     }
@@ -160,7 +160,7 @@ public class DownloadUI extends FCLCommonUI {
     }
 
     /**
-     * 页面切换过渡动画：淡入 + 上滑进入（同步执行，页面首次可见即为动画起点，避免先显示后置透明的闪烁）
+     * Hoạt ảnh chuyển trang: mờ dần + trượt lên (chạy đồng bộ, lần đầu trang hiện chính là điểm bắt đầu hoạt ảnh, tránh chớp hiện-rồi-mờ)
      */
     private void playEnterAnimation(View view) {
         view.animate().cancel();
@@ -170,7 +170,7 @@ public class DownloadUI extends FCLCommonUI {
     }
 
     /**
-     * 返回过渡：下层上滑进入（仅位移不做淡入，避免与临时页淡出叠加时 alpha 硬件层切换闪烁）
+     * Chuyển cảnh khi quay lại: trang dưới trượt lên (chỉ dịch chuyển không làm mờ, tránh chớp hình do alpha đổi lớp phần cứng khi chồng với trang tạm đang mờ dần)
      */
     private void slideIn(View view) {
         view.animate().cancel();
@@ -179,7 +179,7 @@ public class DownloadUI extends FCLCommonUI {
     }
 
     /**
-     * 供外部跳转（如模组管理页）：切换到指定下载模式并显示下载页
+     * Cho nơi khác điều hướng tới (VD trang quản lý mod): chuyển sang chế độ tải chỉ định và hiện trang tải
      */
     public void showDownloadPage(int pageId) {
         TabLayout.Tab tab = tabLayout.getTabAt(pageIdToTabPosition(pageId));
@@ -197,16 +197,16 @@ public class DownloadUI extends FCLCommonUI {
     }
 
     /**
-     * 在覆盖层上显示临时页并压入导航栈（隐藏下层内容，临时页独占显示）
+     * Hiện trang tạm trên lớp phủ và đẩy vào ngăn xếp điều hướng (ẩn nội dung dưới, trang tạm chiếm toàn bộ hiển thị)
      */
     public void showTempPage(FCLPage page) {
         if (overlay == null) return;
-        // 隐藏当前栈顶临时页与下层内容，避免透明背景下层内容透出
+        // Ẩn trang tạm đỉnh ngăn xếp hiện tại và nội dung dưới, tránh lộ nội dung qua nền trong suốt
         if (!tempPageStack.isEmpty()) {
             tempPageStack.get(tempPageStack.size() - 1).getContentView().setVisibility(View.GONE);
         }
         contentContainer.setVisibility(View.GONE);
-        // 新临时页淡入
+        // Trang tạm mới hiện mờ dần vào
         View view = page.getContentView();
         view.setAlpha(0f);
         overlay.setVisibility(View.VISIBLE);
@@ -216,13 +216,13 @@ public class DownloadUI extends FCLCommonUI {
     }
 
     /**
-     * 弹栈顶临时页（淡出后移除并恢复下层）
+     * Đóng trang tạm ở đỉnh ngăn xếp (mờ dần rồi gỡ, khôi phục trang dưới)
      */
     public void dismissCurrentTempPage() {
         if (tempPageStack.isEmpty()) return;
         FCLPage page = tempPageStack.remove(tempPageStack.size() - 1);
         View view = page.getContentView();
-        // 恢复下层（与临时页淡出交叉进行，形成返回过渡动画）
+        // Khôi phục trang dưới (chạy song song lúc trang tạm mờ dần, tạo hoạt ảnh chuyển cảnh khi quay lại)
         if (!tempPageStack.isEmpty()) {
             View lowerView = tempPageStack.get(tempPageStack.size() - 1).getContentView();
             lowerView.setVisibility(View.VISIBLE);
@@ -240,7 +240,7 @@ public class DownloadUI extends FCLCommonUI {
     }
 
     /**
-     * 清空全部临时页
+     * Đóng hết mọi trang tạm
      */
     public void dismissAllTempPages() {
         while (!tempPageStack.isEmpty()) {
@@ -260,7 +260,7 @@ public class DownloadUI extends FCLCommonUI {
     private void loadVersions(Profile profile) {
         if (profile == Profiles.getSelectedProfile()) {
             downloadPage.loadVersion(profile, null);
-            // 先移除旧监听再添加，避免重复注册累积（引用旧 UI 实例导致泄漏）
+            // Gỡ listener cũ trước rồi mới thêm, tránh đăng ký lặp tích lũy (giữ tham chiếu instance UI cũ gây rò rỉ)
             if (selectedVersionListener != null) {
                 listenerProfile.removeSelectedVersionListener(selectedVersionListener);
             }

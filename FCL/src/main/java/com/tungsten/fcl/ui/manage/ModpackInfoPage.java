@@ -91,7 +91,7 @@ public class ModpackInfoPage extends FCLPage implements View.OnClickListener {
         launchArguments.set(versionSetting.getMinecraftArgs());
         javaArguments.set(versionSetting.getJavaArgs());
 
-        // 原 onStart 逻辑：页面构造即绑定控件（findViewById 在 super 构造中已完成）
+        // Logic onStart cũ: trang khởi tạo là gắn control luôn (findViewById đã xong trong constructor super)
         FCLLinearLayout fileApiLayout = findViewById(R.id.file_api_layout);
         FCLLinearLayout launchArgsLayout = findViewById(R.id.minecraft_args_layout);
         FCLLinearLayout jvmArgsLayout = findViewById(R.id.jvm_args_layout);

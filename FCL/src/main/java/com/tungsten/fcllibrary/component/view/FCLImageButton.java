@@ -66,7 +66,7 @@ public class FCLImageButton extends AppCompatImageButton {
             setPadding(0, 0, 0, 0);
         }
         setScaleType(ScaleType.FIT_XY);
-        // 主题变化时刷新样式（registerEvent 立即执行一次，替代原 fakefx bind）
+        // Làm mới style khi theme đổi (registerEvent chạy ngay 1 lần, thay cho fakefx bind cũ)
         ThemeEngine.getInstance().registerEvent(this, this::refreshStyle);
     }
 

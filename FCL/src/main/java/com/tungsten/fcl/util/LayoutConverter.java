@@ -3,12 +3,12 @@ package com.tungsten.fcl.util;
 import android.os.Build;
 
 /**
- * 通过 JNI 调用 control-converter 项目编译的原生库 {@code libcc.so}
- * 实现 FCL 控制布局与 ZalithLauncher2 (ZL2) 布局之间的转换。
+ * Gọi qua JNI tới thư viện native {@code libcc.so} biên dịch từ project control-converter
+ * để chuyển đổi giữa layout điều khiển của FCL và layout ZalithLauncher2 (ZL2).
  *
- * 原生库来源：d:\project\control-converter\go (Go 实现, c-shared 编译)
- * 打包位置：jniLibs/arm64-v8a/libcc.so
- * 通过 JNI 调用，避免命令执行方式在 Android 上的兼容性问题。
+ * Nguồn thư viện native: d:\project\control-converter\go (hiện thực bằng Go, biên dịch c-shared)
+ * Vị trí đóng gói: jniLibs/arm64-v8a/libcc.so
+ * Gọi qua JNI để tránh vấn đề tương thích của cách thực thi lệnh trên Android.
  */
 public final class LayoutConverter {
 
@@ -19,7 +19,7 @@ public final class LayoutConverter {
     private LayoutConverter() {
     }
 
-    /** 当前设备是否支持运行转换（仅 arm64-v8a）。 */
+    /** Thiết bị hiện tại có hỗ trợ chạy chuyển đổi không (chỉ arm64-v8a). */
     public static boolean isSupported() {
         for (String abi : Build.SUPPORTED_ABIS) {
             if ("arm64-v8a".equals(abi)) {
@@ -30,21 +30,21 @@ public final class LayoutConverter {
     }
 
     /**
-     * JNI 原生方法：将 FCL 控制布局 JSON 转换为 ZL2 格式。
+     * Phương thức native JNI: chuyển JSON layout điều khiển FCL sang định dạng ZL2.
      *
-     * @param inputPath  FCL 控制布局 JSON 文件路径
-     * @param outputPath 转换后的 ZL2 JSON 输出文件路径
-     * @return 转换成功返回 null；失败返回错误信息
+     * @param inputPath  Đường dẫn file JSON layout điều khiển FCL
+     * @param outputPath Đường dẫn file JSON ZL2 xuất ra sau khi chuyển đổi
+     * @return Chuyển đổi thành công trả về null; thất bại trả về thông báo lỗi
      */
     private static native String convertFclToZl2Native(String inputPath, String outputPath);
 
     /**
-     * 将 FCL 控制布局 JSON 转换为 ZL2 格式。
-     * <p>同步阻塞，调用方需在后台线程执行。
+     * Chuyển JSON layout điều khiển FCL sang định dạng ZL2.
+     * <p>Chạy đồng bộ chặn luồng, bên gọi cần thực thi ở luồng nền.
      *
-     * @param input  FCL 控制布局 JSON 文件
-     * @param output 转换后的 ZL2 JSON 输出文件
-     * @return 转换成功返回 null；失败返回错误信息
+     * @param input  File JSON layout điều khiển FCL
+     * @param output File JSON ZL2 xuất ra sau khi chuyển đổi
+     * @return Chuyển đổi thành công trả về null; thất bại trả về thông báo lỗi
      */
     public static String convertFclToZl2(java.io.File input, java.io.File output) {
         try {

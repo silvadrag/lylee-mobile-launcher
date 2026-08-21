@@ -53,7 +53,7 @@ public class DatapackListPage extends FCLPage implements View.OnClickListener {
 
         datapack = new Datapack(worldDir.resolve("datapacks"));
 
-        // 原 onStart 逻辑：页面构造即初始化列表并刷新
+        // Logic onStart cũ: trang khởi tạo là list khởi tạo và làm mới luôn
         adapter = new DatapackListAdapter(getContext());
         listView.setAdapter(adapter);
         Bindings.bindContent(adapter.listProperty(), itemsProperty);

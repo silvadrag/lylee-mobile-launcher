@@ -19,11 +19,11 @@ import com.tungsten.fcllibrary.component.ui.FCLBaseUI
 import com.tungsten.fcllibrary.component.ui.FCLCommonUI
 
 /**
- * 主界面 UI 管理器：用 ViewPager2 承载 9 个主 UI 页面。
+ * Bộ quản lý UI màn hình chính: dùng ViewPager2 chứa 9 trang UI chính.
  *
- * UI 实例随 ViewPager 页面生命周期创建/销毁，不保留状态：
- * 页面被 ViewPager 回收（超出 offscreenPageLimit）时销毁对应 UI 实例，
- * 下次进入时全新创建。
+ * Instance UI tạo/hủy theo vòng đời trang ViewPager (không giữ trạng thái):
+ * khi trang bị ViewPager thu hồi (vượt offscreenPageLimit) thì hủy instance UI
+ * tương ứng, lần vào sau tạo lại hoàn toàn mới.
  */
 class UIManager(val context: Context, val pager: ViewPager2) {
     companion object {
@@ -31,11 +31,12 @@ class UIManager(val context: Context, val pager: ViewPager2) {
         lateinit var instance: UIManager
     }
 
-    /** 页面位置 → UI 实例注册表，页面被回收时销毁并清空对应位 */
+    /** Bảng đăng ký vị trí trang → instance UI, hủy và xóa ô tương ứng khi trang bị thu hồi */
     private val uiRegistry = arrayOfNulls<FCLCommonUI>(9)
 
-    /** 页面位置 → UI 工厂。LyleeCobblemonUI 追加在末尾（位置 8），不改动
-     *  account(6)/version(7) 原有编号，避免连带改动 MainActivity 里其他写死的位置判断。 */
+    /** Factory UI theo vị trí trang. LyleeCobblemonUI thêm vào cuối (vị trí 8),
+     *  không đổi số thứ tự account(6)/version(7) cũ, tránh phải sửa dây chuyền
+     *  các vị trí viết chết khác trong MainActivity. */
     private val factories: List<() -> FCLCommonUI> = listOf(
         { MainUI(context, R.layout.ui_main) },
         { ManageUI(context, R.layout.ui_manage) },
@@ -50,21 +51,24 @@ class UIManager(val context: Context, val pager: ViewPager2) {
 
     var currentUI: FCLBaseUI? = null
 
-    /** 页面切换回调，MainActivity 用于同步菜单高亮与标题 */
+    /** Callback khi chuyển trang, MainActivity dùng để đồng bộ menu nổi bật và tiêu đề */
     var pageSelectedListener: ((Int) -> Unit)? = null
 
-    /** 上次 onPageSelected 的页面位置，用于过滤 ViewPager2 重复 dispatch 当前页（如软键盘弹出等布局变化） */
+    /** Vị trí trang lần onPageSelected trước đó, dùng để lọc bỏ việc ViewPager2
+     *  dispatch lại trang hiện tại (VD bàn phím ảo bật lên làm đổi layout) */
     private var lastSelectedPosition = -1
 
     private val pageChangeCallback = object : ViewPager2.OnPageChangeCallback() {
         override fun onPageSelected(position: Int) {
             currentUI = getUI(position)
             pageSelectedListener?.invoke(position)
-            // 统一过渡动画：每次跨页切换都对目标页做淡入 + 上滑进入。
-            // 同步执行（不 post）：onPageSelected 时页面已挂载但尚未绘制，此时置透明
-            // 不会出现先显示后消失的闪烁。
-            // 仅在页面位置真正变化时播放：ViewPager2 在布局变化（如软键盘弹出、页面
-            // 内容刷新）后会重新 dispatch 当前页，此时不播放动画避免页面闪烁
+            // Hoạt ảnh chuyển cảnh thống nhất: mỗi lần qua trang khác đều làm mờ
+            // dần + trượt lên cho trang đích.
+            // Chạy đồng bộ (không post): lúc onPageSelected trang đã gắn nhưng
+            // chưa vẽ, đặt trong suốt lúc này sẽ không bị chớp hiện-rồi-mất.
+            // Chỉ phát khi vị trí trang thực sự đổi: ViewPager2 dispatch lại
+            // trang hiện tại khi layout đổi (VD bàn phím ảo bật, nội dung trang
+            // làm mới), lúc đó không phát hoạt ảnh để tránh chớp hình
             if (position != lastSelectedPosition) {
                 currentUI?.contentView?.apply {
                     animate().cancel()
@@ -90,15 +94,15 @@ class UIManager(val context: Context, val pager: ViewPager2) {
     fun init() {
         instance = this
         pager.adapter = UIAdapter()
-        // 不预加载相邻页面：进入某页时只创建当前页，避免相邻页提前创建带来的
-        // inflate/初始化开销（页面在切换时才创建）
+        // Không tải trước trang lân cận: vào trang nào chỉ tạo trang đó, tránh
+        // chi phí inflate/khởi tạo của trang lân cận tạo trước (trang chỉ tạo khi chuyển tới)
         pager.offscreenPageLimit = ViewPager2.OFFSCREEN_PAGE_LIMIT_DEFAULT
-        // 主界面切换动画为上下过渡（垂直方向）
+        // Hoạt ảnh chuyển màn hình chính là chuyển cảnh trên-dưới (chiều dọc)
         pager.orientation = ViewPager2.ORIENTATION_VERTICAL
-        // 禁用滑动手势：页面内垂直滚动内容与滑动切换冲突，仅通过菜单切换
+        // Tắt cử chỉ vuốt: nội dung cuộn dọc trong trang xung đột với vuốt chuyển trang, chỉ chuyển qua menu
         pager.isUserInputEnabled = false
-        // 不保留页面位置状态：Activity 重建后始终从主页开始，
-        // 避免 ViewPager2 恢复上次位置时途经未初始化的页面（如未 setVersion 的 ManageUI）
+        // Không giữ trạng thái vị trí trang: Activity tạo lại luôn bắt đầu từ trang chủ,
+        // tránh ViewPager2 khôi phục vị trí cũ đi qua trang chưa khởi tạo (VD ManageUI chưa setVersion)
         pager.isSaveEnabled = false
         pager.registerOnPageChangeCallback(pageChangeCallback)
     }
@@ -108,16 +112,16 @@ class UIManager(val context: Context, val pager: ViewPager2) {
         if (position < 0) return
         if (ui === currentUI) return
         if (pager.currentItem == position) {
-            // 与当前页位置相同（如启动时的初始页）：仅更新当前 UI
+            // Trùng vị trí trang hiện tại (VD trang khởi động ban đầu): chỉ cập nhật UI hiện tại
             currentUI = ui
         } else {
-            // 跨页切换统一瞬时跳转，过渡动画统一由 onPageSelected 的淡入上滑处理。
-            // 不用平滑滑动：远距跳转时平滑滚动会途经中间页导致重 UI 被逐个创建/回收
+            // Chuyển trang thống nhất nhảy tức thì, hoạt ảnh chuyển cảnh do onPageSelected xử lý.
+            // Không dùng vuốt mượt: nhảy xa mà cuộn mượt sẽ đi qua trang giữa khiến UI nặng bị tạo/hủy lần lượt
             pager.setCurrentItem(position, false)
         }
     }
 
-    /** 获取指定位置的 UI，不存在则创建并执行 onCreate */
+    /** Lấy UI tại vị trí chỉ định, chưa có thì tạo mới rồi gọi onCreate */
     fun getUI(position: Int): FCLCommonUI {
         return uiRegistry[position] ?: factories[position]().also {
             uiRegistry[position] = it
@@ -125,7 +129,7 @@ class UIManager(val context: Context, val pager: ViewPager2) {
         }
     }
 
-    /** 页面被 ViewPager 回收时清出注册表（不保留状态），UI 资源随视图树释放 */
+    /** Xóa khỏi bảng đăng ký khi trang bị ViewPager thu hồi (không giữ trạng thái), tài nguyên UI tự giải phóng theo view tree */
     fun destroyUI(position: Int) {
         uiRegistry[position] = null
     }
@@ -161,7 +165,7 @@ class UIManager(val context: Context, val pager: ViewPager2) {
         override fun getItemViewType(position: Int): Int = position
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
-            // ViewPager2 要求页面直接子 View 必须 MATCH_PARENT
+            // ViewPager2 yêu cầu View con trực tiếp của trang phải MATCH_PARENT
             val container = FrameLayout(parent.context)
             container.layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -174,8 +178,9 @@ class UIManager(val context: Context, val pager: ViewPager2) {
             holder.boundPosition = position
             holder.container.removeAllViews()
             val contentView = getUI(position).contentView
-            // 防御：GapWorker 预取可能将同一 UI 视图挂到其他容器（预取 bind 与正式 bind 竞争），
-            // 先解除旧 parent，避免 addView 抛 "child already has a parent"
+            // Phòng ngừa: GapWorker prefetch có thể gắn cùng 1 view UI vào container
+            // khác (bind prefetch và bind chính thức tranh chấp nhau) — gỡ parent cũ
+            // trước để tránh addView ném lỗi "child already has a parent"
             (contentView.parent as? ViewGroup)?.removeView(contentView)
             holder.container.addView(
                 contentView,

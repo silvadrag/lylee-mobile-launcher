@@ -26,9 +26,9 @@ import com.tungsten.fcllibrary.component.theme.ThemeEngine
 import com.tungsten.fcllibrary.component.view.FCLTextView
 import com.tungsten.fcllibrary.util.LocaleUtils
 
-/** 启动器设置行操作标签：按钮 / 开关 / Spinner / SeekBar / 勾选框按此分发 */
+/** Tag thao tác dòng cài đặt launcher: nút / công tắc / Spinner / SeekBar / checkbox phân theo tag này */
 enum class LauncherSettingTag {
-    // 按钮行
+    // Dòng nút
     CHECK_UPDATE,
     CLEAR_CACHE,
     EXPORT_LOG,
@@ -53,40 +53,40 @@ enum class LauncherSettingTag {
     MENU_ICON_RESET,
     MENU_ICON_SET,
 
-    // 开关行
+    // Dòng công tắc
     SWITCH_AUTO_EXIT,
     SWITCH_IGNORE_NOTCH,
     SWITCH_CLOSE_SKIN_MODEL,
     SWITCH_DISABLE_FULLSCREEN_INPUT,
     SWITCH_ALLOW_SCREENSHOTS,
 
-    // Spinner 行
+    // Dòng Spinner
     SPINNER_LANGUAGE,
     SPINNER_THEME_MODE,
     SPINNER_SOURCE_AUTO,
     SPINNER_SOURCE,
 
-    // SeekBar 行
+    // Dòng SeekBar
     SEEKBAR_VIDEO_VOLUME,
     SEEKBAR_ANIMATION_SPEED,
     SEEKBAR_VIBRATION,
     SEEKBAR_THREADS,
 
-    // 勾选行
+    // Dòng checkbox
     CHECK_AUTO_SOURCE,
     CHECK_AUTO_THREADS
 }
 
 /**
- * 启动器设置页 RecyclerView 适配器。
- * 行类型复用、扁平列表、数据读写手动回写，与版本设置页保持一致。
+ * Adapter RecyclerView của trang cài đặt launcher.
+ * Tái dùng theo loại dòng, list phẳng, đọc/ghi dữ liệu thủ công, nhất quán với trang cài đặt version.
  */
 class LauncherSettingAdapter(
     private val context: Context,
     private val listener: Listener
 ) : RecyclerView.Adapter<LauncherSettingAdapter.Holder>() {
 
-    /** 页面回调：按钮 / 开关 / Spinner / SeekBar / 自动勾选 */
+    /** Callback trang: nút / công tắc / Spinner / SeekBar / tự động tick */
     interface Listener {
         fun onButtonClick(tag: LauncherSettingTag)
         fun onSwitchToggle(tag: LauncherSettingTag, checked: Boolean)
@@ -310,7 +310,7 @@ class LauncherSettingAdapter(
     private sealed class Row {
         open val rowTag: LauncherSettingTag? = null
 
-        /** 行下方的作用描述文案资源，0 表示无描述 */
+        /** Resource text mô tả tác dụng bên dưới dòng, 0 nghĩa là không có mô tả */
         open val descriptionRes: Int = 0
 
         data class SwitchRow(
@@ -375,7 +375,7 @@ class LauncherSettingAdapter(
     }
 
     class Holder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        // 编辑行复用时先移除旧 TextWatcher，避免监听累积
+        // Tái dùng dòng edit thì gỡ TextWatcher cũ trước, tránh tích lũy listener
         var textWatcher: TextWatcher? = null
     }
 
@@ -406,12 +406,12 @@ class LauncherSettingAdapter(
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
-        // 行背景为圆角形状（item 布局中定义）；颜色改为深色卡片色（对齐 PC 版设计
-        // 语言，色块不再铺满主题强调色），静态色值不必再随主题刷新监听
+        // Nền dòng là hình bo góc (định nghĩa trong layout item); màu đổi sang màu card tối (đồng bộ thiết kế
+        // PC, không phủ đặc màu accent theme lên khối màu nữa), màu tĩnh không cần theo dõi theme làm mới nữa
         holder.itemView.backgroundTintList =
             ColorStateList.valueOf(ContextCompat.getColor(context, R.color.card_bg))
         val row = rows[position]
-        // 行下方的作用描述
+        // Mô tả tác dụng bên dưới dòng
         holder.itemView.findViewById<FCLTextView>(R.id.description)?.let { description ->
             if (row.descriptionRes != 0) {
                 description.text = context.getString(row.descriptionRes)
@@ -470,7 +470,7 @@ class LauncherSettingAdapter(
         binding.label.text = context.getString(row.labelRes)
         val adapter = ArrayAdapter(context, R.layout.item_spinner_auto_tint, row.data)
         adapter.setDropDownViewResource(R.layout.item_spinner_dropdown)
-        // 先清 listener 再设 adapter/selection，避免复用行时触发旧监听
+        // Xóa listener trước rồi mới gán adapter/selection, tránh tái dùng dòng kích hoạt listener cũ
         binding.spinner.onItemSelectedListener = null
         binding.spinner.adapter = adapter
         binding.spinner.setSelection(row.selection)
@@ -538,7 +538,7 @@ class LauncherSettingAdapter(
         val auto = row.autoChecked()
         binding.checkAutoSource.setOnCheckedChangeListener(null)
         binding.checkAutoSource.isChecked = auto
-        // 自动/手动源交替显示
+        // Hiện xen kẽ nguồn tự động/thủ công
         binding.sourceAuto.visibility = if (auto) View.VISIBLE else View.GONE
         binding.source.visibility = if (auto) View.GONE else View.VISIBLE
         binding.checkAutoSource.setOnCheckedChangeListener { _, checked ->
@@ -568,7 +568,7 @@ class LauncherSettingAdapter(
     ) {
         val adapter = ArrayAdapter(context, R.layout.item_spinner_auto_tint, data)
         adapter.setDropDownViewResource(R.layout.item_spinner_dropdown)
-        // 先清 listener 再设 adapter/selection，避免复用行时触发旧监听
+        // Xóa listener trước rồi mới gán adapter/selection, tránh tái dùng dòng kích hoạt listener cũ
         spinner.onItemSelectedListener = null
         spinner.adapter = adapter
         spinner.setSelection(selection)

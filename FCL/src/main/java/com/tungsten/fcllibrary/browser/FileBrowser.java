@@ -21,15 +21,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 文件浏览器配置类
- * 支持单选/多选、文件格式过滤、起始目录设置
+ * Lớp cấu hình trình duyệt file
+ * Hỗ trợ chọn đơn/chọn nhiều, lọc định dạng file, đặt thư mục bắt đầu
  */
 public class FileBrowser implements Serializable {
 
     public static final String SELECTED_FILES = "SELECTED_FILES";
 
     /**
-     * 从 Intent 中获取选中的文件列表
+     * Lấy danh sách file đã chọn từ Intent
      */
     public static List<String> getSelectedFiles(Intent data) {
         if (data == null) {
@@ -92,7 +92,7 @@ public class FileBrowser implements Serializable {
     }
 
     /**
-     * @deprecated 使用 FileBrowserLauncher 替代
+     * @deprecated Dùng FileBrowserLauncher thay thế
      */
     @Deprecated
     public void browse(Activity activity, int code, ResultListener.Listener listener) {
@@ -113,7 +113,7 @@ public class FileBrowser implements Serializable {
     }
 
     /**
-     * 回调接口 - 现代化的结果回调
+     * Interface callback - callback kết quả kiểu hiện đại
      */
     public interface Callback {
         void onResult(@Nullable List<String> files);
@@ -165,7 +165,7 @@ public class FileBrowser implements Serializable {
         }
 
         /**
-         * 设置结果回调（现代化方式）
+         * Đặt callback kết quả (cách hiện đại)
          */
         public Builder setCallback(Callback callback) {
             fileBrowser.callback = callback;

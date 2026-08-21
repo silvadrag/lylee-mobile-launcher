@@ -53,7 +53,7 @@ class VersionListPage(context: Context?, id: Int, resId: Int) : FCLPage(context,
         binding = PageVersionListBinding.bind(contentView)
         binding.refresh.setOnClickListener(this)
         binding.newProfile.setOnClickListener(this)
-        // 版本刷新监听：attach 恢复、detach 注销，防止静态列表持有已销毁页面（与 DownloadUI 一致）
+        // Listener làm mới version: khôi phục lúc attach, hủy lúc detach, tránh list tĩnh giữ trang đã hủy (nhất quán với DownloadUI)
         val listener = Consumer<Profile> { loadVersions(it) }
         versionsListener = listener
         registerVersionsListener(listener)
@@ -63,7 +63,7 @@ class VersionListPage(context: Context?, id: Int, resId: Int) : FCLPage(context,
                     unregisterVersionsListener(it)
                     registerVersionsListener(it)
                 }
-                // 切换 Profile 时重载版本列表（不依赖刷新事件）
+                // Tải lại list version khi đổi Profile (không phụ thuộc sự kiện làm mới)
                 profileCollectJob = activity.lifecycleScope.launch {
                     Profiles.selectedProfile.collect { profile ->
                         if (profile != null) loadVersions(profile)
@@ -74,8 +74,8 @@ class VersionListPage(context: Context?, id: Int, resId: Int) : FCLPage(context,
             override fun onViewDetachedFromWindow(v: View) {
                 versionsListener?.let { unregisterVersionsListener(it) }
                 profileCollectJob?.cancel()
-                // 移除挂到 profile 单例上的高亮监听，避免页面销毁后仍被回调
-                // （attach 时 collect 立即发射当前值，会重新 loadVersions 注册）
+                // Gỡ listener nổi bật gắn trên profile đơn lẻ, tránh bị gọi lại sau khi trang đã hủy
+                // (lúc attach collect sẽ phát ngay giá trị hiện tại, sẽ đăng ký lại loadVersions)
                 versionHighlightListener?.let { highlightedProfile?.removeSelectedVersionListener(it) }
                 versionHighlightListener = null
                 highlightedProfile = null
@@ -158,7 +158,7 @@ class VersionListPage(context: Context?, id: Int, resId: Int) : FCLPage(context,
     }
 
     private fun loadVersions(profile: Profile) {
-        // 终止上一个加载（切换 profile 时旧版本加载立即取消，避免过期结果覆盖）
+        // Dừng lần tải trước (đổi profile thì hủy ngay việc tải version cũ, tránh kết quả quá hạn đè lên)
         loadJob?.cancel()
         var job: Job? = null
         job = MainActivity.getInstance().lifecycleScope.launch {
@@ -176,7 +176,7 @@ class VersionListPage(context: Context?, id: Int, resId: Int) : FCLPage(context,
                         .map { version: Version ->
                             ensureActive()
                             val game = profile.repository.getGameVersion(version.id)
-                            // 一次解析，analyzer 与图标判断复用（getVersionIconImage 不再重复 resolve）
+                            // Phân tích 1 lần, analyzer và xác định icon dùng chung (getVersionIconImage không resolve lặp lại nữa)
                             val resolved =
                                 profile.repository.getResolvedPreservingPatchesVersion(version.id)
                             val libraries =
@@ -227,8 +227,8 @@ class VersionListPage(context: Context?, id: Int, resId: Int) : FCLPage(context,
                                 )
                             }
                             val icon = repository.getVersionIconImage(analyzer, version.id)
-                            // Mod 数统计在 IO 线程并行流里完成（避免滑动时主线程目录 IO）；
-                            // use 关闭 DirectoryStream，否则文件描述符泄漏（CloseGuard 报资源未关闭）
+                            // Đếm số Mod thực hiện trong parallel stream ở luồng IO (tránh IO thư mục trên luồng chính lúc vuốt);
+                            // use để đóng DirectoryStream, không thì rò rỉ file descriptor (CloseGuard báo tài nguyên chưa đóng)
                             val modCount = runCatching {
                                 Files.list(repository.getModsDirectory(version.id)).use { stream ->
                                     stream.filter { it.isRegularFile() }.count().toInt()
@@ -245,7 +245,7 @@ class VersionListPage(context: Context?, id: Int, resId: Int) : FCLPage(context,
                         }
                         .collect(Collectors.toList())
                 }
-                // 加载期间可能已切换 profile 或重新加载，放弃过期结果
+                // Trong lúc tải có thể đã đổi profile hoặc tải lại, bỏ kết quả quá hạn
                 if (loadJob !== job) return@launch
                 children = result
                 if (profile == getSelectedProfile()) {
@@ -270,7 +270,7 @@ class VersionListPage(context: Context?, id: Int, resId: Int) : FCLPage(context,
                         binding.versionList.scrollToPosition(children.indexOf(selected))
                     }
                 }
-                // 版本选中高亮：监听 profile 版本变化时更新（替代 fakefx bind）
+                // Nổi bật version đang chọn: cập nhật khi lắng nghe version của profile đổi (thay cho fakefx bind cũ)
                 versionHighlightListener?.let { highlightedProfile?.removeSelectedVersionListener(it) }
                 val highlightListener = Runnable {
                     children.forEach { item ->

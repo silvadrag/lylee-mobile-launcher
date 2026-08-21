@@ -14,7 +14,7 @@
     android:stateListAnimator="@xml/anim_scale"
     app:auto_tint="true">
 
-    <!-- 内部线性排列：减少 ConstraintLayout 约束求解开销（列表高频 measure） -->
+    <!-- Sắp xếp tuyến tính bên trong: giảm chi phí giải ràng buộc của ConstraintLayout (list measure tần suất cao) -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"

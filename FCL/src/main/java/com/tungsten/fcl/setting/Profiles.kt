@@ -23,17 +23,17 @@ object Profiles {
      * Called when it's ready to load profiles from [ConfigHolder.config].
      */
     private val holder = WeakListenerHolder()
-    /** Profile 列表（Repository 单例，修改统一走 addProfile/removeProfile 以触发保存与选中项校验） */
+    /** Danh sách Profile (Repository đơn lẻ, sửa đổi đều qua addProfile/removeProfile để kích hoạt lưu và kiểm tra mục đang chọn) */
     @JvmStatic
     val profiles = mutableListOf<Profile>()
     private val _selectedProfile = MutableStateFlow<Profile?>(null)
-    /** 当前选中的 Profile（Repository 单例状态，Java 侧访问 getSelectedProfileFlow()） */
+    /** Profile đang chọn (trạng thái Repository đơn lẻ, phía Java truy cập qua getSelectedProfileFlow()) */
     @get:JvmName("getSelectedProfileFlow")
     val selectedProfile: StateFlow<Profile?> = _selectedProfile.asStateFlow()
-    /** 选中 Profile 变化的监听者（setter 同步通知，调用线程即回调线程） */
+    /** Listener khi Profile đang chọn đổi (setter thông báo đồng bộ, luồng gọi cũng là luồng callback) */
     private val selectedProfileListeners = mutableListOf<Runnable>()
     private val _selectedVersion = MutableStateFlow<String?>(null)
-    /** 当前选中 Profile 的选中版本（Repository 单例状态，Java 侧访问 getSelectedVersionFlow()） */
+    /** Version đang chọn của Profile đang chọn (trạng thái Repository đơn lẻ, phía Java truy cập qua getSelectedVersionFlow()) */
     @get:JvmName("getSelectedVersionFlow")
     val selectedVersion: StateFlow<String?> = _selectedVersion.asStateFlow()
     private var selectedVersionProfile: Profile? = null
@@ -41,7 +41,7 @@ object Profiles {
     private val versionsListeners: MutableList<Consumer<Profile>> =
         ArrayList(4)
 
-    /** 添加 Profile（触发配置保存、默认补全与选中项校验） */
+    /** Thêm Profile (kích hoạt lưu cấu hình, bù mặc định và kiểm tra mục đang chọn) */
     @JvmStatic
     fun addProfile(profile: Profile) {
         registerProfileSave(profile)
@@ -49,7 +49,7 @@ object Profiles {
         onProfilesChanged()
     }
 
-    /** 移除 Profile（触发配置保存、默认补全与选中项校验） */
+    /** Gỡ Profile (kích hoạt lưu cấu hình, bù mặc định và kiểm tra mục đang chọn) */
     @JvmStatic
     fun removeProfile(profile: Profile) {
         profiles.remove(profile)
@@ -59,7 +59,7 @@ object Profiles {
     private fun onProfilesChanged() {
         updateProfileStorages()
         checkProfiles()
-        // 列表变化时校验选中项仍在列表中（原 fakefx 列表监听逻辑）
+        // Kiểm tra mục đang chọn vẫn còn trong list khi list đổi (logic listener list fakefx cũ)
         val current = _selectedProfile.value
         if (current != null && !profiles.contains(current)) {
             setSelectedProfileInternal(profiles[0])
@@ -84,7 +84,7 @@ object Profiles {
         }
     }
 
-    /** 字段变化（全局设置/选中版本/目录/名称）时触发配置保存 */
+    /** Kích hoạt lưu cấu hình khi field đổi (cài đặt toàn cục/version đang chọn/thư mục/tên) */
     private fun registerProfileSave(profile: Profile) {
         profile.onChanged = { updateProfileStorages() }
     }
@@ -133,7 +133,7 @@ object Profiles {
         isFirstRefresh = false
     }
 
-    /** 设置选中 Profile（统一走校验、保存与版本绑定逻辑，同步通知监听者） */
+    /** Đặt Profile đang chọn (đều qua logic kiểm tra, lưu và gắn version, thông báo listener đồng bộ) */
     private fun setSelectedProfileInternal(profile: Profile) {
         if (_selectedProfile.value === profile) return
         _selectedProfile.value = profile
@@ -158,10 +158,10 @@ object Profiles {
 //                    profile.repository.refreshVersionsAsync().start()
             }
         }
-        // 复制后遍历：回调内可能增删监听，避免并发修改
+        // Sao chép rồi duyệt: callback có thể thêm/xóa listener, tránh sửa đổi đồng thời
         selectedProfileListeners.toList().forEach { listener -> listener.run() }
-        // 仅未加载版本的 Profile 切换时才刷新（refreshVersions 会清空解析/jar 缓存，
-        // 已加载的 Profile 保留缓存以加快切换；版本变化由刷新事件与手动刷新驱动）
+        // Chỉ làm mới khi chuyển Profile chưa tải version (refreshVersions sẽ xóa cache phân tích/jar,
+        // Profile đã tải giữ cache để chuyển nhanh hơn; version đổi do sự kiện làm mới và làm mới thủ công điều khiển)
         if (!isFirstRefresh && !profile.repository.isLoaded) {
             profile.repository.refreshVersionsAsync().start()
         }
@@ -178,7 +178,7 @@ object Profiles {
         setSelectedProfileInternal(profile)
     }
 
-    /** 注册选中 Profile 变化监听（Java 友好，内部基于 StateFlow collect） */
+    /** Đăng ký listener khi Profile đang chọn đổi (thân thiện Java, bên trong dựa trên StateFlow collect) */
     @JvmStatic
     fun addSelectedProfileListener(listener: Runnable) {
         selectedProfileListeners.add(listener)
@@ -189,7 +189,7 @@ object Profiles {
         selectedProfileListeners.remove(listener)
     }
 
-    /** 跟随指定 Profile 的版本属性（原 fakefx bind 语义） */
+    /** Theo thuộc tính version của Profile chỉ định (ngữ nghĩa bind fakefx cũ) */
     private fun bindSelectedVersion(profile: Profile) {
         selectedVersionProfile?.let { old ->
             selectedVersionListener?.let { old.removeSelectedVersionListener(it) }

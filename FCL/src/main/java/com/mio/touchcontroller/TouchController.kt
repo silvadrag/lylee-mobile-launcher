@@ -31,10 +31,10 @@ class TouchController(
     private var nextPointerId = 1
 
     //moveView
-    // 存储每个手指的初始位置（key = pointerId）
+    // Lưu vị trí ban đầu của từng ngón tay (key = pointerId)
     private val initialPoints = SparseArray<PointF>()
 
-    // 存储每个手指的上次位置（用于计算增量位移）
+    // Lưu vị trí lần trước của từng ngón tay (dùng để tính độ dịch chuyển tăng dần)
     private val lastPoints = SparseArray<PointF>()
 
     init {
@@ -123,7 +123,7 @@ class TouchController(
 
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
-                // 新手指按下，记录初始位置和上次位置
+                // Ngón tay mới nhấn xuống, ghi lại vị trí ban đầu và vị trí lần trước
                 val x = event.getX(pointerIndex)
                 val y = event.getY(pointerIndex)
                 initialPoints.put(pointerId, PointF(x, y))
@@ -138,7 +138,7 @@ class TouchController(
                     if (initialPoint != null && lastPoint != null) {
                         val deltaX = event.getX(i) - lastPoint.x
                         val deltaY = event.getY(i) - lastPoint.y
-                        // 更新上次位置
+                        // Cập nhật vị trí lần trước
                         lastPoint.x = event.getX(i)
                         lastPoint.y = event.getY(i)
                         client.moveView(true, deltaY / height, deltaX / width)

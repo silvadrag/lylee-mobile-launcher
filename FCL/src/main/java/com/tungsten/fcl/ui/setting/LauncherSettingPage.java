@@ -56,8 +56,8 @@ import java.util.function.IntConsumer;
 import java.util.logging.Level;
 
 /**
- * 启动器设置页。设置项由 {@link LauncherSettingAdapter} 以 RecyclerView 行级复用渲染，
- * 页面只负责对话框、文件选择与权限等业务逻辑。
+ * Trang cài đặt launcher. Mục cài đặt do {@link LauncherSettingAdapter} render theo dòng RecyclerView tái dùng,
+ * trang chỉ phụ trách logic nghiệp vụ như dialog, chọn file, quyền truy cập.
  */
 public class LauncherSettingPage extends FCLPage implements LauncherSettingAdapter.Listener {
 
@@ -74,7 +74,7 @@ public class LauncherSettingPage extends FCLPage implements LauncherSettingAdapt
         PageSettingLauncherBinding binding = PageSettingLauncherBinding.bind(getContentView());
         LauncherSettingAdapter adapter = new LauncherSettingAdapter(getContext(), this);
         binding.settingList.setLayoutManager(new LinearLayoutManager(getContext()));
-        // 行间用间距分隔（ItemDecoration），最后一行不加
+        // Các dòng cách nhau bằng khoảng trống (ItemDecoration), dòng cuối không thêm
         binding.settingList.addItemDecoration(new SpacingItemDecoration((int) (8 * getContext().getResources().getDisplayMetrics().density)));
         binding.settingList.setAdapter(adapter);
         adapter.rebuild();
@@ -413,7 +413,7 @@ public class LauncherSettingPage extends FCLPage implements LauncherSettingAdapt
     public void onSpinnerSelect(LauncherSettingTag tag, int position) {
         switch (tag) {
             case SPINNER_LANGUAGE:
-                // 初始化/复用 bind 的回调与当前值相同，忽略；实际切换才生效
+                // Callback của bind khởi tạo/tái dùng giống giá trị hiện tại thì bỏ qua; chỉ khi thực sự đổi mới có hiệu lực
                 if (position == LocaleUtils.getLanguage(getContext())) return;
                 LocaleUtils.changeLanguage(getContext(), position);
                 LocaleUtils.setLanguage(getContext());
@@ -433,8 +433,8 @@ public class LauncherSettingPage extends FCLPage implements LauncherSettingAdapt
                     mode = position == 1 ? AppCompatDelegate.MODE_NIGHT_NO : AppCompatDelegate.MODE_NIGHT_YES;
                 }
                 AppCompatDelegate.setDefaultNightMode(mode);
-                // configChanges 含 uiMode 时 AppCompat 不重建 Activity 也不更新 Resources 配置，
-                // 亮暗切换需显式刷新主题控件与背景（ThemeEngine.isNightMode 读 themeMode 设置）
+                // Khi configChanges có uiMode, AppCompat không tạo lại Activity cũng không cập nhật cấu hình Resources,
+                // đổi sáng/tối cần làm mới control theme và nền tường minh (ThemeEngine.isNightMode đọc cài đặt themeMode)
                 ThemeEngine.getInstance().refreshTheme();
                 break;
             case SPINNER_SOURCE_AUTO:

@@ -72,7 +72,7 @@ public class RemoteModDownloadPage extends FCLPage implements View.OnClickListen
 
         create();
 
-        // 原 onStart 逻辑：页面构造即填充内容并加载依赖
+        // Logic onStart cũ: trang khởi tạo là điền nội dung và tải dependency luôn
         name.setText(modVersion.getName());
         tag.setText(ModVersionAdapter.getTag(getContext(), modVersion));
         date.setText(ModVersionAdapter.FORMATTER.format(modVersion.getDatePublished()));

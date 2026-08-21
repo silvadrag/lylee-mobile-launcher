@@ -29,7 +29,7 @@ public class RemoteModpackPage extends ModpackPage {
         this.updateVersion = updateVersion;
         this.manifest = manifest;
 
-        // 原 onStart 逻辑：页面构造即解析服务端模组包
+        // Logic onStart cũ: trang khởi tạo là phân tích modpack phía server luôn
         progressBar.setVisibility(View.VISIBLE);
         layout.setVisibility(View.GONE);
 

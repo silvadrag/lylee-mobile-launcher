@@ -8,7 +8,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * ModTranslations 后台预加载（preload）的验证：幂等性与数据一致性。
+ * Kiểm chứng việc preload nền của ModTranslations: tính idempotent và nhất quán dữ liệu.
  */
 @RunWith(AndroidJUnit4::class)
 class ModTranslationsTest {
@@ -16,10 +16,10 @@ class ModTranslationsTest {
     @Test
     fun preloadIsIdempotent() {
         val before = ModTranslations.MOD.getMods()
-        // 预加载与重复预加载不抛异常
+        // Preload và preload lặp lại không ném exception
         ModTranslations.MOD.preload()
         ModTranslations.MOD.preload()
-        // 多次调用后数据实例一致（内部缓存复用）
+        // Instance dữ liệu nhất quán sau nhiều lần gọi (tái dùng cache nội bộ)
         assertSame(before, ModTranslations.MOD.getMods())
     }
 
@@ -33,7 +33,7 @@ class ModTranslationsTest {
             ModTranslations.MODPACK,
             ModTranslations.getTranslationsByRepositoryType(RemoteModRepository.Type.MODPACK)
         )
-        // 其他类型使用空翻译
+        // Loại khác dùng bản dịch rỗng
         assertEquals(
             ModTranslations.EMPTY,
             ModTranslations.getTranslationsByRepositoryType(RemoteModRepository.Type.RESOURCE_PACK)

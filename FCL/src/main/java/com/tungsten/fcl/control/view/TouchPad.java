@@ -153,7 +153,7 @@ public class TouchPad extends View {
                 if (event.getAction() == MotionEvent.ACTION_MOVE) {
                     gameMenu.getInput().setPointer((int) event.getRawX(), (int) event.getRawY());
                 }
-                //防止被外接鼠标触发
+                //tránh bị chuột ngoài kích hoạt
                 return true;
             }
             if (gameMenu.getMenuSetting().getMouseMoveMode() == MouseMoveMode.CLICK) {

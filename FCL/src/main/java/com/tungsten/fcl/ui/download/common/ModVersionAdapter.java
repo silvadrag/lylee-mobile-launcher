@@ -62,8 +62,8 @@ public class ModVersionAdapter extends FCLAdapter {
             viewHolder.date = view.findViewById(R.id.date);
             viewHolder.parent.setStateListAnimator(AnimatorInflater.loadStateListAnimator(getContext(), com.tungsten.fcl.R.xml.anim_scale));
             view.setTag(viewHolder);
-            // 仅首次创建时播放滑入动画：convertView 复用（滚动/布局变化重绑定）时不重播，
-            // 避免截图等异步加载完成触发布局变化导致列表动画重复
+            // Chỉ phát hoạt ảnh trượt vào lúc tạo lần đầu: khi convertView tái dùng (cuộn/đổi layout gắn lại) không phát lại,
+            // tránh việc tải bất đồng bộ (VD ảnh chụp màn hình) hoàn tất kích hoạt đổi layout khiến hoạt ảnh list lặp lại
             AnimUtil.playTranslationX(view, ThemeEngine.getInstance().getTheme().getAnimationSpeed() * 30L, -100f, 0f).start();
         } else {
             viewHolder = (ViewHolder) view.getTag();

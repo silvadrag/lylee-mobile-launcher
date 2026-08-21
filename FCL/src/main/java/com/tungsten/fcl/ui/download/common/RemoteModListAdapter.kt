@@ -41,7 +41,7 @@ class RemoteModListAdapter(
 
     init {
         MainActivity.getInstance().lifecycleScope.launch(Dispatchers.Default) {
-            // 后台预热 Mod 翻译数据，避免首次 bind 时在主线程解析大文件造成卡顿
+            // Làm nóng dữ liệu dịch Mod ở nền, tránh lần bind đầu phân tích file lớn ở luồng chính gây giật
             ModTranslations.getTranslationsByRepositoryType(downloadPage.repository.getType())
                 .preload()
             if (downloadPage.pageId == DownloadUI.PAGE_ID_DOWNLOAD_MOD) {
@@ -75,12 +75,12 @@ class RemoteModListAdapter(
     }
 
     companion object {
-        /** 缓存占位位图（内容只读，多视图共享安全），避免每次 bind 重新分配与绘制 */
+        /** Cache bitmap placeholder (nội dung chỉ đọc, chia sẻ an toàn giữa nhiều view), tránh mỗi lần bind phải cấp phát và vẽ lại */
         private var placeholderBitmap: Bitmap? = null
     }
 
-    /** 固定 90×90 内在尺寸的占位图（与 override 后图片尺寸一致，避免加载完成时
-     *  drawable 内在尺寸变化触发 requestLayout 导致列表重排） */
+    /** Ảnh placeholder kích thước cố định 90×90 (khớp kích thước ảnh sau khi override, tránh khi tải xong
+     *  kích thước nội tại drawable đổi kích hoạt requestLayout khiến list sắp xếp lại) */
     private fun fixedIconPlaceholder(): Drawable {
         var bitmap = placeholderBitmap
         if (bitmap == null) {
@@ -117,9 +117,9 @@ class RemoteModListAdapter(
                 remoteMod
             )
         }
-        // 固定 90×90 占位（与 override 后图片内在尺寸一致）：图片加载完成替换时
-        // drawable 内在尺寸不变，不触发 requestLayout，避免列表全局重排导致
-        // 其他 item 的 marquee 文本被重置
+        // Placeholder cố định 90×90 (khớp kích thước nội tại ảnh sau khi override): khi ảnh tải xong thay thế
+        // kích thước nội tại drawable không đổi, không kích hoạt requestLayout, tránh việc list sắp xếp lại toàn bộ khiến
+        // text marquee của item khác bị reset
         binding.icon.setImageDrawable(fixedIconPlaceholder())
         Glide.with(binding.icon)
             .load(remoteMod.iconUrl)

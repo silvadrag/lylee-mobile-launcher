@@ -9,19 +9,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 启动前过滤/替换游戏版本 JSON 中的依赖库。
+ * Lọc/thay thư viện phụ thuộc trong JSON version game trước khi khởi chạy.
  * <p>
- * 过滤目的：
+ * Mục đích lọc:
  * <ul>
- *   <li>移除 LWJGL 库——游戏运行时改用 FCL 自带的 LWJGL（app_runtime/lwjgl/3.3.3、3.4.1）</li>
- *   <li>移除 LWJGL2 时代的输入/直播辅助库（jinput-platform、twitch-platform），Android 上由 FCL 输入桥取代</li>
- *   <li>替换与 Java 17+ / 新版 Android 不兼容的旧版库（asm、jna、oshi）为已适配的版本</li>
+ *   <li>Gỡ thư viện LWJGL — lúc chạy game dùng LWJGL đi kèm FCL (app_runtime/lwjgl/3.3.3, 3.4.1)</li>
+ *   <li>Gỡ thư viện hỗ trợ input/livestream thời LWJGL2 (jinput-platform, twitch-platform), trên Android đã có FCL input bridge thay thế</li>
+ *   <li>Thay thư viện cũ không tương thích Java 17+ / Android mới (asm, jna, oshi) bằng bản đã tương thích</li>
  * </ul>
  */
 public class LibFilter {
 
-    // asm-all 5.0.4 是最后一个聚合 jar；asm < 5 无法解析 Java 17 编译的 class 文件，
-    // 旧整合包（1.7.x/1.8.x 的 Forge）常携带 asm 4.x，需整体替换
+    // asm-all 5.0.4 là jar gộp cuối cùng; asm < 5 không phân tích được class file biên dịch bằng Java 17,
+    // modpack cũ (Forge 1.7.x/1.8.x) thường kèm asm 4.x, cần thay toàn bộ
     private static final String ASM_ALL_5_0_4_STRING = "{\n" +
             "      \"name\": \"org.ow2.asm:asm-all:5.0.4\",\n" +
             "      \"downloads\": {\n" +
@@ -32,7 +32,7 @@ public class LibFilter {
             "        }\n" +
             "      }\n" +
             "    }";
-    // JNA 5.13 起支持新版 Android（API 30+ 的 System.loadLibrary 行为变更），旧版本会启动失败
+    // JNA từ 5.13 mới hỗ trợ Android mới (hành vi System.loadLibrary đổi từ API 30+), bản cũ sẽ lỗi lúc khởi chạy
     private static final String JNA_5_13_STRING = "{\n" +
             "      \"name\": \"net.java.dev.jna:jna:5.13.0\",\n" +
             "      \"downloads\": {\n" +
@@ -43,7 +43,7 @@ public class LibFilter {
             "        }\n" +
             "      }\n" +
             "    }";
-    // oshi-core 6.2 在 Android/Java 17 环境下获取系统信息异常，6.3 修复
+    // oshi-core 6.2 lấy thông tin hệ thống bị lỗi trên môi trường Android/Java 17, đã sửa ở 6.3
     private static final String OSHI_6_3_STRING = "{\n" +
             "      \"name\": \"com.github.oshi:oshi-core:6.3.0\",\n" +
             "      \"downloads\": {\n" +
@@ -60,14 +60,14 @@ public class LibFilter {
     private static final Library OSHI_6_3 = GSON.fromJson(OSHI_6_3_STRING, Library.class);
 
     /**
-     * 过滤版本依赖，默认跳过 LWJGL 库
+     * Lọc dependency của version, mặc định bỏ qua thư viện LWJGL
      */
     public static Version filter(Version version) {
         return version.setLibraries(filterLibs(version.getLibraries(), true));
     }
 
     /**
-     * 过滤版本依赖，skipLwjgl 控制是否移除 LWJGL 库
+     * Lọc dependency của version, skipLwjgl quyết định có gỡ thư viện LWJGL hay không
      */
     public static Version filter(Version version, boolean skipLwjgl) {
         return version.setLibraries(filterLibs(version.getLibraries(), skipLwjgl));
@@ -76,27 +76,27 @@ public class LibFilter {
     public static List<Library> filterLibs(List<Library> libraries, boolean skipLwjgl) {
         ArrayList<Library> newLibraries = new ArrayList<>();
         for (Library library : libraries) {
-            // 过滤 LWJGL 官方库（org.lwjgl:* / org.lwjgl.lwjgl:*）
+            // Lọc thư viện LWJGL chính thức (org.lwjgl:* / org.lwjgl.lwjgl:*)
             if (skipLwjgl && library.getName().contains("org.lwjgl"))
                 continue;
-            // jinput-platform / twitch-platform 是 LWJGL2 的输入与直播依赖，Android 上由 FCL 输入桥取代
+            // jinput-platform / twitch-platform là dependency input và livestream của LWJGL2, trên Android đã có FCL input bridge thay thế
             if (!library.getName().contains("jinput-platform") && !library.getName().contains("twitch-platform")) {
                 String[] version = library.getName().split(":")[2].split("\\.");
                 if (library.getArtifactId().equals("asm-all") && Integer.parseInt(version[0]) < 5) {
-                    // asm < 5 无法解析 Java 17 的 class 文件，替换为 5.0.4
+                    // asm < 5 không phân tích được class file Java 17, thay bằng 5.0.4
                     newLibraries.add(ASM_ALL_5_0_4);
                 } else if (library.getName().startsWith("net.java.dev.jna:jna:")) {
                     if (Integer.parseInt(version[0]) >= 5 && Integer.parseInt(version[1]) >= 13) {
                         newLibraries.add(library);
                     } else {
-                        // jna < 5.13 不兼容新版 Android，替换为 5.13.0
+                        // jna < 5.13 không tương thích Android mới, thay bằng 5.13.0
                         newLibraries.add(JNA_5_13);
                     }
                 } else if (library.getName().startsWith("com.github.oshi:oshi-core:")) {
                     if (Integer.parseInt(version[0]) != 6 || Integer.parseInt(version[1]) != 2) {
                         newLibraries.add(library);
                     } else {
-                        // oshi-core 6.2 在 Android 上获取系统信息异常，替换为 6.3.0
+                        // oshi-core 6.2 lấy thông tin hệ thống bị lỗi trên Android, thay bằng 6.3.0
                         newLibraries.add(OSHI_6_3);
                     }
                 } else {

@@ -17,8 +17,8 @@ import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * Profile 重构（fakefx property → 普通类型字段 + 监听回调）的验证：
- * 序列化/反序列化、selectedVersion 校验与通知、游戏目录切换。
+ * Kiểm chứng việc tái cấu trúc Profile (fakefx property → field kiểu thường + callback lắng nghe):
+ * Serialize/deserialize, kiểm tra và thông báo selectedVersion, chuyển đổi thư mục game.
  */
 @RunWith(AndroidJUnit4::class)
 class ProfileTest {
@@ -63,7 +63,7 @@ class ProfileTest {
         assertEquals(2048, restored.globalVersionSetting.maxMemory)
         assertEquals("1.2.3.4", restored.globalVersionSetting.serverIp)
         assertFalse(restored.globalVersionSetting.isUsesGlobal)
-        // 反序列化时名称固定为 "Default"（Serializer 不持久化 name）
+        // Tên cố định là "Default" khi deserialize (Serializer không lưu bền name)
         assertEquals("Default", restored.name)
     }
 
@@ -76,7 +76,7 @@ class ProfileTest {
         try {
             profile.selectedVersion = "1.0"
             assertEquals(1, notified.get())
-            // 同值不通知
+            // Giá trị giống nhau thì không thông báo
             profile.selectedVersion = "1.0"
             assertEquals(1, notified.get())
             profile.selectedVersion = "2.0"
@@ -88,7 +88,7 @@ class ProfileTest {
         assertEquals(2, notified.get())
     }
 
-    /** 回调内增删监听不崩溃（遍历前复制列表） */
+    /** Thêm/xóa listener trong callback không crash (sao chép list trước khi duyệt) */
     @Test
     fun listenerCanRemoveItselfDuringNotification() {
         val profile = Profile("Test", tempDir)
@@ -105,7 +105,7 @@ class ProfileTest {
         assertEquals(1, otherCount.get())
     }
 
-    /** repository 未加载时不校验 selectedVersion */
+    /** Không kiểm tra selectedVersion khi repository chưa tải */
     @Test
     fun selectedVersionKeptWhenRepositoryNotLoaded() {
         val profile = Profile("Test", tempDir)
@@ -113,7 +113,7 @@ class ProfileTest {
         assertEquals("ghost", profile.selectedVersion)
     }
 
-    /** 加载后选中不存在的版本会回退到第一个版本 */
+    /** Sau khi tải, chọn version không tồn tại sẽ về version đầu tiên */
     @Test
     fun selectedVersionInvalidFallsBackToFirst() {
         writeVersion("1.0")
@@ -124,7 +124,7 @@ class ProfileTest {
         assertEquals("1.0", profile.selectedVersion)
     }
 
-    /** 加载后无任何版本时，选中不存在的版本被清空为 null */
+    /** Sau khi tải mà không có version nào, chọn version không tồn tại sẽ bị xóa về null */
     @Test
     fun selectedVersionInvalidClearedWhenNoVersions() {
         val profile = Profile("Test", tempDir)
@@ -134,7 +134,7 @@ class ProfileTest {
         assertNull(profile.selectedVersion)
     }
 
-    /** 有效版本不受校验影响 */
+    /** Version hợp lệ không bị ảnh hưởng bởi việc kiểm tra */
     @Test
     fun selectedVersionValidKept() {
         writeVersion("1.0")
@@ -144,7 +144,7 @@ class ProfileTest {
         assertEquals("1.0", profile.selectedVersion)
     }
 
-    /** 切换游戏目录后仓库指向新目录 */
+    /** Sau khi đổi thư mục game, repository trỏ tới thư mục mới */
     @Test
     fun gameDirSwitchChangesRepositoryDirectory() {
         val dir1 = File(tempDir, "dir1")

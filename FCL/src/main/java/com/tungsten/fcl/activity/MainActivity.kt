@@ -117,7 +117,7 @@ class MainActivity : FCLActivity(), OnSelectListener, View.OnClickListener {
     private var rightMenuWidth = 0
     private var skinViewerWidth = 0
 
-    /** 右菜单显示/隐藏手势：双指在 right_menu 区域内水平滑动切换（左滑显示、右滑隐藏），不消费事件 */
+    /** Cử chỉ hiện/ẩn menu phải: vuốt ngang 2 ngón trong vùng right_menu để chuyển (vuốt trái hiện, vuốt phải ẩn), không tiêu thụ sự kiện */
     private var twoFingerStartX = 0f
     private var twoFingerStartY = 0f
     private var secondFingerStartX = 0f
@@ -169,7 +169,7 @@ class MainActivity : FCLActivity(), OnSelectListener, View.OnClickListener {
         if (!ConfigHolder.isInit()) {
             try {
                 ConfigHolder.init()
-                //当强制关闭进程时，不会经过SplashActivity，此时需要重新初始化
+                //Khi tiến trình bị buộc tắt, sẽ không đi qua SplashActivity, lúc này cần khởi tạo lại
                 RendererManager.init(this@MainActivity)
             } catch (e: IOException) {
                 LOG.log(Level.WARNING, e.message)
@@ -232,13 +232,13 @@ class MainActivity : FCLActivity(), OnSelectListener, View.OnClickListener {
                     }
                 }
                 uiManager.init()
-                // 滑动切换页面时同步左侧菜单高亮与标题（复用 setSelected 触发 onSelect 的机制）
+                // Đồng bộ nổi bật menu trái và tiêu đề khi vuốt chuyển trang (tái dùng cơ chế setSelected kích hoạt onSelect)
                 uiManager.pageSelectedListener = { position ->
                     when (position) {
                         0 -> {
                             refreshMenuView(home)
                             home.setSelected(true)
-                            // 主页重建/重新进入时应用皮肤位置状态（right_menu 隐藏则固定）
+                            // Áp trạng thái vị trí skin khi trang chủ tạo lại/vào lại (right_menu ẩn thì cố định)
                             fixSkinViewerPosition(binding.rightMenu.visibility != View.VISIBLE)
                         }
 
@@ -283,7 +283,7 @@ class MainActivity : FCLActivity(), OnSelectListener, View.OnClickListener {
                         }
                     }
                 }
-                // 点击左侧菜单项：始终播放选中动画（已选中时重复点击也能触发），选中与切换逻辑沿用 setSelected
+                // Bấm mục menu trái: luôn phát hoạt ảnh chọn (bấm lại khi đã chọn vẫn kích hoạt), logic chọn/chuyển vẫn theo setSelected
                 listOf(home, lyleeCobblemon, manage, download, controller, multiplayer, setting).forEach { menu ->
                     menu.setOnClickListener {
                         playMenuAnim(menu)
@@ -355,10 +355,10 @@ class MainActivity : FCLActivity(), OnSelectListener, View.OnClickListener {
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        // 仅分析手势（不消费事件），用于右菜单显示/隐藏
+        // Chỉ phân tích cử chỉ (không tiêu thụ sự kiện), dùng để hiện/ẩn menu phải
         when (ev.actionMasked) {
             MotionEvent.ACTION_POINTER_DOWN -> {
-                // 恰好两根手指按下时记录两指起始位置
+                // Đúng 2 ngón chạm xuống thì ghi lại vị trí bắt đầu của 2 ngón
                 if (ev.pointerCount == 2) {
                     twoFingerStartX = ev.getX(0)
                     twoFingerStartY = ev.getY(0)
@@ -378,14 +378,14 @@ class MainActivity : FCLActivity(), OnSelectListener, View.OnClickListener {
                     val startCenterY = (twoFingerStartY + secondFingerStartY) / 2
                     val dx = centerX - startCenterX
                     val dy = centerY - startCenterY
-                    // 水平位移超过阈值且为主导方向时触发，一次手势只触发一次
+                    // Kích hoạt khi độ lệch ngang vượt ngưỡng và là hướng chủ đạo, mỗi cử chỉ chỉ kích hoạt 1 lần
                     if (abs(dx) > ViewConfiguration.get(this).scaledTouchSlop * 3f && abs(dx) > abs(
                             dy
                         )
                     ) {
                         twoFingerTracking = false
-                        // 仅当两指起始位置都在 right_menu 区域内才触发
-                        // （菜单隐藏时无布局尺寸，按隐藏前记录的宽度推算右侧区域）
+                        // Chỉ kích hoạt khi vị trí bắt đầu của cả 2 ngón đều nằm trong vùng right_menu
+                        // (menu ẩn thì không có kích thước layout, dùng chiều rộng đã ghi trước khi ẩn để suy ra vùng bên phải)
                         val menu = binding.rightMenu
                         val menuWidth = if (menu.width > 0) menu.width else rightMenuWidth
                         val screenWidth = binding.root.width
@@ -434,14 +434,14 @@ class MainActivity : FCLActivity(), OnSelectListener, View.OnClickListener {
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        // 亮暗切换时 FCLActivity.onConfigurationChanged 会调 refreshTheme，
-        // 背景由 themeRefreshListener 统一刷新；强制亮/暗模式（AppCompat 不触发
-        // onConfigurationChanged）由 LauncherSettingPage 切换时显式 refreshTheme
+        // Khi chuyển sáng/tối, FCLActivity.onConfigurationChanged sẽ gọi refreshTheme,
+        // nền được themeRefreshListener làm mới thống nhất; chế độ sáng/tối ép buộc (AppCompat không kích hoạt
+        // onConfigurationChanged) do LauncherSettingPage tự gọi refreshTheme khi chuyển
     }
 
-    /** 按当前亮暗模式加载主界面背景（Theme.getBackground 按亮暗动态返回）。
-     *  ThemeEngine 的刷新回调是全局 Handler 异步排队，Activity 销毁后仍未执行的
-     *  回调无法通过 onDestroy 注销取消，这里需防 Glide 对已销毁 Activity 加载崩溃 */
+    /** Tải nền màn hình chính theo chế độ sáng/tối hiện tại (Theme.getBackground tự trả về động theo sáng/tối).
+     *  Callback làm mới của ThemeEngine xếp hàng bất đồng bộ qua Handler toàn cục, callback chưa chạy
+     *  sau khi Activity bị hủy không hủy được qua onDestroy — cần phòng Glide load ảnh cho Activity đã hủy gây crash */
     private fun loadBackground() {
         if (isDestroyed || isFinishing) return
         ImageUtil.loadInto(
@@ -450,7 +450,7 @@ class MainActivity : FCLActivity(), OnSelectListener, View.OnClickListener {
         )
     }
 
-    /** 主题刷新时重新加载背景与按钮配色（onDestroy 注销，防止持有已销毁实例） */
+    /** Tải lại nền và màu nút khi theme làm mới (hủy đăng ký ở onDestroy, tránh giữ instance đã hủy) */
     private val themeRefreshListener = Runnable {
         loadBackground()
         updateColor()
@@ -516,7 +516,7 @@ class MainActivity : FCLActivity(), OnSelectListener, View.OnClickListener {
     }
 
     /**
-     * 点击左侧菜单项时播放的选中动画（旋转 + 缩放），重复点击可无限触发
+     * Hoạt ảnh chọn phát khi bấm mục menu trái (xoay + phóng to), bấm lặp lại vẫn kích hoạt được vô hạn lần
      */
     private fun playMenuAnim(view: FCLMenuView) {
         val speed = ThemeEngine.getInstance().getTheme().animationSpeed
@@ -537,7 +537,7 @@ class MainActivity : FCLActivity(), OnSelectListener, View.OnClickListener {
     private fun hideRightMenu() {
         val menu = binding.rightMenu
         rightMenuWidth = menu.width
-        // 记录皮肤当前宽度（隐藏后内容区扩展，用于固定皮肤位置）
+        // Ghi lại chiều rộng skin hiện tại (vùng nội dung mở rộng sau khi ẩn, dùng để cố định vị trí skin)
         val ui = UIManager.instance.currentUI
         if (ui is MainUI) {
             skinViewerWidth = ui.contentView.findViewById<View>(R.id.skin_viewer).width
@@ -550,8 +550,8 @@ class MainActivity : FCLActivity(), OnSelectListener, View.OnClickListener {
     }
 
     /**
-     * right_menu 隐藏时内容区扩展为全宽，但皮肤预览固定在原位置：
-     * 宽度保持原值，end 侧留出菜单宽度。
+     * Khi right_menu ẩn, vùng nội dung mở rộng full chiều rộng, nhưng khung xem trước skin vẫn cố định vị trí cũ:
+     * chiều rộng giữ nguyên giá trị cũ, phía end chừa đúng chiều rộng menu.
      */
     private fun fixSkinViewerPosition(fix: Boolean) {
         val ui = UIManager.instance.currentUI
@@ -756,7 +756,7 @@ class MainActivity : FCLActivity(), OnSelectListener, View.OnClickListener {
     }
 
     private fun setupVersionDisplay() {
-        // 选中版本变化时刷新主界面版本显示（Repository 单例 StateFlow，随 Activity 生命周期取消）
+        // Làm mới hiển thị version màn hình chính khi version đang chọn đổi (Repository StateFlow đơn lẻ, hủy theo vòng đời Activity)
         lifecycleScope.launch {
             Profiles.selectedVersion.collect { s ->
                 loadVersion(s)

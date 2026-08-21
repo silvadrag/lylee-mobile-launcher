@@ -89,7 +89,7 @@ public class RemoteModInfoPage extends FCLPage implements View.OnClickListener {
 
         create();
 
-        // 原 onStart 逻辑：页面构造即填充内容并加载
+        // Logic onStart cũ: trang khởi tạo là điền nội dung và tải luôn
         icon.setImageDrawable(null);
         Glide.with(getContext()).load(addon.getIconUrl()).into(icon);
         ModTranslations.Mod mod = translations.getModByCurseForgeId(addon.getSlug());

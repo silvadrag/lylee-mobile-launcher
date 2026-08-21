@@ -928,7 +928,7 @@
     <string name="modloader">Завантажувач модів</string>
     <string name="message_warn_renderer_global_setting">Вибрана вами версія має окремі налаштування для кожного профілю, тому вказаний тут рендерер не може бути застосований до поточної версії. Рекомендується тривале натискання кнопки "Запуск" для вибору рендерера.</string>
 
-    <!-- 原 FCLLibrary 模块字符串（模块已并入 FCL） -->
+    <!-- Chuỗi của module FCLLibrary cũ (module đã gộp vào FCL) -->
     <string name="file_browser_title">Файловий менеджер</string>
     <string name="file_browser_back">Назад</string>
     <string name="file_browser_close">Вийти</string>

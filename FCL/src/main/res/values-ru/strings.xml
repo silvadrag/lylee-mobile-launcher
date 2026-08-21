@@ -971,7 +971,7 @@
     <string name="supported_mc_version">Поддерживаемая версия MC:</string>
     <string name="message_check_renderer">Текущий рендерер %s не поддерживает эту версию игры. Продолжение его использования может привести к ошибкам рендеринга или сбоям игры! Хотите продолжить?</string>
 
-    <!-- 原 FCLLibrary 模块字符串（模块已并入 FCL） -->
+    <!-- Chuỗi của module FCLLibrary cũ (module đã gộp vào FCL) -->
     <string name="file_browser_title">Файловый менеджер</string>
     <string name="file_browser_back">Назад</string>
     <string name="file_browser_close">Выйти</string>

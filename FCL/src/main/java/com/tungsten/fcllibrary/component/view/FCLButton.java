@@ -33,13 +33,13 @@ public class FCLButton extends AppCompatButton {
     private GradientDrawable drawableNormal;
     private GradientDrawable drawablePress;
 
-    /** 同时设置文字颜色与图标（compound drawable）颜色，保证图标随文字主题色渲染 */
+    /** Đặt đồng thời màu chữ và màu icon (compound drawable), đảm bảo icon render theo màu theme của chữ */
     private void applyTextColor(int color) {
         setTextColor(color);
         setCompoundDrawableTintList(new ColorStateList(new int[][]{{}}, new int[]{color}));
     }
 
-    /** 主题刷新回调（registerEvent 注册，主题变化时全量执行） */
+    /** Callback làm mới theme (đăng ký qua registerEvent, chạy toàn bộ khi theme đổi) */
     private void refreshTheme() {
             drawableNormal.setColor(Color.TRANSPARENT);
             drawablePress.setColor(ThemeEngine.getInstance().getTheme().getLtColor());
