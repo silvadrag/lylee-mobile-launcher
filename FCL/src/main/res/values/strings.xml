@@ -2,16 +2,16 @@
     <string name="app_name" translatable="false">Lylee Launcher</string>
     <string name="app_name_import">Install Modpack</string>
 
-    <string name="splash_agreement">FCL requires storage permission to manage and read game files. FCL is fully open-source on GitHub, so please rest assured about your data security. The permission is solely for the game to operate properly and poses no security risks.</string>
-    <string name="splash_permission_msg">No storage permission, please grant Fold Craft Launcher the permission.</string>
+    <string name="splash_agreement">Lylee Launcher requires storage permission to manage and read game files. The app is fully open-source on GitHub, so please rest assured about your data security. The permission is solely for the game to operate properly and poses no security risks.</string>
+    <string name="splash_permission_msg">No storage permission, please grant Lylee Launcher the permission.</string>
     <string name="splash_permission_grant">Grant</string>
     <string name="splash_permission_title">Permission to store needed</string>
     <string name="splash_permission_close">Close the app</string>
     <string name="splash_permission_settings">Settings</string>
     <string name="splash_permission_settings_msg">You have chosen "Never Allow" Please manually grant storage permissions in settings.</string>
-    <string name="notification_permission">FCL requires permission to post notifications to prevent issues with normal game installation or startup.</string>
+    <string name="notification_permission">Lylee Launcher requires permission to post notifications to prevent issues with normal game installation or startup.</string>
 
-    <string name="splash_title">Welcome to Fold Craft Launcher</string>
+    <string name="splash_title">Welcome to Lylee Launcher</string>
     <string name="splash_eula_error">Cannot get EULA, please check the network.</string>
     <string name="splash_eula_next">Agree and Continue</string>
     <string name="splash_runtime_title">Install or update app runtime</string>
@@ -37,11 +37,11 @@
     <string name="setting">Setting</string>
 
     <string name="about">About</string>
-    <string name="about_launcher" translatable="false">Fold Craft Launcher</string>
+    <string name="about_launcher" translatable="false">Lylee Launcher</string>
     <string name="about_developer" translatable="false">FCL-Team</string>
     <string name="about_sponsor">Sponsor</string>
     <string name="about_source">Open Source</string>
-    <string name="about_desc">Fold Craft Launcher is an Android Minecraft Launcher, allows user to launch Minecraft: Java Edition on Android device.\n\nFold Craft Launcher is developed by FCL-Team.\n\nFold Craft Launcher\'s most features are modified based on HMCLCore.\n\nThe app borrows and quotes some codes of PojavLauncher and Boat, so if you are going to distribute this app, please follow GPL-v3 License.</string>
+    <string name="about_desc">Lylee Launcher is an Android Minecraft Launcher for the Lylee community, allows user to launch Minecraft: Java Edition on Android device.\n\nLylee Launcher is a fork of Fold Craft Launcher, developed by FCL-Team.\n\nMost features are modified based on HMCLCore.\n\nThe app borrows and quotes some codes of PojavLauncher and Boat, so if you are going to distribute this app, please follow GPL-v3 License.</string>
 
     <string name="account_add_server">Add Authentication Server</string>
     <string name="account_add_server_url">Server URL</string>
@@ -1331,7 +1331,7 @@
     <string name="file_browser_share_title">Share the file</string>
     <string name="file_browser_share_message">Are you sure to share this file?</string>
     <string name="crash_reporter_title">Crash Report</string>
-    <string name="crash_reporter_hint">Fold Craft Launcher has encountered an unresolvable error, please seek help from the developer or others.</string>
+    <string name="crash_reporter_hint">Lylee Launcher has encountered an unresolvable error, please seek help from the developer or others.</string>
     <string name="crash_reporter_restart">Restart</string>
     <string name="crash_reporter_close">Exit</string>
     <string name="crash_reporter_copy">Copy</string>
