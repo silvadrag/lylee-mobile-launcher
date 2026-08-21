@@ -240,12 +240,48 @@ Người dùng gửi 7 ảnh chụp màn hình thật trên máy, phát hiện a
   "Chơi ngay" để launch thật (không cần thiết cho việc xác minh — nút đó chỉ gọi
   lại `Versions.launch()` vốn đã là tính năng ổn định có sẵn của FCL).
 
+## 12. Backend thật cho announcement + version-check, đã deploy + test sống (2026-08-21)
+
+- [x] `URL` trong `MainUI.java`/`UpdateChecker.java` đổi từ placeholder
+  (`mobile/announcement_v2.txt`, `mobile/version_map.json`) sang endpoint thật:
+  `GET /api/mobile/announcement` và `GET /api/mobile/version-check` — cùng domain
+  Cloudflare Worker/mod thật launcher PC đang dùng.
+- [x] Bên `fabric-lyleelauncherAPI-mod-1.21.1`: thêm 3 route mới trong
+  `ApiServer.java` — `GET /api/mobile/announcement` (tái dùng NGUYÊN bảng
+  `Announcement` có sẵn, không đổi schema, chỉ bọc lại đúng shape
+  `Announcement.java` mobile mong đợi), `GET /api/mobile/version-check` (đọc bảng
+  mới `MobileClientVersion`), `POST /api/admin/mobile-version` (JWT admin, publish
+  bản mới). Chi tiết DTO/DB xem `Dtos.java`/`Database.java` cùng commit.
+- [x] Bảng mới `MobileClientVersion` — migration mục 8 trong
+  `docs/database/migrations-applied-2026-08.sql` (repo PC) — KHÔNG đụng bảng nào
+  khác. Người dùng tự chạy qua HeidiSQL trên DB thật.
+- [x] `LyleeAdminTool`: thêm tab **📱 Mobile** (song song tab 🚀 Launcher hiện có)
+  để publish bản version mobile mới — `MainWindow.xaml`/`.xaml.cs`, `Models/Dtos.cs`,
+  `Services/AdminApiService.cs`. Đã build lại + publish bản `.exe` mới vào
+  `publish/LyleeAdminTool/` (bản cũ 09/08 không có tab này).
+- [x] **Deploy thật + test sống trên server Cobblemon đang chạy**: người dùng tự
+  build jar (`./gradlew build` → `build/libs/lyleelauncherapi-1.0.0.jar`, đã verify
+  jar chứa đủ 3 route mới), upload đè vào `mods/` trên Lilypad, Restart server.
+  Xuất bản thử 1 bản test (`type=release`, `versionCode=1328`,
+  `versionName=9.9.9-test`) qua tab Mobile — mở lại app trên điện thoại thật, hộp
+  thoại "Đã phát hiện phiên bản có thể cập nhật" hiện ĐÚNG y hệt dữ liệu vừa xuất
+  bản. Đồng thời phát hiện `/api/mobile/announcement` CŨNG chạy sống luôn (thấy
+  banner thông báo thật "RAID BOSS ETERNAL FLOETTE" đã có sẵn trong DB, tự hiện
+  lên app mobile mà không cần đăng gì thêm).
+- [ ] **Vấn đề phát sinh, chưa xử lý**: thông báo tái dùng từ bảng `Announcement`
+  hiện NGUYÊN VĂN mã XAML (`<FlowDocument PagePadding=...>`) trên mobile thay vì
+  text đọc được — vì nội dung được soạn qua RichTextBox (WPF FlowDocument) bên
+  AdminTool cho PC render, còn mobile chỉ hiện text thuần nên bị lộ mã ra ngoài.
+  Cần xử lý sau (VD: bóc text thuần từ XAML phía server trước khi trả về mobile,
+  hoặc tách kênh soạn thông báo riêng cho mobile) — không chặn, không phải lỗi
+  code mới, là giới hạn thật của việc dùng chung 1 bảng cho 2 nền tảng khác kiểu
+  nội dung.
+- Người dùng tự xóa bản test `9.9.9-test` khỏi `MobileClientVersion` sau khi xác
+  nhận xong (không cần giữ lại, chỉ để test đường ống hoạt động).
+
 ### Việc cần làm tiếp
 
-- [ ] Dựng backend thật cho 2 endpoint placeholder từ mục 10
-  (`mobile/announcement_v2.txt`, `mobile/version_map.json`) — cần thêm route mới
-  bên `fabric-lyleelauncherAPI-mod-1.21.1` (+ có thể UI quản trị bên `LyleeAdminTool`
-  để publish bản APK mới), rebuild/deploy JAR thủ công theo quy trình đã có.
+- [ ] Xử lý vấn đề thông báo hiện mã XAML thô trên mobile (xem mục 12 ở trên).
 - [ ] Thiết kế lại UI (mục người dùng yêu cầu, chưa bắt đầu — mới chỉ xong phần
   màu/tên/icon/splash/dọn link + 1 nút Cobblemon, chưa đổi layout/màn hình nào).
   Khi làm, cân nhắc nâng nút "Lylee Cobblemon" hiện tại (tạm bợ, chỉ 1 nút góc màn
@@ -254,3 +290,5 @@ Người dùng gửi 7 ảnh chụp màn hình thật trên máy, phát hiện a
 - [ ] Chưa có nút "chỉ đồng bộ lại modpack" tách riêng khỏi nút connect chính —
   hiện bấm lại nút "Lylee Cobblemon" khi version đã tồn tại sẽ tự động chỉ đồng bộ
   (đúng ý), nhưng chưa có chỗ nào giải thích rõ điều này cho người chơi trong UI.
+- [ ] Chưa có APK thật nào được host ở `_mobile/` trên server — bản test hiện tại
+  chỉ xác nhận đường ống hoạt động (DB → API → app), chưa test tải/cài thật.
