@@ -2,6 +2,12 @@
 *.iml
 .gradle/
 build/
+
+## Khóa ký release thật — PHẢI giữ ngoài repo (mất là không bao giờ cập nhật
+## được app dưới cùng identity nữa, lộ ra thì ai cũng ký giả được bản cập
+## nhật). Mật khẩu nằm ở local.properties (đã ignore riêng dòng dưới).
+key-store.jks
+key-store.jks.old-nopassword
 captures/
 .externalNativeBuild/
 .cxx/
