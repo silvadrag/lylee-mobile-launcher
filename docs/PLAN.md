@@ -384,3 +384,26 @@ hồng `#EC5990` CHỈ dùng cho CTA/trạng thái active, bo góc chuẩn 4/6/8
 ### Việc cần làm tiếp
 
 - [ ] Deploy bản sửa thông báo XAML lên server thật (xem mục 15).
+
+## 16. Dịch toàn bộ comment tiếng Trung sang tiếng Việt (2026-08-21)
+
+- [x] Quét toàn bộ codebase (`grep -rlP '[\x{4e00}-\x{9fff}]'`, không tính
+  `/build/`) — dịch hết comment/Javadoc/KDoc tiếng Trung sang tiếng Việt,
+  gồm cả code gốc của FCL-Team (không chỉ phần Lylee tự viết), trải khắp
+  4 module (`FCL`, `FCLCore`, `FCLauncher`, `ZipFileSystem`), file layout/
+  values XML, và bộ `androidTest`.
+- [x] Quy trình mỗi đợt dịch: viết dict Python (chuỗi Trung → chuỗi Việt) →
+  chạy thay thế → **bắt buộc grep lại** từng file sau khi chạy để bắt phần
+  Trung còn sót do dict key chỉ khớp một phần chuỗi dài hơn (đã bắt được vài
+  lần lỗi kiểu này khi tự-check "no MISSING keys" của script không đủ tin
+  cậy).
+- [x] Cố ý **giữ nguyên** các nội dung tiếng Trung hợp lệ, không dịch:
+  `values-zh/strings.xml` và `values-zh-rHK/strings.xml` (bản dịch tiếng
+  Trung thật cho người dùng chọn ngôn ngữ đó), tên ngôn ngữ tự thân trong bộ
+  chọn ngôn ngữ (`简体中文`, `繁體中文（香港）`), và tên riêng trang
+  "MC百科" (`mcmod`, đã đánh dấu `translatable="false"` sẵn từ trước).
+- [x] Build `FCL:assembleFordebug` full thành công sau khi dịch xong toàn
+  bộ (resource + Kotlin + Java compile OK) — không có thiết bị nào kết nối
+  lúc này nên chưa test trực tiếp trên máy, chỉ xác nhận qua build.
+- [x] Commit `b525ccd57` — gộp phần còn lại (phần skin/cube renderer đã
+  dịch + commit riêng trước đó, xem `c5409196e`).
