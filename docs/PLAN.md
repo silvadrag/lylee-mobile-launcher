@@ -462,5 +462,64 @@ hồng `#EC5990` CHỈ dùng cho CTA/trạng thái active, bo góc chuẩn 4/6/8
   Mobile hiện **chưa có gì** (không 1 file friend/chat nào trong repo mobile
   — đã grep xác nhận). Việc chính khi làm là xây UI mobile mới (list bạn
   bè, màn chat, polling/typing...) nối vào API có sẵn — không cần động
-  backend. Là feature lớn, người dùng xác nhận để dành làm riêng 1 phiên,
+  backend. Là feature lớn, người dùng xác nhận để dành riêng 1 phiên,
   chưa bắt đầu.
+
+## 18. Test thật "Chơi ngay" Lylee Cobblemon — phát hiện RAM không đủ trên máy thấp cấp (2026-08-22)
+
+Người dùng hỏi app đã "xài được chưa" — rà lại thấy mục 9 vẫn còn 1 dòng
+`[ ]` treo từ đầu dự án: **chưa từng thật sự bấm "Chơi ngay" để vào game**
+(mục 11 chỉ test tới bước cài đặt/đồng bộ mod, cố tình dừng trước bước
+launch). Bấm thử thật trên máy test (Galaxy A50s, Exynos 9611/Mali-G72,
+3.67GB RAM) — đây là lần đầu.
+
+- [x] **Luồng cài đặt + tải mod**: chạy hoàn hảo (đã xác nhận từ mục 11).
+- [x] **Bấm "Chơi ngay" lần 1**: game khởi chạy thật (Java check → resolve
+  dependencies → login → boot), qua được màn welcome "SERVER LYLEE
+  COBBLEMON" nhưng **treo hẳn** ở bước `Loading animations...` (log
+  `FCL Debug`) — CPU 168%, RAM hệ thống tụt còn **14MB trống** trước khi
+  mình chủ động force-stop để bảo vệ máy.
+- [x] Điều tra nguyên nhân — đọc code thật, không đoán:
+  - `MemoryUtils.findBestRAMAllocation()`: máy ≤6144MB RAM → sàn tối đa
+    **1GB** heap (64-bit). Máy test 3.67GB rơi đúng vào mức này.
+  - `FCLGameRepository.getAllocatedMemory()`: mức cấp THẬT lúc launch =
+    80% RAM **đang trống tại thời điểm đó** (trừ 384MB dự phòng), miễn là
+    lớn hơn sàn — nghĩa là con số 1GB không cố định, phụ thuộc RAM trống
+    lúc bấm nút.
+- [x] **Giả thuyết "reboot máy sẽ giúp"** — test trực tiếp: reboot xong RAM
+  trống nhảy 342MB → 2.24GB, nhưng chỉ riêng launcher UI (skin viewer,
+  home screen...) đã ăn lại gần hết trước khi Minecraft kịp khởi chạy →
+  vẫn tụt về đúng 1GB heap. **Bấm "Chơi ngay" lần 2 (sau reboot) vẫn treo
+  ở ĐÚNG bước `Loading animations...`** — xác nhận đây là bottleneck lặp
+  lại được, không phải rác app nền ngẫu nhiên. Máy phục hồi ngay (RAM
+  trống nhảy 14MB → 1.4-1.5GB) sau mỗi lần force-stop — máy không hỏng gì,
+  chỉ đúng lúc app chạy là cạn RAM.
+- [x] **Kết luận**: không phải bug launcher — công thức tự tính RAM vốn cố
+  tình bảo thủ để không crash trên diện rộng máy yếu. Vấn đề thật là
+  **modpack Cobblemon (animation hàng trăm Pokémon) cần nhiều RAM hơn máy
+  dưới ~6GB có thể đáp ứng** — khớp với khuyến nghị ≥4GB heap của server
+  PC (PC không bị giới hạn bởi RAM hệ điều hành di động + native overhead
+  như mobile).
+- [x] **Đã làm — cảnh báo RAM trước khi tải** (không đụng backend, rủi ro
+  thấp, theo lựa chọn của người dùng trong 3 hướng được đề xuất): sửa
+  `LyleeCobblemonConnector.connect()` — kiểm tra
+  `MemoryUtils.getTotalDeviceMemory()` trước khi gọi `fetchManifest()`,
+  nếu dưới **6144MB** (đúng mốc `findBestRAMAllocation` dùng để nhảy từ
+  1GB lên 2GB, không bịa số mới) thì hiện `FCLAlertDialog` (AlertLevel.ALERT)
+  báo rõ RAM máy + lý do + cho chọn "Vẫn tiếp tục" hoặc hủy — tránh người
+  chơi mất công tải cả GB dữ liệu rồi mới biết máy không chạy nổi. Test
+  thật trên máy: hiện đúng "Máy bạn có khoảng 3,5 GB RAM..." + cả 2 nhánh
+  Cancel/Vẫn tiếp tục đều hoạt động đúng.
+
+### Việc cần làm tiếp
+
+- [ ] 2 hướng còn lại CHƯA làm (người dùng chọn hướng cảnh báo trước, để
+  dành 2 hướng này nếu cần sau): (a) thử ép tay mức cấp RAM cao hơn cho
+  riêng bản LyleeCobblemon (rủi ro thật — có thể khiến OOM-crash ngay thay
+  vì treo từ từ như hiện tại, cần test kỹ trước khi cân nhắc); (b) chấp
+  nhận giới hạn, không sửa thêm gì.
+- [ ] Phát hiện phụ không liên quan RAM: mod Simple Voice Chat lỗi native
+  lib `liblame4j.so` (`UnsatisfiedLinkError: libm.so.6 not found` — thư
+  viện glibc không có trên Android/Bionic) — không crash game (tự fallback
+  "Using Cloth Config GUI"), nhưng tính năng voice chat khả năng không
+  hoạt động trên mobile. Chưa điều tra sâu, chưa fix.
