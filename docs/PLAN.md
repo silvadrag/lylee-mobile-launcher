@@ -203,16 +203,54 @@ Người dùng gửi 7 ảnh chụp màn hình thật trên máy, phát hiện a
 
 ### Việc cần làm tiếp (đợt này)
 
-- [ ] Gắn UI trigger thật cho `LyleeCobblemonSync.sync()` — cân nhắc: thêm mục
-  trong màn hình chính (tab riêng "Lylee Cobblemon" giống mô hình 2 tab bên PC:
-  Cobblemon + Instances tự do) hay gắn tạm vào AboutPage/Settings trước cho nhanh.
-- [ ] Dựng backend thật cho 2 endpoint placeholder ở trên
+- [x] Người dùng kết nối lại điện thoại — đã cài bản build lần 2, xác minh trực
+  quan trên máy thật: About page (mô tả + link đúng), controller mặc định (mô tả
+  đúng sau khi xóa cache cũ để app tự sinh lại từ asset mới — không phải bug),
+  màu/nút trang chủ đều đúng.
+
+## 11. Gắn UI trigger thật cho Lylee Cobblemon (2026-08-21, cùng ngày)
+
+- [x] Thêm nút "Lylee Cobblemon" ngay trên màn hình chính (`ui_main.xml`, góc
+  dưới trái, cạnh skin viewer) — bấm là chạy toàn bộ luồng "nối nhanh":
+  1. `LyleeCobblemonSync.fetchManifest()` — lấy manifest thật từ backend (đã tách
+     riêng khỏi `sync()` cũ để biết trước `minecraftVersion`/`loaderVersion` trước
+     khi quyết định có cần tạo version mới hay không).
+  2. Nếu profile hiện tại CHƯA có version tên cố định `LyleeCobblemon`: dùng
+     `GameBuilder` + `VersionList.getVersion(mcVersion, loaderVersion)` (API cài đặt
+     game/loader CÓ SẴN của FCL, y hệt luồng "Cài game mới" thật của app) để cài
+     đúng bản Minecraft + Fabric loader server yêu cầu — KHÔNG tự chế lại logic cài
+     đặt, tái dùng nguyên bộ máy Task/GameBuilder đã có.
+  3. Đồng bộ file modpack qua `LyleeCobblemonSync.syncFiles()` (như cũ, không tự
+     xóa file thừa).
+  4. Chọn version này làm selected version, hiện dialog "Lylee Cobblemon đã sẵn
+     sàng, có thể vào chơi" với nút "Chơi ngay" (gọi lại `Versions.launch()` có sẵn
+     của FCL) hoặc Cancel.
+  5. Lần bấm SAU (version đã tồn tại): bỏ qua bước cài, chỉ đồng bộ lại file —
+     dùng để "cập nhật modpack" nhanh mỗi khi server đổi mod.
+- [x] File mới: `FCL/src/main/java/com/tungsten/fcl/lylee/LyleeCobblemonConnector.java`.
+  Dùng lại nguyên UI pattern (TaskDialog, FCLAlertDialog, thông báo lỗi qua
+  `VersionInstallInfoPage.alertFailureMessage`) đã có sẵn trong app, không phát
+  minh lại dialog riêng.
+- [x] Build `:FCL:assembleFordebug` qua sạch, **đã cài lên máy thật và bấm thử
+  toàn bộ luồng end-to-end**: tải thư viện Minecraft 1.21.1 + Fabric loader thật
+  qua BMCLAPI → "Cài đặt Minecraft" xong → tự chuyển sang tải đúng các mod thật
+  của server (LyleeMod-1.1.jar, lyleebattlepass-1.0.jar, mega_showdown-fabric,
+  NoChatReports, mcw-roofs, netherportalfix...) → panel bên phải tự đổi version
+  đang chọn thành "LyleeCobblemon" → dialog sẵn sàng chơi hiện đúng. Không bấm
+  "Chơi ngay" để launch thật (không cần thiết cho việc xác minh — nút đó chỉ gọi
+  lại `Versions.launch()` vốn đã là tính năng ổn định có sẵn của FCL).
+
+### Việc cần làm tiếp
+
+- [ ] Dựng backend thật cho 2 endpoint placeholder từ mục 10
   (`mobile/announcement_v2.txt`, `mobile/version_map.json`) — cần thêm route mới
   bên `fabric-lyleelauncherAPI-mod-1.21.1` (+ có thể UI quản trị bên `LyleeAdminTool`
   để publish bản APK mới), rebuild/deploy JAR thủ công theo quy trình đã có.
 - [ ] Thiết kế lại UI (mục người dùng yêu cầu, chưa bắt đầu — mới chỉ xong phần
-  màu/tên/icon/splash/dọn link, chưa đổi layout/màn hình nào).
-- [ ] Người dùng đã rút USB điện thoại test giữa chừng đợt này — TOÀN BỘ thay đổi
-  ở mục 10 (link/text + 2 file Lylee mới) mới chỉ được xác nhận qua build source
-  (`gradle` compile sạch), CHƯA được xác minh trực quan trên máy thật. Cần cài lại
-  và chụp ảnh kiểm tra khi người dùng kết nối lại điện thoại.
+  màu/tên/icon/splash/dọn link + 1 nút Cobblemon, chưa đổi layout/màn hình nào).
+  Khi làm, cân nhắc nâng nút "Lylee Cobblemon" hiện tại (tạm bợ, chỉ 1 nút góc màn
+  hình chính) lên thành 1 tab/màn hình riêng đúng tinh thần "2 tab Cobblemon +
+  Instances tự do" bên PC.
+- [ ] Chưa có nút "chỉ đồng bộ lại modpack" tách riêng khỏi nút connect chính —
+  hiện bấm lại nút "Lylee Cobblemon" khi version đã tồn tại sẽ tự động chỉ đồng bộ
+  (đúng ý), nhưng chưa có chỗ nào giải thích rõ điều này cho người chơi trong UI.
