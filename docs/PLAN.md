@@ -328,12 +328,28 @@ hồng `#EC5990` CHỈ dùng cho CTA/trạng thái active, bo góc chuẩn 4/6/8
   - **Xác minh trên máy thật ở 2 màn khác nhau**: Cài đặt (cả 3 tab: Trò chơi
     Toàn cục/Trình khởi chạy/Giới thiệu) và Tải mod — mọi card/tab/checkbox đều
     nền tối, hồng chỉ còn ở toggle/checkbox/progress bar/tab đang chọn/nút CTA.
-  - **CHƯA đụng**: còn ~12 file dùng cơ chế tint khác (không qua 3 class trên) —
-    để dành, ưu tiên thấp hơn vì phần lớn app đã đồng bộ.
+- [x] **Bước 3 (hoàn tất) — 12 file còn lại**: khảo sát từng file, phân loại rõ
+  ràng trước khi sửa để không phá vỡ chỗ dùng hồng HỢP LÝ:
+  - Sửa thêm 2 class dùng chung (`FCLConstraintLayout.kt`, `FCLAppBarLayout.kt` —
+    cùng pattern `auto_tint` như `FCLLinearLayout` đã sửa ở bước trước),
+    `FCLCheckedTextView.java` (mỗi dòng trong spinner dropdown từng phủ hồng cả
+    dòng), và 9 file class trang/adapter riêng lẻ (thanh tìm kiếm, khung info,
+    danh sách installer item...) — mỗi chỗ chỉ 1 dòng gọi
+    `setBackgroundTintList(theme.ltColor)`.
+  - `DatapackListAdapter`/`LocalModListAdapter`: GIỮ NGUYÊN màu hồng cho dòng
+    ĐANG ĐƯỢC CHỌN (đúng tinh thần "accent chỉ báo trạng thái active", giống tab/
+    icon nav đang chọn), chỉ đổi màu dòng CHƯA chọn từ hồng nhạt sang `card_bg`.
+  - CHỦ Ý KHÔNG đụng: màu ripple khi bấm (`FCLButton`/`FCLImageButton`/
+    `FCLMenuView`), màu toggle/checkbox/viền khi focus ô nhập
+    (`FCLSwitch`/`FCLCheckBox`/`FCLEditText`), tag nhỏ loại phiên bản
+    (`RemoteVersionListAdapter`), icon file/thư mục trong File Browser, và
+    trang tự chọn màu theme (đều là dùng hồng ĐÚNG chỗ, không phải bug).
+  - **Xác minh trên máy thật thêm 3 màn**: Điều khiển (Controller), Quản lý (cả
+    5 tab con: Cài đặt Trò chơi/Quản lý/Trình tải Mod/Quản lý Mods/Thế giới) —
+    tất cả nền tối đúng, không còn mảng hồng đặc nào ngoài ý muốn.
 
 ### Việc cần làm tiếp
 
-- [ ] 12 file còn lại chưa đồng bộ màu (cơ chế tint riêng, chưa khảo sát kỹ).
 - [ ] Xử lý vấn đề thông báo hiện mã XAML thô trên mobile (xem mục 12).
 - [ ] Nâng nút "Lylee Cobblemon" từ 1 nút góc màn hình chính lên thành
   tab/màn hình riêng (đúng tinh thần "2 tab Cobblemon + Instances tự do" bên PC).
