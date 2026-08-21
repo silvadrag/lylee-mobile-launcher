@@ -33,12 +33,12 @@ import java.util.logging.Level;
 
 public class MainUI extends FCLCommonUI implements View.OnClickListener {
 
-    // TODO(Lylee): trỏ về endpoint thật của server Lylee khi đã dựng xong (xem
-    // docs/PLAN.md phần "Lylee Cobblemon") — hiện chưa tồn tại, request sẽ tự
-    // fail êm (catch Exception bên dưới), không hiện thông báo nào cho tới lúc đó.
+    // Endpoint thật — GET /api/mobile/announcement, xem ApiServer.getMobileAnnouncement
+    // bên fabric-lyleelauncherAPI-mod-1.21.1 (trả 404 nếu chưa có thông báo nào
+    // đang hiển thị, request tự fail êm, không hiện gì — catch Exception bên dưới).
     // Cố tình KHÔNG còn trỏ về repo GitHub thật của FCL-Team nữa (tránh hiện thông
     // báo/liên kết của đội FCL gốc bên trong app đã đổi thương hiệu Lylee).
-    public static final String ANNOUNCEMENT_URL = "https://lylee-launcher-api.lyleelauncher.workers.dev/mobile/announcement_v2.txt";
+    public static final String ANNOUNCEMENT_URL = "https://lylee-launcher-api.lyleelauncher.workers.dev/api/mobile/announcement";
     public static final String ANNOUNCEMENT_URL_CN = ANNOUNCEMENT_URL;
 
     private LinearLayoutCompat announcementContainer;
@@ -72,6 +72,10 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
         ThemeEngine.getInstance().registerEvent(announcementLayout, () -> announcementLayout.getBackground().setTint(ThemeEngine.getInstance().getTheme().getColor()));
         hide.setOnClickListener(this);
         lyleeCobblemon.setOnClickListener(this);
+        lyleeCobblemon.setOnLongClickListener(v -> {
+            LyleeCobblemonConnector.showInfo(getContext(), Profiles.getSelectedProfile());
+            return true;
+        });
 
         skinViewer = findViewById(R.id.skin_viewer);
         renderer = new SkinRenderer(getContext());

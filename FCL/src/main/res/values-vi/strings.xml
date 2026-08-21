@@ -114,8 +114,11 @@
 
     <string name="lylee_cobblemon_button">Lylee Cobblemon</string>
     <string name="lylee_cobblemon_connecting">Đang kết nối Lylee Cobblemon</string>
+    <string name="lylee_cobblemon_updating">Đang cập nhật modpack Lylee Cobblemon</string>
     <string name="lylee_cobblemon_ready">Lylee Cobblemon đã sẵn sàng, có thể vào chơi.</string>
     <string name="lylee_cobblemon_launch">Chơi ngay</string>
+    <string name="lylee_cobblemon_info_new">Bấm để cài Lylee Cobblemon: tạo 1 bản riêng và tải modpack về. Không đụng tới các bản khác của bạn.</string>
+    <string name="lylee_cobblemon_info_installed">Lylee Cobblemon đã cài rồi. Bấm lại chỉ tải mới các file mod thay đổi từ server — không cài lại từ đầu, không xóa file bạn tự thêm.</string>
 
     <string name="archive_author">Tác giả</string>
     <string name="archive_date">Ngày xuất bản</string>

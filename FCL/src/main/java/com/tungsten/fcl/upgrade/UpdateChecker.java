@@ -19,12 +19,13 @@ import java.util.ArrayList;
 
 public class UpdateChecker {
 
-    // TODO(Lylee): trỏ về endpoint thật của server Lylee khi đã dựng xong (xem
-    // docs/PLAN.md phần "Lylee Cobblemon") — hiện chưa tồn tại, request sẽ tự
-    // fail êm, không hiện gì cho tới lúc đó. Cố tình KHÔNG còn trỏ về repo GitHub
-    // thật của FCL-Team nữa (app đã đổi thương hiệu Lylee, không nên tự ý kiểm tra
-    // cập nhật dựa theo version của đội FCL gốc).
-    public static final String UPDATE_CHECK_URL = "https://lylee-launcher-api.lyleelauncher.workers.dev/mobile/version_map.json";
+    // Endpoint thật — GET /api/mobile/version-check, xem ApiServer.getMobileVersionCheck
+    // bên fabric-lyleelauncherAPI-mod-1.21.1 (trả mảng rỗng nếu chưa publish bản
+    // nào qua LyleeAdminTool — vòng lặp bên dưới tự bỏ qua, không hiện gì).
+    // Cố tình KHÔNG còn trỏ về repo GitHub thật của FCL-Team nữa (app đã đổi
+    // thương hiệu Lylee, không nên tự ý kiểm tra cập nhật dựa theo version của
+    // đội FCL gốc).
+    public static final String UPDATE_CHECK_URL = "https://lylee-launcher-api.lyleelauncher.workers.dev/api/mobile/version-check";
     public static final String UPDATE_CHECK_URL_CN = UPDATE_CHECK_URL;
 
     private static UpdateChecker instance;

@@ -43,8 +43,14 @@ public final class LyleeCobblemonConnector {
     }
 
     public static void connect(Context context, Profile profile) {
+        // Tiêu đề khác nhau tuỳ đã có version hay chưa, để người chơi biết ngay
+        // lần bấm này là cài mới hay chỉ đang tải lại mod mới nhất từ server
+        // (không phải cài lại từ đầu) — xem thêm showInfo().
+        boolean alreadyInstalled = profile.getRepository().hasVersion(VERSION_NAME);
         TaskDialog dialog = new TaskDialog(context, new TaskCancellationAction(AppCompatDialog::dismiss));
-        dialog.setTitle(context.getString(R.string.lylee_cobblemon_connecting));
+        dialog.setTitle(context.getString(alreadyInstalled
+                ? R.string.lylee_cobblemon_updating
+                : R.string.lylee_cobblemon_connecting));
 
         Task<?> task = LyleeCobblemonSync.fetchManifest()
                 .thenComposeAsync(manifest -> prepareVersion(profile, manifest));
@@ -101,6 +107,20 @@ public final class LyleeCobblemonConnector {
             new File(runDir, "mods").mkdirs();
             return LyleeCobblemonSync.syncFiles(runDir, manifest);
         });
+    }
+
+    /** Giải thích nút cho người chơi lần đầu bấm giữ — chủ yếu để làm rõ ý
+     *  nghĩa của lần bấm THỨ HAI trở đi (chỉ đồng bộ lại mod, không cài lại
+     *  từ đầu), vì nút không có chỗ nào khác diễn giải điều này. */
+    public static void showInfo(Context context, Profile profile) {
+        boolean alreadyInstalled = profile.getRepository().hasVersion(VERSION_NAME);
+        FCLAlertDialog.Builder builder = new FCLAlertDialog.Builder(context);
+        builder.setAlertLevel(FCLAlertDialog.AlertLevel.INFO);
+        builder.setMessage(context.getString(alreadyInstalled
+                ? R.string.lylee_cobblemon_info_installed
+                : R.string.lylee_cobblemon_info_new));
+        builder.setNegativeButton(null);
+        builder.create().show();
     }
 
     private static void offerLaunch(Context context, Profile profile) {
