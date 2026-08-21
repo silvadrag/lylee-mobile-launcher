@@ -287,8 +287,10 @@ Người dùng gửi 7 ảnh chụp màn hình thật trên máy, phát hiện a
   Khi làm, cân nhắc nâng nút "Lylee Cobblemon" hiện tại (tạm bợ, chỉ 1 nút góc màn
   hình chính) lên thành 1 tab/màn hình riêng đúng tinh thần "2 tab Cobblemon +
   Instances tự do" bên PC.
-- [ ] Chưa có nút "chỉ đồng bộ lại modpack" tách riêng khỏi nút connect chính —
-  hiện bấm lại nút "Lylee Cobblemon" khi version đã tồn tại sẽ tự động chỉ đồng bộ
-  (đúng ý), nhưng chưa có chỗ nào giải thích rõ điều này cho người chơi trong UI.
+- [x] Giải thích cho người chơi hiểu bấm lại nút = cập nhật (không cài lại từ
+  đầu) — đã code (tiêu đề dialog đổi theo trạng thái + giữ nút hiện Info) và **xác
+  minh trên máy thật (2026-08-21)**: giữ nút "Lylee Cobblemon" khi đã cài hiện
+  đúng "Lylee Cobblemon đã cài rồi. Bấm lại chỉ tải mới các file mod thay đổi từ
+  server — không cài lại từ đầu, không xóa file bạn tự thêm."
 - [ ] Chưa có APK thật nào được host ở `_mobile/` trên server — bản test hiện tại
   chỉ xác nhận đường ống hoạt động (DB → API → app), chưa test tải/cài thật.
