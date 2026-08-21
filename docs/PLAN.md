@@ -408,3 +408,44 @@ hồng `#EC5990` CHỈ dùng cho CTA/trạng thái active, bo góc chuẩn 4/6/8
   lúc này nên chưa test trực tiếp trên máy, chỉ xác nhận qua build.
 - [x] Commit `b525ccd57` — gộp phần còn lại (phần skin/cube renderer đã
   dịch + commit riêng trước đó, xem `c5409196e`).
+
+## 17. Nút chuông xem lại tin tức + ẩn kiểu nhắc nhở mỗi ngày (2026-08-21)
+
+- [x] **Backend** (`fabric-lyleelauncherAPI-mod-1.21.1`, commit `94d425d`) —
+  thêm `Database.getRecentActiveAnnouncementsForMobile` +
+  `GET /api/mobile/announcements` (số nhiều, khác `/announcement` số ít chỉ
+  trả 1 tin mới nhất): trả danh sách tối đa 50 tin đang active/còn hạn, cùng
+  shape + cùng bóc XAML với endpoint cũ.
+- [x] **Mobile** (commit `00941486c`) — nút chuông 🔔 luôn hiện ở góc trên-
+  phải khu vực tin tức Trang chủ (kể cả khi không có tin nào đang active),
+  mở `AnnouncementHistoryDialog` liệt kê toàn bộ tin từ endpoint mới.
+  - Vấp 1 lần: định làm màn hình riêng qua `FCLPage`/`showTempPage` (giống
+    các trang phụ khác), nhưng `MainUI` (Trang chủ) là `FCLCommonUI` đơn
+    trang — gọi `showTempPage` trên UI của TAB KHÁC (`ManageUI`) không hiện
+    gì vì contentView của tab đó chưa được `ViewPager2` gắn vào cây view
+    đang hiển thị. Sửa bằng cách dùng `FCLDialog` (nền tảng của `TaskDialog`
+    có sẵn) — dialog độc lập với tab đang mở, đã test lại đúng trên máy.
+  - `Announcement.hide()`/`shouldDisplay()` đổi ý nghĩa: bấm "Ẩn" giờ chỉ
+    tắt card **trong ngày hôm đó** (lưu kèm ngày ẩn vào SharedPreferences),
+    hôm sau tự hiện lại nếu tin còn hạn — thay vì mất hẳn tới khi có tin
+    mới hơn như trước.
+- [x] Test trên máy thật (`R58M93RVPXH`): card tiêu đề hiện đúng text thuần
+  (không còn XAML thô), nút chuông mở dialog đúng, trạng thái rỗng
+  ("Chưa có tin tức nào.") hiện đúng vì server **chưa** deploy endpoint mới.
+- [ ] **Phát hiện phụ, chưa sửa**: thông báo thật (RAID BOSS ETERNAL FLOETTE
+  và cả 3 tin cũ khác) đều là `FlowDocument` chỉ chứa 1 `<Image>`, không có
+  chữ — sau khi bóc XAML, phần thân card mobile trống trơn (chỉ còn tiêu
+  đề). Đây là giới hạn có sẵn của tính năng thông báo mobile (chỉ hiện text,
+  chưa hỗ trợ hiện ảnh), không phải lỗi do đợt sửa XAML gây ra. Người dùng
+  chọn "thêm ảnh vào mobile sau" — không làm ngay, ghi lại làm việc cần làm
+  tiếp bên dưới.
+
+### Việc cần làm tiếp
+
+- [ ] **Deploy jar mới** lên Lilypad (build ở mục này đã gộp cả 2 thay đổi:
+  fix XAML mục 15 + endpoint danh sách mục 17) — build → upload `mods/` →
+  Restart, quy trình giống mọi lần trước.
+- [ ] Thêm hỗ trợ hiện ảnh trong thông báo mobile (card Trang chủ +
+  `AnnouncementHistoryDialog`) — cần cả backend (trả kèm URL ảnh, XAML hiện
+  đang bóc bỏ hẳn thẻ `<Image>`) lẫn mobile (tải + hiện `ImageView` trong
+  card/dialog). Chưa bắt đầu, người dùng xác nhận làm sau.
