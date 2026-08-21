@@ -167,7 +167,7 @@ public class RemoteModDownloadPage extends FCLPage implements View.OnClickListen
         cancel.setOnClickListener(this);
         back.setOnClickListener(this);
 
-        ThemeEngine.getInstance().registerEvent(dependencyLayout, () -> dependencyLayout.setBackgroundTintList(new ColorStateList(new int[][]{{}}, new int[]{ThemeEngine.getInstance().getTheme().getLtColor()})));
+        ThemeEngine.getInstance().registerEvent(dependencyLayout, () -> dependencyLayout.setBackgroundTintList(new ColorStateList(new int[][]{{}}, new int[]{getContext().getResources().getColor(R.color.card_bg, null)})));
     }
 
     public void setLoading(boolean loading, boolean hasDependency) {

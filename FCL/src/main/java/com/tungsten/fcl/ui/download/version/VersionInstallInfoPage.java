@@ -78,7 +78,7 @@ public class VersionInstallInfoPage extends FCLPage implements View.OnClickListe
         group = new InstallerItem.InstallerItemGroup(getContext(), gameVersion);
         nameBar = findViewById(R.id.name_bar);
 
-        ColorStateList colorStateList = new ColorStateList(new int[][]{{}}, new int[]{ThemeEngine.getInstance().getTheme().getLtColor()});
+        ColorStateList colorStateList = new ColorStateList(new int[][]{{}}, new int[]{getContext().getResources().getColor(R.color.card_bg, null)});
         ThemeEngine.getInstance().registerEvent(nameBar, () -> nameBar.setBackgroundTintList(colorStateList));
 
         editText = findViewById(R.id.edit);

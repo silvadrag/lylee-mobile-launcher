@@ -21,10 +21,12 @@ class FCLConstraintLayout @JvmOverloads constructor(
         }
         ThemeEngine.getInstance().registerEvent(this) {
             if (autoTint) {
+                // Màu card tối (đồng bộ launcher PC) thay vì màu accent nhạt —
+                // vùng lớn không nên phủ đặc màu nhấn.
                 setBackgroundTintList(
                     ColorStateList(
                         arrayOf<IntArray?>(intArrayOf()),
-                        intArrayOf(ThemeEngine.getInstance().getTheme().ltColor)
+                        intArrayOf(resources.getColor(R.color.card_bg, null))
                     )
                 )
             }

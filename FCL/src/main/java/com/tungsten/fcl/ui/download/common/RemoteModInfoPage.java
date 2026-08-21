@@ -128,7 +128,7 @@ public class RemoteModInfoPage extends FCLPage implements View.OnClickListener {
         mcmod.setOnClickListener(this);
         website.setOnClickListener(this);
 
-        ThemeEngine.getInstance().registerEvent(versionListView, () -> versionListView.setBackgroundTintList(new ColorStateList(new int[][]{{}}, new int[]{ThemeEngine.getInstance().getTheme().getLtColor()})));
+        ThemeEngine.getInstance().registerEvent(versionListView, () -> versionListView.setBackgroundTintList(new ColorStateList(new int[][]{{}}, new int[]{getContext().getResources().getColor(R.color.card_bg, null)})));
 
         search.stringProperty().addListener(observable -> loadGameVersions());
     }

@@ -70,7 +70,7 @@ public class ModUpdatesPage extends FCLPage implements View.OnClickListener {
     public void onCreate() {
         super.onCreate();
         listView = findViewById(R.id.list);
-        ThemeEngine.getInstance().registerEvent(listView, () -> listView.setBackgroundTintList(new ColorStateList(new int[][]{{}}, new int[]{ThemeEngine.getInstance().getTheme().getLtColor()})));
+        ThemeEngine.getInstance().registerEvent(listView, () -> listView.setBackgroundTintList(new ColorStateList(new int[][]{{}}, new int[]{getContext().getResources().getColor(R.color.card_bg, null)})));
         export = findViewById(R.id.export);
         update = findViewById(R.id.update);
         updateWithout = findViewById(R.id.update_without);

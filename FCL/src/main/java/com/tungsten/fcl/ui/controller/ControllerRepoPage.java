@@ -305,7 +305,7 @@ public class ControllerRepoPage extends FCLPage implements View.OnClickListener,
     public void onCreate() {
         super.onCreate();
         searchLayout = findViewById(R.id.search_layout);
-        ThemeEngine.getInstance().registerEvent(searchLayout, () -> searchLayout.setBackgroundTintList(new ColorStateList(new int[][]{{}}, new int[]{ThemeEngine.getInstance().getTheme().getLtColor()})));
+        ThemeEngine.getInstance().registerEvent(searchLayout, () -> searchLayout.setBackgroundTintList(new ColorStateList(new int[][]{{}}, new int[]{getContext().getResources().getColor(R.color.card_bg, null)})));
 
         check = findViewById(R.id.check);
         search = findViewById(R.id.search);

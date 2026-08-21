@@ -22,7 +22,9 @@ public class FCLCheckedTextView extends androidx.appcompat.widget.AppCompatCheck
                 setTextColor(ThemeEngine.getInstance().getTheme().getAutoTint());
             }
             if (autoBackgroundTint) {
-                setBackgroundTintList(new ColorStateList(new int[][] { { } }, new int[]{ ThemeEngine.getInstance().getTheme().getColor() }));
+                // Màu card tối (đồng bộ launcher PC) thay vì phủ đặc màu accent —
+                // dùng cho từng dòng trong danh sách thả xuống (spinner).
+                setBackgroundTintList(new ColorStateList(new int[][] { { } }, new int[]{ getResources().getColor(R.color.card_bg, null) }));
             }
     }
 

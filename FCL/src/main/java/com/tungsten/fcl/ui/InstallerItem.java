@@ -255,7 +255,7 @@ public class InstallerItem {
             remove = parent.findViewById(R.id.remove);
             select = parent.findViewById(R.id.select);
 
-            ColorStateList colorStateList = new ColorStateList(new int[][]{{}}, new int[]{ThemeEngine.getInstance().getTheme().getLtColor()});
+            ColorStateList colorStateList = new ColorStateList(new int[][]{{}}, new int[]{context.getResources().getColor(R.color.card_bg, null)});
             ThemeEngine.getInstance().registerEvent(item, () -> item.setBackgroundTintList(colorStateList));
             icon.setBackground(installerItem.getIcon());
             name.setText(installerItem.getName());

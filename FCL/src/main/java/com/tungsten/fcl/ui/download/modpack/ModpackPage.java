@@ -52,7 +52,7 @@ public abstract class ModpackPage extends FCLPage implements View.OnClickListene
         describe = findViewById(R.id.describe);
         install.setOnClickListener(this);
         describe.setOnClickListener(this);
-        ThemeEngine.getInstance().registerEvent(infoLayout, () -> infoLayout.setBackgroundTintList(new ColorStateList(new int[][]{{}}, new int[]{ThemeEngine.getInstance().getTheme().getLtColor()})));
+        ThemeEngine.getInstance().registerEvent(infoLayout, () -> infoLayout.setBackgroundTintList(new ColorStateList(new int[][]{{}}, new int[]{getContext().getResources().getColor(R.color.card_bg, null)})));
     }
 
     @Override

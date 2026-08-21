@@ -25,7 +25,6 @@ import com.tungsten.fclcore.util.io.FileUtils
 import com.tungsten.fcllibrary.browser.FileBrowser
 import com.tungsten.fcllibrary.browser.options.LibMode
 import com.tungsten.fcllibrary.component.dialog.FCLAlertDialog
-import com.tungsten.fcllibrary.component.theme.ThemeEngine
 import com.tungsten.fcllibrary.component.ui.FCLPage
 import com.tungsten.fcllibrary.component.view.FCLUILayout
 import com.tungsten.fcllibrary.ui.ProgressDialog
@@ -55,16 +54,12 @@ class ManagePage(context: Context?, id: Int, resId: Int) : FCLPage(context, id, 
 
     private fun create() {
         binding = PageManageVersionBinding.bind(contentView).apply {
-            ThemeEngine.getInstance().registerEvent(left) {
-                left.backgroundTintList = ColorStateList(
-                    arrayOf(intArrayOf()), intArrayOf(ThemeEngine.getInstance().getTheme().ltColor)
-                )
-            }
-            ThemeEngine.getInstance().registerEvent(right) {
-                right.backgroundTintList = ColorStateList(
-                    arrayOf(intArrayOf()), intArrayOf(ThemeEngine.getInstance().getTheme().ltColor)
-                )
-            }
+            left.backgroundTintList = ColorStateList(
+                arrayOf(intArrayOf()), intArrayOf(left.resources.getColor(R.color.card_bg, null))
+            )
+            right.backgroundTintList = ColorStateList(
+                arrayOf(intArrayOf()), intArrayOf(right.resources.getColor(R.color.card_bg, null))
+            )
 
             left.layoutManager = LinearLayoutManager(context)
             left.adapter = ManageItemAdapter(

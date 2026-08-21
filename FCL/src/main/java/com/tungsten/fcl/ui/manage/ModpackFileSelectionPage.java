@@ -73,7 +73,7 @@ public class ModpackFileSelectionPage extends FCLPage implements View.OnClickLis
         // 原 onCreate 逻辑：绑定控件
         progressBar = findViewById(R.id.progress);
         listView = findViewById(R.id.list);
-        ThemeEngine.getInstance().registerEvent(listView, () -> listView.setBackgroundTintList(new ColorStateList(new int[][]{{}}, new int[]{ThemeEngine.getInstance().getTheme().getLtColor()})));
+        ThemeEngine.getInstance().registerEvent(listView, () -> listView.setBackgroundTintList(new ColorStateList(new int[][]{{}}, new int[]{getContext().getResources().getColor(R.color.card_bg, null)})));
         next = findViewById(R.id.next);
         next.setOnClickListener(this);
 

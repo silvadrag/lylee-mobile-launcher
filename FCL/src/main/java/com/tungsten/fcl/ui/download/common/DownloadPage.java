@@ -451,7 +451,7 @@ public class DownloadPage extends FCLPage implements ManageUI.VersionLoadable, V
         binding = PageDownloadBinding.bind(getContentView());
         searchState = new ViewModelProvider(getActivity()).get(DownloadSearchViewModel.class).getState(getPageId());
         searchLayout = findViewById(R.id.search_layout);
-        ThemeEngine.getInstance().registerEvent(searchLayout, () -> searchLayout.setBackgroundTintList(new ColorStateList(new int[][]{{}}, new int[]{ThemeEngine.getInstance().getTheme().getLtColor()})));
+        ThemeEngine.getInstance().registerEvent(searchLayout, () -> searchLayout.setBackgroundTintList(new ColorStateList(new int[][]{{}}, new int[]{getContext().getResources().getColor(R.color.card_bg, null)})));
 
         search = findViewById(R.id.search);
         search.setOnClickListener(this);

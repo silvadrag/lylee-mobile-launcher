@@ -172,8 +172,7 @@ class LocalModListAdapter(
             arrayOf<IntArray?>(intArrayOf()),
             intArrayOf(
                 if (selectedItemsProperty.contains(modInfoObject)) ThemeEngine.getInstance()
-                    .getTheme().color else ThemeEngine.getInstance().getTheme()
-                    .ltColor
+                    .getTheme().color else binding.parent.resources.getColor(R.color.card_bg, null)
             )
         )
         ThemeEngine.getInstance().unregisterEvent(binding.root)
@@ -182,8 +181,7 @@ class LocalModListAdapter(
                 arrayOf<IntArray?>(intArrayOf()),
                 intArrayOf(
                     if (selectedItemsProperty.contains(modInfoObject)) ThemeEngine.getInstance()
-                        .getTheme().color else ThemeEngine.getInstance().getTheme()
-                        .ltColor
+                        .getTheme().color else binding.parent.resources.getColor(R.color.card_bg, null)
                 )
             )
         }
@@ -195,7 +193,7 @@ class LocalModListAdapter(
                 binding.parent.backgroundTintList = ColorStateList(
                     arrayOf<IntArray?>(
                         intArrayOf()
-                    ), intArrayOf(ThemeEngine.getInstance().getTheme().ltColor)
+                    ), intArrayOf(binding.parent.resources.getColor(R.color.card_bg, null))
                 )
             } else {
                 fromSelf = true

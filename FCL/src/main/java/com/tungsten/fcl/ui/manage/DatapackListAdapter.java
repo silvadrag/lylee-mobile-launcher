@@ -85,14 +85,14 @@ public class DatapackListAdapter extends FCLAdapter {
             viewHolder = (ViewHolder) view.getTag();
         }
         DatapackListPage.DatapackInfoObject datapackInfoObject = listProperty.get(i);
-        viewHolder.parent.setBackgroundTintList(new ColorStateList(new int[][] { { } }, new int[] { selectedItemsProperty.contains(datapackInfoObject) ? ThemeEngine.getInstance().getTheme().getColor() : ThemeEngine.getInstance().getTheme().getLtColor() }));
-        ThemeEngine.getInstance().registerEvent(viewHolder.parent, () -> viewHolder.parent.setBackgroundTintList(new ColorStateList(new int[][] { { } }, new int[] { selectedItemsProperty.contains(datapackInfoObject) ? ThemeEngine.getInstance().getTheme().getColor() : ThemeEngine.getInstance().getTheme().getLtColor() })));
+        viewHolder.parent.setBackgroundTintList(new ColorStateList(new int[][] { { } }, new int[] { selectedItemsProperty.contains(datapackInfoObject) ? ThemeEngine.getInstance().getTheme().getColor() : getContext().getResources().getColor(R.color.card_bg, null) }));
+        ThemeEngine.getInstance().registerEvent(viewHolder.parent, () -> viewHolder.parent.setBackgroundTintList(new ColorStateList(new int[][] { { } }, new int[] { selectedItemsProperty.contains(datapackInfoObject) ? ThemeEngine.getInstance().getTheme().getColor() : getContext().getResources().getColor(R.color.card_bg, null) })));
         viewHolder.parent.setOnClickListener(v -> {
             if (selectedItemsProperty.contains(datapackInfoObject)) {
                 fromSelf = true;
                 selectedItemsProperty.remove(datapackInfoObject);
                 fromSelf = false;
-                viewHolder.parent.setBackgroundTintList(new ColorStateList(new int[][] { { } }, new int[] { ThemeEngine.getInstance().getTheme().getLtColor() }));
+                viewHolder.parent.setBackgroundTintList(new ColorStateList(new int[][] { { } }, new int[] { getContext().getResources().getColor(R.color.card_bg, null) }));
             } else {
                 fromSelf = true;
                 selectedItemsProperty.add(datapackInfoObject);
