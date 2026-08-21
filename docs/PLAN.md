@@ -15,9 +15,13 @@ Chạy Minecraft Java Edition trên Android đòi hỏi 4 tầng, khác hẳn la
 
 Tầng 3-4 (build lại OpenJDK cho ARM, dịch Desktop OpenGL sang OpenGL ES/Vulkan qua GL4ES/Zink, viết JNI bridge cho LWJGL/GLFW) là bài toán kỹ thuật mất hàng tháng-năm nếu tự viết. **Quyết định: fork 1 project mã nguồn mở đã hoàn thiện 2 tầng dưới, chỉ tự viết/tùy biến tầng UI (1) và có thể một phần Core (2).**
 
-(Nghiên cứu đầy đủ, kèm code mẫu Kotlin cho touch controls/gesture detector/control editor: [`docs/gemini-research-pojavlauncher-architecture.pdf`](gemini-research-pojavlauncher-architecture.pdf).)
+(Nghiên cứu đầy đủ — kiến trúc PojavLauncher, code mẫu Kotlin cho touch controls/gesture detector/control editor, PHẦN SAU (từ trang 15) là phân tích so sánh Pojav/FCL + gợi ý triển khai riêng cho FCL (đồng bộ modpack Cobblemon tự động, màn hình chính Jetpack Compose Material 3, chuyển cảnh sang Game Activity): [`docs/gemini-research-pojavlauncher-fcl-comparison.pdf`](gemini-research-pojavlauncher-fcl-comparison.pdf) — CHƯA review kỹ/chưa chạy thử, chỉ là gợi ý tham khảo lúc bắt tay code thật.)
 
-## 2. Chọn base để fork — CHƯA CHỐT
+## 2. Chọn base để fork — ĐÃ CHỐT: Fold Craft Launcher (FCL)
+
+> **Quyết định cuối (2026-08-21)**: chọn **FCL**. Lý do: (1) kiến trúc multi-module tách UI khỏi Core rõ ràng, đúng mô hình dự tính ở mục 3; (2) license GPLv3 rõ ràng, có file thật, không vướng vùng xám như Pojav (xem mục "Xác minh license" bên dưới); (3) UI/UX đã có sẵn đầu tư kỹ (xem mục 8), gần với mức người dùng cuối mong đợi hơn. Nhánh `explore/pojavlauncher-fork` **giữ lại làm tham khảo** (đã build/chạy thành công, không xóa), không phát triển tiếp. Đã gỡ APK PojavLauncher khỏi điện thoại test (máy yếu, không cần giữ app không dùng).
+>
+> Quyết định có tham khảo phân tích từ Gemini (dùng [`docs/ai-comparison-prompt.md`](ai-comparison-prompt.md) làm brief) — bản thân người dùng đọc + xác nhận, không phải AI tự chọn thay.
 
 | | [PojavLauncher](https://github.com/TeamPojavLauncher/PojavLauncher) | [Fold Craft Launcher (FCL)](https://github.com/FCL-Team/FoldCraftLauncher) |
 |---|---|---|
@@ -27,7 +31,11 @@ Tầng 3-4 (build lại OpenJDK cho ARM, dịch Desktop OpenGL sang OpenGL ES/Vu
 
 **Cả 2 đều copyleft** — nếu fork + phát hành app cho người chơi dùng, **bắt buộc giữ mã nguồn mở** (không thể âm thầm đóng gói lại thành closed-source). Cần đọc kỹ LICENSE của đúng version/tag định fork trước khi quyết định — LGPLv3 (Pojav bản mới) lỏng hơn GPLv3 (FCL) một chút về việc link thư viện, nhưng cả 2 đều yêu cầu công khai source code bản đã sửa.
 
-⚠️ **Phát hiện lúc clone thử (2026-08-21)**: repo PojavLauncher (nhánh mặc định `v3_openjdk`) **không có file `LICENSE` ở gốc repo** — badge LGPLv3 trong README trỏ tới file đó nhưng GitHub API (`gh api repos/.../license`) cũng không nhận diện được license nào. Cần tự mở thẳng trang GitHub xác nhận lại (không tin riêng badge) trước khi coi LGPLv3 là chính thức.
+⚠️ **Phát hiện lúc clone thử (2026-08-21)**: repo PojavLauncher (nhánh mặc định `v3_openjdk`) **không có file `LICENSE` ở gốc repo** — badge LGPLv3 trong README trỏ tới file đó nhưng GitHub API (`gh api repos/.../license`) cũng không nhận diện được license nào.
+
+**Xác minh sâu hơn (2026-08-21, tự tay đào lịch sử git thật + đối chiếu qua `gh api`, không đoán)**: repo TỪNG có file `LICENSE` (LGPLv3, nội dung đầy đủ) — bị xóa trong đúng 1 commit **`4cac3d5fb "[Full Rewrite] MJLauncher --> PojavLauncher"`** (tác giả `WOOD6563`, xác nhận commit này có thật trên GitHub qua `gh api repos/TeamPojavLauncher/PojavLauncher/commits/4cac3d5fb...`), và chưa từng được thêm lại tới giờ. `gh api repos/.../TeamPojavLauncher/PojavLauncher` xác nhận `default_branch = v3_openjdk` và trường `license` trả về rỗng — tức đây là tình trạng THẬT của nhánh chính hiện tại, không phải do mình clone thiếu hay cache lỗi thời.
+
+Về pháp lý: KHÔNG có license = mặc định "giữ toàn quyền" (theo luật bản quyền quốc tế Berne Convention) — nghĩa là kỹ thuật thuần túy chưa ai cấp phép fork/sửa/phát tán, dù gần như chắc chắn chỉ là quên thêm lại file (dự án có hàng trăm fork công khai, không collision gì thực tế xảy ra). Nếu sau này vẫn muốn quay lại hướng Pojav, có thể fork từ đúng commit/tag TRƯỚC `4cac3d5fb` (còn LICENSE LGPLv3 thật) thay vì nhánh `v3_openjdk` hiện tại để có giấy phép rõ ràng.
 
 **Cách quyết định**: dựng thử CẢ 2 qua 2 nhánh riêng (`explore/pojavlauncher-fork` và `explore/fcl-fork`, xem mục 4) — build thành công, chạy thử trên máy/emulator, đọc code thật để đánh giá "dễ tùy biến" tới đâu — rồi mới chọn 1 nhánh để đi tiếp làm `main`. Tránh chốt theo cảm tính sớm khi chưa build thử.
 
@@ -62,10 +70,10 @@ Research doc (mục 1) mô tả đơn giản hóa 5 package (`authenticator/cust
 
 ## 4. Cấu trúc nhánh (branch)
 
-- `main` — chỉ chứa tài liệu kế hoạch (thư mục này) cho tới khi chọn xong hướng ở mục 2. KHÔNG code thử nghiệm trực tiếp trên `main`.
-- `explore/pojavlauncher-fork` — clone/fork PojavLauncher, build thử, đọc cấu trúc module thật.
-- `explore/fcl-fork` — clone/fork Fold Craft Launcher, build thử, đọc cấu trúc module thật.
-- Sau khi chọn xong 1 hướng: merge nhánh đó vào `main`, xóa nhánh còn lại (hoặc giữ làm tham khảo, tùy lúc đó).
+- `main` — tài liệu kế hoạch (thư mục này).
+- `explore/fcl-fork` — **hướng đã chọn, đang phát triển tiếp** — mã nguồn FCL đầy đủ (giữ lịch sử git gốc, `git remote` tên `upstream-fcl` trỏ về `FCL-Team/FoldCraftLauncher`).
+- `explore/pojavlauncher-fork` — **giữ lại làm tham khảo, KHÔNG phát triển tiếp** — đã build/chạy thành công, có thể quay lại nếu FCL gặp trở ngại kỹ thuật nghiêm trọng sau này. `git remote` tên `upstream-pojav`.
+- Việc còn lại (mục 9): merge `explore/fcl-fork` vào `main` khi đã ổn định đủ để coi là "chính thức" (không cần vội — cứ code trên `explore/fcl-fork` cho tới khi có bản demo UI Lylee thật sự chạy được).
 
 ## 5. Môi trường dev
 
@@ -126,6 +134,9 @@ Loạt lỗi thật gặp phải khi build lần đầu trên máy Windows chưa
 - [x] Clone PojavLauncher + FCL (`--recurse-submodules`) vào scratch, đọc cấu trúc thật — xem mục 2.
 - [x] Build thành công APK debug cho CẢ 2 (`app_pojavlauncher-full-debug.apk` + `FCL-fordebug-1.3.2.7-all.apk`) — xem mục 6.
 - [x] Cài cả 2 APK lên máy thật, xác nhận CHẠY được (mở app, không crash, thấy màn hình chính) — xem mục 8.
-- [ ] Đọc kỹ LICENSE đúng tag sẽ fork của cả 2 (xác nhận nghĩa vụ copyleft cụ thể) — Pojav cần xác minh lại trực tiếp trên GitHub vì không thấy file LICENSE thật, FCL đã có sẵn LICENSE rõ ràng.
-- [ ] **Chốt hướng** (cần quyết định của người dùng, không tự chọn) — dựa trên mục 6 (so sánh) + kết quả chạy thử thật.
-- [ ] Sau khi chốt: đưa mã nguồn fork thật vào đúng nhánh `explore/...` tương ứng (hiện source chỉ đang nằm ở `D:\dev\pojav`/`D:\dev\fcl` ngoài git, chưa commit) — cân nhắc giữ lịch sử git gốc (thêm remote + merge) thay vì copy phẳng, để dễ kéo update từ upstream sau này.
+- [x] Đọc kỹ LICENSE thật của Pojav (đào lịch sử git + `gh api`, không đoán) — xem mục 2, kết luận: KHÔNG có license hiệu lực trên nhánh mặc định hiện tại (bị xóa 1 commit, chưa thêm lại). FCL có LICENSE GPLv3 rõ ràng.
+- [x] Nhờ Gemini phân tích/so sánh (dùng [`docs/ai-comparison-prompt.md`](ai-comparison-prompt.md)) — khuyến nghị FCL, người dùng đọc + tự quyết định chọn theo.
+- [x] **Chốt hướng: Fold Craft Launcher (FCL)** — xem mục 2. Đã gỡ APK PojavLauncher khỏi điện thoại test.
+- [x] Đưa mã nguồn cả 2 fork thật vào đúng nhánh `explore/...` tương ứng, giữ nguyên lịch sử git gốc qua `git remote add` + `merge --allow-unrelated-histories` (không copy phẳng) — cả 2 nhánh đã push lên GitHub thành công.
+- [ ] Test thật mod Cobblemon (Forge/Fabric) trên APK FCL, đúng chip Galaxy A50s (Exynos 9611/Mali-G72) — Gemini gợi ý làm trước khi chốt, nhưng người dùng đã quyết định chốt FCL trước khi làm bước này; để dành làm sớm trong lúc bắt đầu tùy biến, phòng khi phát hiện lỗi render GPU Mali cần đổi renderer (VirGL/Zink/Holy GL4ES — xem `docs/ai-comparison-prompt.md` phần trả lời Gemini để tham khảo gợi ý cấu hình).
+- [ ] Bắt đầu tùy biến UI Lylee lên trên FCL — có sẵn bản thiết kế tham khảo (Jetpack Compose Material 3: `ServerStatusCard`/`NewsBannerCarousel`/`LaunchBar`) + hướng đồng bộ modpack Cobblemon tự động (`CobblemonSyncTask` trong `FCLCore`) do Gemini soạn theo yêu cầu người dùng — xem file PDF gốc trong `docs/` (chưa được review kỹ, chỉ là gợi ý code mẫu chưa chạy thử).
