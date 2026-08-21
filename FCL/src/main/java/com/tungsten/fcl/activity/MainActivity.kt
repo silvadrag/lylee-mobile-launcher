@@ -178,13 +178,15 @@ class MainActivity : FCLActivity(), OnSelectListener, View.OnClickListener {
 
         binding.apply {
             uiLayout.post {
-                ThemeEngine.getInstance().registerEvent(leftMenu) {
-                    leftMenu.background = GradientDrawable().apply {
-                        setColor(ThemeEngine.getInstance().getTheme().color)
-                        shape = GradientDrawable.RECTANGLE
-                        ConvertUtils.dip2px(this@MainActivity, 8f).toFloat().apply {
-                            cornerRadii = floatArrayOf(0f, 0f, this, this, this, this, 0f, 0f)
-                        }
+                // Nền tối (đồng bộ launcher PC) thay vì phủ đặc màu hồng theme lên cả
+                // thanh — hồng chỉ còn dùng làm điểm nhấn icon đang chọn (FCLMenuView
+                // tự tô qua dkColor, không đụng ở đây), tránh cảm giác "chỉ đổi màu
+                // logo" mà mọi khung UI khác vẫn na ná FCL gốc.
+                leftMenu.background = GradientDrawable().apply {
+                    setColor(ContextCompat.getColor(this@MainActivity, R.color.sidebar_bg))
+                    shape = GradientDrawable.RECTANGLE
+                    ConvertUtils.dip2px(this@MainActivity, 8f).toFloat().apply {
+                        cornerRadii = floatArrayOf(0f, 0f, this, this, this, this, 0f, 0f)
                     }
                 }
 

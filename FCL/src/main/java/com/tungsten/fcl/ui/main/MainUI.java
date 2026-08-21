@@ -6,6 +6,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.LinearLayoutCompat;
+import androidx.core.content.ContextCompat;
 
 import com.tungsten.fcl.R;
 import com.tungsten.fcl.game.TexturesLoader;
@@ -69,7 +70,9 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
         date = findViewById(R.id.date);
         hide = findViewById(R.id.hide);
         lyleeCobblemon = findViewById(R.id.lylee_cobblemon);
-        ThemeEngine.getInstance().registerEvent(announcementLayout, () -> announcementLayout.getBackground().setTint(ThemeEngine.getInstance().getTheme().getColor()));
+        // Nền thẻ tối #252525 (đồng bộ launcher PC — "news card" không phủ đặc
+        // màu hồng theme) thay vì tint theo màu accent như trước.
+        announcementLayout.getBackground().setTint(ContextCompat.getColor(getContext(), R.color.card_bg));
         hide.setOnClickListener(this);
         lyleeCobblemon.setOnClickListener(this);
         lyleeCobblemon.setOnLongClickListener(v -> {

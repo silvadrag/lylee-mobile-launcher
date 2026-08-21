@@ -6,6 +6,11 @@
     <color name="ui_bg_color">#40F4F4F4</color>
     <color name="right_menu_color">#80F4F4F4</color>
     <color name="icon_background_color">#211B27</color>
+    <!-- Đồng bộ ngôn ngữ thiết kế với launcher PC (docs/UI_DESIGN_GUIDELINES.md):
+         nền chrome/khung tối, hồng #EC5990 chỉ dùng làm điểm nhấn (active/CTA),
+         không phủ đặc lên vùng lớn. -->
+    <color name="sidebar_bg">#141414</color>
+    <color name="card_bg">#252525</color>
     <color name="primary_text">#0E0E0E</color>
     <!-- 原 FCLLibrary 模块颜色（模块已并入 FCL） -->
     <color name="dialog_background">#F4F4F4</color>
