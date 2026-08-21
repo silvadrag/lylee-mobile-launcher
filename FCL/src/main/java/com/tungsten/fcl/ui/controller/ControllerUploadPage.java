@@ -59,7 +59,10 @@ public class ControllerUploadPage extends FCLPage implements View.OnClickListene
 
         qq = findViewById(R.id.qq);
         share = findViewById(R.id.share);
-        qq.setOnClickListener(this);
+        // Nút này từng đưa thẳng vào group QQ thật của FCL-Team để nộp controller
+        // layout cho họ duyệt — không phải kênh của Lylee, ẩn đi vì chưa có kênh
+        // thật để thay (cùng lý do đã bỏ link QQ/Discord bên AboutPage.java).
+        qq.setVisibility(View.GONE);
         share.setOnClickListener(this);
     }
 
@@ -71,9 +74,6 @@ public class ControllerUploadPage extends FCLPage implements View.OnClickListene
 
     @Override
     public void onClick(View view) {
-        if (view == qq) {
-            joinQQGroup(QQ_GROUP_KEY);
-        }
         if (view == share) {
             ControllerUploadDialog dialog = new ControllerUploadDialog(getContext(), getActivity(), controller, this::share);
             dialog.show();
@@ -122,14 +122,4 @@ public class ControllerUploadPage extends FCLPage implements View.OnClickListene
         }).start();
     }
 
-    private final static String QQ_GROUP_KEY = "y9zEb5_DHSGdOYyigFdwsNHx9-9kALbX";
-
-    public void joinQQGroup(String key) {
-        Intent intent = new Intent();
-        intent.setData(Uri.parse("mqqopensdkapi://bizAgent/qm/qr?url=http%3A%2F%2Fqm.qq.com%2Fcgi-bin%2Fqm%2Fqr%3Ffrom%3Dapp%26p%3Dandroid%26jump_from%3Dwebapi%26k%3D" + key));
-        try {
-            getContext().startActivity(intent);
-        } catch (Exception ignored) {
-        }
-    }
 }

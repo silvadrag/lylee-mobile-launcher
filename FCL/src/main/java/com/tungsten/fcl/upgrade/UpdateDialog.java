@@ -86,10 +86,9 @@ public class UpdateDialog extends FCLDialog implements View.OnClickListener {
         negative.setOnClickListener(this);
         netdisk.setOnClickListener(this);
 
-        positive.setOnLongClickListener(view -> {
-            AndroidUtils.openLink(getContext(),"https://github.com/FCL-Team/FoldCraftLauncher/releases/latest");
-            return true;
-        });
+        // Trước trỏ thẳng vào trang release GitHub thật của FCL-Team khi giữ nút
+        // Cập nhật — app đã đổi thương hiệu Lylee nên bỏ hẳn, không có trang
+        // release Lylee thật để thay vào (xem AboutPage.java, lý do tương tự).
 
         checkHeight();
     }
@@ -122,13 +121,13 @@ public class UpdateDialog extends FCLDialog implements View.OnClickListener {
             dialog.setTitle(getContext().getString(R.string.update_launcher));
             Schedulers.androidUIThread().execute(() -> {
                 TaskExecutor executor = Task.composeAsync(() -> {
-                    FileDownloadTask task = new FileDownloadTask(NetworkUtils.toURL(getTargetArchUrl()), new File(FCLPath.CACHE_DIR, "FoldCraftLauncher.apk"));
-                    task.setName("FoldCraftLauncher");
+                    FileDownloadTask task = new FileDownloadTask(NetworkUtils.toURL(getTargetArchUrl()), new File(FCLPath.CACHE_DIR, "LyleeLauncher.apk"));
+                    task.setName("LyleeLauncher");
                     return task.whenComplete(Schedulers.androidUIThread(), exception -> {
                         if (exception == null) {
                             Intent intent = new Intent(Intent.ACTION_VIEW);
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            Uri apkUri = FileProvider.getUriForFile(getContext(), getContext().getString(com.tungsten.fcl.R.string.file_browser_provider), new File(FCLPath.CACHE_DIR, "FoldCraftLauncher.apk"));
+                            Uri apkUri = FileProvider.getUriForFile(getContext(), getContext().getString(com.tungsten.fcl.R.string.file_browser_provider), new File(FCLPath.CACHE_DIR, "LyleeLauncher.apk"));
                             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                             intent.setDataAndType(apkUri, "application/vnd.android.package-archive");
                             getContext().startActivity(intent);
