@@ -1,8 +1,6 @@
 package com.tungsten.fcl.ui.setting;
 
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,16 +23,18 @@ public class AboutPage extends FCLPage {
     private static final int TYPE_DESC = 0;
     private static final int TYPE_LINK = 1;
 
-    private static final String QQ_GROUP_KEY = "9_Mnxe5x1l6L7giLuRYQyBh0iWBgCUbw";
-
-    /** 条目顺序：说明置顶，随后为各链接行 */
+    // Bỏ hẳn about_launcher (từng trỏ tới fcl-team.github.io — sai hoàn toàn
+    // sau khi đổi thương hiệu, label ghi "Lylee Launcher" nhưng bấm vào lại ra
+    // trang FCL), community_discord/community_qq (kênh cộng đồng CỦA FCL-Team,
+    // không phải Lylee — không có Discord/QQ thật của Lylee để thay vào, thà
+    // KHÔNG có nút còn hơn trỏ sai), về_sponsor/afdian (trang donate CÁ NHÂN
+    // của dev FCL — để nguyên sẽ khiến người chơi tưởng đang ủng hộ Lylee mà
+    // thực ra chuyển tiền cho người khác, rất dễ gây hiểu lầm nghiêm trọng).
+    // Giữ lại about_developer (credit đúng nghĩa vụ GPL-v3, không được xóa) và
+    // about_source (đổi link sang repo Lylee thật, xem openLink()).
     private static final int[] TITLES = {
             R.string.about_desc,
-            R.string.about_launcher,
             R.string.about_developer,
-            R.string.community_discord,
-            R.string.community_qq,
-            R.string.about_sponsor,
             R.string.about_source
     };
 
@@ -101,32 +101,16 @@ public class AboutPage extends FCLPage {
     private void openLink(int position) {
         switch (position) {
             case 1:
-                AndroidUtils.openLink(getContext(), "https://fcl-team.github.io/");
-                break;
-            case 2:
+                // Credit đúng nghĩa vụ GPL-v3 — trỏ về team gốc đã tạo ra
+                // Fold Craft Launcher, KHÔNG được đổi/xóa.
                 AndroidUtils.openLink(getContext(), "https://github.com/FCL-Team");
                 break;
-            case 3:
-                AndroidUtils.openLink(getContext(), "https://discord.gg/ffhvuXTwyV");
+            case 2:
+                // Mã nguồn bản Lylee (đã sửa đổi) — repo private lúc mới tạo,
+                // cần bật public trên GitHub thì link này người chơi mới vào
+                // xem được (xem docs/PLAN.md).
+                AndroidUtils.openLink(getContext(), "https://github.com/silvadrag/lylee-mobile-launcher");
                 break;
-            case 4:
-                joinQQGroup(QQ_GROUP_KEY);
-                break;
-            case 5:
-                AndroidUtils.openLink(getContext(), "https://afdian.com/@tungs");
-                break;
-            case 6:
-                AndroidUtils.openLink(getContext(), "https://github.com/FCL-Team/FoldCraftLauncher");
-                break;
-        }
-    }
-
-    private void joinQQGroup(String key) {
-        Intent intent = new Intent();
-        intent.setData(Uri.parse("mqqopensdkapi://bizAgent/qm/qr?url=http%3A%2F%2Fqm.qq.com%2Fcgi-bin%2Fqm%2Fqr%3Ffrom%3Dapp%26p%3Dandroid%26jump_from%3Dwebapi%26k%3D" + key));
-        try {
-            getContext().startActivity(intent);
-        } catch (Exception ignored) {
         }
     }
 }

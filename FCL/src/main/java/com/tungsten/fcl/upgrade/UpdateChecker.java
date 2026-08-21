@@ -19,8 +19,13 @@ import java.util.ArrayList;
 
 public class UpdateChecker {
 
-    public static final String UPDATE_CHECK_URL = "https://raw.githubusercontent.com/FCL-Team/FoldCraftLauncher/main/version_map.json";
-    public static final String UPDATE_CHECK_URL_CN = "https://gitee.com/fcl-team/FCL-Repo/raw/main/res/version_map.json";
+    // TODO(Lylee): trỏ về endpoint thật của server Lylee khi đã dựng xong (xem
+    // docs/PLAN.md phần "Lylee Cobblemon") — hiện chưa tồn tại, request sẽ tự
+    // fail êm, không hiện gì cho tới lúc đó. Cố tình KHÔNG còn trỏ về repo GitHub
+    // thật của FCL-Team nữa (app đã đổi thương hiệu Lylee, không nên tự ý kiểm tra
+    // cập nhật dựa theo version của đội FCL gốc).
+    public static final String UPDATE_CHECK_URL = "https://lylee-launcher-api.lyleelauncher.workers.dev/mobile/version_map.json";
+    public static final String UPDATE_CHECK_URL_CN = UPDATE_CHECK_URL;
 
     private static UpdateChecker instance;
 

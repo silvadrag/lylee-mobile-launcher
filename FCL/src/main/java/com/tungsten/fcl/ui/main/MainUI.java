@@ -31,8 +31,13 @@ import java.util.logging.Level;
 
 public class MainUI extends FCLCommonUI implements View.OnClickListener {
 
-    public static final String ANNOUNCEMENT_URL = "https://raw.githubusercontent.com/FCL-Team/FCL-Repo/refs/heads/main/res/announcement_v2.txt";
-    public static final String ANNOUNCEMENT_URL_CN = "https://gitee.com/fcl-team/FCL-Repo/raw/main/res/announcement_v2.txt";
+    // TODO(Lylee): trỏ về endpoint thật của server Lylee khi đã dựng xong (xem
+    // docs/PLAN.md phần "Lylee Cobblemon") — hiện chưa tồn tại, request sẽ tự
+    // fail êm (catch Exception bên dưới), không hiện thông báo nào cho tới lúc đó.
+    // Cố tình KHÔNG còn trỏ về repo GitHub thật của FCL-Team nữa (tránh hiện thông
+    // báo/liên kết của đội FCL gốc bên trong app đã đổi thương hiệu Lylee).
+    public static final String ANNOUNCEMENT_URL = "https://lylee-launcher-api.lyleelauncher.workers.dev/mobile/announcement_v2.txt";
+    public static final String ANNOUNCEMENT_URL_CN = ANNOUNCEMENT_URL;
 
     private LinearLayoutCompat announcementContainer;
     private LinearLayoutCompat announcementLayout;

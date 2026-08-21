@@ -140,3 +140,54 @@ Loạt lỗi thật gặp phải khi build lần đầu trên máy Windows chưa
 - [x] Đưa mã nguồn cả 2 fork thật vào đúng nhánh `explore/...` tương ứng, giữ nguyên lịch sử git gốc qua `git remote add` + `merge --allow-unrelated-histories` (không copy phẳng) — cả 2 nhánh đã push lên GitHub thành công.
 - [ ] Test thật mod Cobblemon (Forge/Fabric) trên APK FCL, đúng chip Galaxy A50s (Exynos 9611/Mali-G72) — Gemini gợi ý làm trước khi chốt, nhưng người dùng đã quyết định chốt FCL trước khi làm bước này; để dành làm sớm trong lúc bắt đầu tùy biến, phòng khi phát hiện lỗi render GPU Mali cần đổi renderer (VirGL/Zink/Holy GL4ES — xem `docs/ai-comparison-prompt.md` phần trả lời Gemini để tham khảo gợi ý cấu hình).
 - [ ] Bắt đầu tùy biến UI Lylee lên trên FCL — có sẵn bản thiết kế tham khảo (Jetpack Compose Material 3: `ServerStatusCard`/`NewsBannerCarousel`/`LaunchBar`) + hướng đồng bộ modpack Cobblemon tự động (`CobblemonSyncTask` trong `FCLCore`) do Gemini soạn theo yêu cầu người dùng — xem file PDF gốc trong `docs/` (chưa được review kỹ, chỉ là gợi ý code mẫu chưa chạy thử).
+
+## 10. Đợt dọn thương hiệu FCL còn sót + bắt đầu "Lylee Cobblemon" (2026-08-21)
+
+Người dùng gửi 7 ảnh chụp màn hình thật trên máy, phát hiện app đã đổi màu/tên/icon
+đúng nhưng vẫn còn vài chỗ nội dung/link CỦA FCL-Team sót lại. Đã sửa:
+
+- [x] `AboutPage.java` — bỏ hẳn `about_launcher` (trỏ `fcl-team.github.io`), bỏ
+  `community_discord`/`community_qq` (kênh cộng đồng của FCL, Lylee chưa có kênh
+  thật để thay), và **quan trọng nhất**: bỏ link donate Afdian cá nhân của dev FCL
+  (`about_sponsor`) — để nguyên sẽ khiến người chơi tưởng ủng hộ Lylee mà thực ra
+  chuyển tiền cho người khác. Giữ `about_developer` (credit GPL-v3 bắt buộc, trỏ
+  `github.com/FCL-Team`) và `about_source` (đổi sang `github.com/silvadrag/lylee-mobile-launcher`,
+  chỉ vào xem được khi repo này được bật public).
+- [x] `MainUI.java` — banner thông báo trong app (`ANNOUNCEMENT_URL`/`_CN`) trước
+  trỏ thẳng vào GitHub/Gitee thật của FCL-Team (đây là chỗ user chụp ảnh thấy card
+  "Thông báo: About 1.3.1.5" của FCL hiện trong app Lylee) → đổi sang placeholder
+  `.../mobile/announcement_v2.txt` trên đúng domain Cloudflare Worker mà launcher PC
+  đang dùng thật. Endpoint này CHƯA tồn tại phía backend nên hiện tại sẽ fail êm,
+  không hiện gì — cần dựng thật ở mục việc-cần-làm bên dưới.
+- [x] `UpdateChecker.java` — tương tự, `UPDATE_CHECK_URL`/`_CN` đổi từ
+  `version_map.json` thật của FCL-Team sang placeholder `.../mobile/version_map.json`
+  cùng domain, cũng chưa có backend thật phía sau.
+- [x] Controller JSON (`00000000.json`) — sửa mô tả còn ghi "Fold Craft Launcher".
+- [x] Bắt đầu phần "Lylee Cobblemon" (nối nhanh vào server) — tạo
+  `FCL/src/main/java/com/tungsten/fcl/lylee/LyleeManifest.java` (DTO khớp đúng JSON
+  thật của `Dtos.ManifestResponse`/`FileEntryResponse` bên mod backend) và
+  `LyleeCobblemonSync.java` (engine đồng bộ: gọi CHÍNH endpoint
+  `GET /api/servers/1/manifest` mà launcher PC đang dùng thật — không bịa endpoint
+  riêng cho mobile — so size trước/hash SHA-1/256 sau để biết file nào cần tải lại,
+  dùng `FileDownloadTask` có `IntegrityCheck` sẵn của `FCLCore`). CHỦ Ý không tự xóa
+  file thừa ngoài manifest, học từ bug thật đã gặp bên PC launcher (xem
+  `docs/PROGRESS.md` bên repo PC, mục cải tiến update 2026-08-13) — tự xóa từng ép
+  mất mod người chơi tự thêm. Build `:FCL:assembleFordebug` qua sạch, nhưng **CHƯA
+  gắn nút/màn hình nào gọi `LyleeCobblemonSync.sync()`** — mới chỉ là engine gọi
+  được từ code, chưa có UI trigger thật.
+
+### Việc cần làm tiếp (đợt này)
+
+- [ ] Gắn UI trigger thật cho `LyleeCobblemonSync.sync()` — cân nhắc: thêm mục
+  trong màn hình chính (tab riêng "Lylee Cobblemon" giống mô hình 2 tab bên PC:
+  Cobblemon + Instances tự do) hay gắn tạm vào AboutPage/Settings trước cho nhanh.
+- [ ] Dựng backend thật cho 2 endpoint placeholder ở trên
+  (`mobile/announcement_v2.txt`, `mobile/version_map.json`) — cần thêm route mới
+  bên `fabric-lyleelauncherAPI-mod-1.21.1` (+ có thể UI quản trị bên `LyleeAdminTool`
+  để publish bản APK mới), rebuild/deploy JAR thủ công theo quy trình đã có.
+- [ ] Thiết kế lại UI (mục người dùng yêu cầu, chưa bắt đầu — mới chỉ xong phần
+  màu/tên/icon/splash/dọn link, chưa đổi layout/màn hình nào).
+- [ ] Người dùng đã rút USB điện thoại test giữa chừng đợt này — TOÀN BỘ thay đổi
+  ở mục 10 (link/text + 2 file Lylee mới) mới chỉ được xác nhận qua build source
+  (`gradle` compile sạch), CHƯA được xác minh trực quan trên máy thật. Cần cài lại
+  và chụp ảnh kiểm tra khi người dùng kết nối lại điện thoại.
