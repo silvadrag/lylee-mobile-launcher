@@ -40,8 +40,11 @@ public class FCLTabLayout extends TabLayout {
 
                     }
             };
+            // Nền thanh tab đổi sang màu card tối (đồng bộ launcher PC) thay vì
+            // phủ đặc màu hồng nhạt — chỉ tab đang chọn mới nổi bật màu nhấn
+            // (qua indicator + màu chữ dkColor phía trên, không đụng ở đây).
             int[] bgColor = {
-                    ThemeEngine.getInstance().getTheme().getLtColor()
+                    getResources().getColor(R.color.card_bg, null)
             };
             setSelectedTabIndicatorColor(ThemeEngine.getInstance().getTheme().getDkColor());
             setTabTextColors(new ColorStateList(state, color));

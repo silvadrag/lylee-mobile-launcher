@@ -23,7 +23,6 @@ import com.tungsten.fcl.setting.Controllers
 import com.tungsten.fcl.setting.VersionSetting
 import com.tungsten.fcl.util.AndroidUtils
 import com.tungsten.fclcore.util.platform.MemoryUtils
-import com.tungsten.fcllibrary.component.theme.ThemeEngine
 import com.tungsten.fcllibrary.component.view.FCLTextView
 
 /** 设置行操作标签：按钮点击 / 特殊开关 / 编辑行长按按此分发 */
@@ -324,11 +323,9 @@ class VersionSettingAdapter(
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
-        // 行背景为圆角形状（item 布局中定义），颜色 tint 取主题浅色；间隔空隙透出页面背景
-        ThemeEngine.getInstance().unregisterEvent(holder.itemView)
-        ThemeEngine.getInstance().registerEvent(holder.itemView) {
-            holder.itemView.backgroundTintList = ColorStateList.valueOf(ThemeEngine.getInstance().getTheme().ltColor)
-        }
+        // 行背景为圆角形状（item 布局中定义）；颜色改为深色卡片色（对齐 PC 版设计
+        // 语言，色块不再铺满主题强调色），静态色值不必再随主题刷新监听
+        holder.itemView.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.card_bg))
         val row = rows[position]
         // 行下方的作用描述
         holder.itemView.findViewById<FCLTextView>(R.id.description)?.let { description ->

@@ -39,7 +39,9 @@ public class FCLTextView extends AppCompatTextView {
             }
         }
         if (autoBackgroundTint) {
-            setBackgroundTintList(new ColorStateList(new int[][]{{}}, new int[]{ThemeEngine.getInstance().getTheme().getColor()}));
+            // Đổi sang màu card tối (đồng bộ launcher PC) thay vì màu accent chính —
+            // vùng lớn không nên phủ đặc màu nhấn, chỉ CTA/trạng thái active mới dùng.
+            setBackgroundTintList(new ColorStateList(new int[][]{{}}, new int[]{getResources().getColor(R.color.card_bg, null)}));
         }
         if (useThemeColor) {
             setTextColor(ThemeEngine.getInstance().getTheme().getColor2());
