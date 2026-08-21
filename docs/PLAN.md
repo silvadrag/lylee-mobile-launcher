@@ -366,6 +366,21 @@ hồng `#EC5990` CHỈ dùng cho CTA/trạng thái active, bo góc chuẩn 4/6/8
   (đúng vì Cobblemon đã cài từ lúc test mục 11), icon nav tô hồng đúng khi được
   chọn, nút cũ trên trang chủ đã biến mất.
 
+## 15. Sửa thông báo mobile hiện mã XAML thô (2026-08-21)
+
+- [x] `Database.getLatestActiveAnnouncementForMobile` (repo mod) — thêm
+  `xamlToPlainText()`: bóc nội dung XAML FlowDocument (PC AdminTool soạn qua
+  RichTextBox) về text thuần trước khi trả cho mobile. Đi qua DOM XML thật
+  (không regex mù) để không vỡ khi thuộc tính chứa `<`/`>`, xuống dòng ở ranh
+  giới mỗi `Paragraph`, ảnh/control khác tự bỏ qua vì không có text. XAML lỗi
+  định dạng thì fallback bóc thẻ bằng regex thay vì làm hỏng cả announcement.
+  Test tay bằng mẫu XAML giống hệt announcement thật đã thấy trên máy (ảnh bị
+  bỏ đúng, xuống dòng đúng, entity `&lt;` giải mã đúng, input lỗi vẫn fallback
+  ra được text đọc được) — xem `git log` commit liên quan.
+- [ ] **Chưa deploy**: giống mọi lần sửa `Database.java`/`ApiServer.java`
+  khác, cần build lại jar + upload lên Lilypad + Restart để có hiệu lực thật
+  (xem mục 12 hướng dẫn deploy cũ, quy trình giống hệt).
+
 ### Việc cần làm tiếp
 
-- [ ] Xử lý vấn đề thông báo hiện mã XAML thô trên mobile (xem mục 12).
+- [ ] Deploy bản sửa thông báo XAML lên server thật (xem mục 15).
