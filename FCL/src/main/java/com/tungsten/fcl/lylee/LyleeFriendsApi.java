@@ -116,6 +116,15 @@ public final class LyleeFriendsApi {
                 new PasswordBody(password), PlayerLoginResponse.class);
     }
 
+    /** Route KHÔNG nằm dưới /api/players/{username}/ như các route khác — cố định
+     *  /api/auth/google, username đi trong body chứ không phải path (xem
+     *  ApiServer.googleLogin bên mod backend). Response thật còn có thêm
+     *  isPremium nhưng PlayerLoginResponse không cần field đó, Gson bỏ qua. */
+    public static Task<PlayerLoginResponse> googleLogin(String idToken, String username) {
+        return postJson(BASE_URL + "/api/auth/google", null,
+                new GoogleLoginBody(idToken, username), PlayerLoginResponse.class);
+    }
+
     public static Task<SuccessResponse> registerStart(String username, String email) {
         return postJson(BASE_URL + "/api/players/" + enc(username) + "/register/start", null,
                 new EmailBody(email), SuccessResponse.class);
@@ -255,6 +264,16 @@ public final class LyleeFriendsApi {
 
         PasswordBody(String password) {
             this.password = password;
+        }
+    }
+
+    private static final class GoogleLoginBody {
+        final String idToken;
+        final String username;
+
+        GoogleLoginBody(String idToken, String username) {
+            this.idToken = idToken;
+            this.username = username;
         }
     }
 

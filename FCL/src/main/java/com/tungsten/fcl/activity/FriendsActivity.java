@@ -12,6 +12,11 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
 import com.tungsten.fcl.R;
 import com.tungsten.fcl.lylee.LyleeFriendsApi;
 import com.tungsten.fcl.lylee.LyleeFriendsSession;
@@ -43,6 +48,14 @@ public class FriendsActivity extends FCLActivity {
 
     private static final int POLL_INTERVAL_MS = 2000;
 
+    // Client ID OAuth "Web application" tạo riêng cho mobile trên Google Cloud
+    // Console (cùng project essential-graph-505020-f5 mà PC dùng) — Android
+    // GoogleSignInOptions.requestIdToken() cần audience kiểu Web, KHÔNG dùng
+    // được client "Desktop" mà PC launcher đang có sẵn. Backend
+    // (GoogleTokenVerifier) đã cấu hình chấp nhận cả 2 client này làm audience.
+    private static final String GOOGLE_WEB_CLIENT_ID =
+            "103098936310-se30mln5luh8lscoun2b73nodjjqm5k9.apps.googleusercontent.com";
+
     private enum Screen { LOGIN, LIST, CHAT }
 
     // --- Đăng nhập ---
@@ -55,6 +68,8 @@ public class FriendsActivity extends FCLActivity {
     private FCLButton loginSubmit;
     private FCLTextView loginError;
     private FCLProgressBar loginProgress;
+    private View loginGoogle;
+    private GoogleSignInClient googleSignInClient;
     private boolean isClaimed = false;
     private boolean registerCodeSent = false;
 
@@ -168,7 +183,48 @@ public class FriendsActivity extends FCLActivity {
         loginSubmit = findViewById(R.id.login_submit);
         loginError = findViewById(R.id.login_error);
         loginProgress = findViewById(R.id.login_progress);
+        loginGoogle = findViewById(R.id.login_google);
         loginSubmit.setOnClickListener(v -> onLoginSubmit());
+
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(GOOGLE_WEB_CLIENT_ID)
+                .requestEmail()
+                .build();
+        googleSignInClient = GoogleSignIn.getClient(this, gso);
+        loginGoogle.setOnClickListener(v -> {
+            loginError.setVisibility(View.GONE);
+            startActivityForResult(googleSignInClient.getSignInIntent(), this::onGoogleSignInResult);
+        });
+    }
+
+    private void onGoogleSignInResult(androidx.activity.result.ActivityResult result) {
+        try {
+            GoogleSignInAccount account = GoogleSignIn.getSignedInAccountFromIntent(result.getData())
+                    .getResult(ApiException.class);
+            String idToken = account.getIdToken();
+            if (idToken == null) {
+                showLoginError(R.string.friends_google_login_failed);
+                return;
+            }
+            setLoginBusy(true);
+            LyleeFriendsApi.googleLogin(idToken, myUsername)
+                    .whenComplete(Schedulers.androidUIThread(), (res, ex) -> {
+                        setLoginBusy(false);
+                        if (ex != null || res == null) {
+                            showLoginError(R.string.friends_google_login_failed);
+                            return;
+                        }
+                        LyleeFriendsSession.save(this, res.token, res.username, res.expiresAt);
+                        showScreen(Screen.LIST);
+                    }).start();
+        } catch (ApiException e) {
+            // Mã 12501 = người dùng tự hủy chọn tài khoản — không phải lỗi thật, khỏi hiện thông báo đỏ
+            if (e.getStatusCode() == 12501) {
+                Toast.makeText(this, getString(R.string.friends_google_cancelled), Toast.LENGTH_SHORT).show();
+            } else {
+                showLoginError(R.string.friends_google_login_failed);
+            }
+        }
     }
 
     private void checkClaimStatus() {
@@ -246,6 +302,7 @@ public class FriendsActivity extends FCLActivity {
     private void setLoginBusy(boolean busy) {
         loginProgress.setVisibility(busy ? View.VISIBLE : View.GONE);
         loginSubmit.setEnabled(!busy);
+        loginGoogle.setEnabled(!busy);
     }
 
     private void showLoginError(int resId) {

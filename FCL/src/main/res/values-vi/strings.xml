@@ -135,6 +135,10 @@
     <string name="friends_email_hint">Email</string>
     <string name="friends_code_hint">Mã xác nhận</string>
     <string name="friends_login_button">Đăng nhập</string>
+    <string name="friends_or_divider">hoặc</string>
+    <string name="friends_google_login">Đăng nhập bằng Google</string>
+    <string name="friends_google_login_failed">Đăng nhập Google thất bại. Thử lại nhé.</string>
+    <string name="friends_google_cancelled">Đã hủy đăng nhập Google.</string>
     <string name="friends_login_checking">Đang kiểm tra tài khoản %s…</string>
     <string name="friends_login_check_failed">Không kiểm tra được tài khoản này. Kiểm tra kết nối mạng rồi thử lại.</string>
     <string name="friends_login_subtitle_existing">Nhập mật khẩu cho %s để tiếp tục.</string>

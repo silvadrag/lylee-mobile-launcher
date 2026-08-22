@@ -150,6 +150,10 @@
     <string name="friends_email_hint">Email</string>
     <string name="friends_code_hint">Verification code</string>
     <string name="friends_login_button">Log in</string>
+    <string name="friends_or_divider">or</string>
+    <string name="friends_google_login">Sign in with Google</string>
+    <string name="friends_google_login_failed">Google sign-in failed. Try again.</string>
+    <string name="friends_google_cancelled">Google sign-in was cancelled.</string>
     <string name="friends_login_checking">Checking account %s…</string>
     <string name="friends_login_check_failed">Couldn\'t check this account. Check your connection and try again.</string>
     <string name="friends_login_subtitle_existing">Enter the password for %s to continue.</string>
