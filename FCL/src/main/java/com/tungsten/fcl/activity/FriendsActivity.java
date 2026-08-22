@@ -46,6 +46,7 @@ public class FriendsActivity extends FCLActivity {
     private enum Screen { LOGIN, LIST, CHAT }
 
     // --- Đăng nhập ---
+    private View loginBack;
     private View loginContainer;
     private FCLTextView loginSubtitle;
     private FCLEditText loginPassword;
@@ -129,6 +130,7 @@ public class FriendsActivity extends FCLActivity {
 
     private void showScreen(Screen screen) {
         currentScreen = screen;
+        loginBack.setVisibility(screen == Screen.LOGIN ? View.VISIBLE : View.GONE);
         loginContainer.setVisibility(screen == Screen.LOGIN ? View.VISIBLE : View.GONE);
         listContainer.setVisibility(screen == Screen.LIST ? View.VISIBLE : View.GONE);
         chatContainer.setVisibility(screen == Screen.CHAT ? View.VISIBLE : View.GONE);
@@ -156,6 +158,8 @@ public class FriendsActivity extends FCLActivity {
     // ===================== Đăng nhập / Đăng ký =====================
 
     private void bindLoginViews() {
+        loginBack = findViewById(R.id.login_back);
+        loginBack.setOnClickListener(v -> finish());
         loginContainer = findViewById(R.id.login_container);
         loginSubtitle = findViewById(R.id.login_subtitle);
         loginPassword = findViewById(R.id.login_password);
