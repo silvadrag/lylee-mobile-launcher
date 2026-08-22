@@ -25,17 +25,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/friends_login_title"
+            android:textColor="@android:color/white"
             android:textSize="22sp"
-            android:textStyle="bold"
-            app:auto_text_tint="true" />
+            android:textStyle="bold" />
 
         <com.tungsten.fcllibrary.component.view.FCLTextView
             android:id="@+id/login_subtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:textSize="13sp"
-            app:auto_text_tint="true" />
+            android:textColor="#AAAAAA"
+            android:textSize="13sp" />
 
         <com.tungsten.fcllibrary.component.view.FCLEditText
             android:id="@+id/login_password"
@@ -113,16 +113,17 @@
                 android:id="@+id/list_back"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_baseline_arrow_back_24" />
+                android:src="@drawable/ic_baseline_arrow_back_24"
+                android:tint="@android:color/white" />
 
             <com.tungsten.fcllibrary.component.view.FCLTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="@string/friends_title"
+                android:textColor="@android:color/white"
                 android:textSize="20sp"
-                android:textStyle="bold"
-                app:auto_text_tint="true" />
+                android:textStyle="bold" />
 
             <View
                 android:layout_width="0dp"
@@ -133,7 +134,8 @@
                 android:id="@+id/list_add"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_baseline_person_add_24" />
+                android:src="@drawable/ic_baseline_person_add_24"
+                android:tint="@android:color/white" />
 
         </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -171,16 +173,17 @@
                 android:id="@+id/chat_back"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_baseline_arrow_back_24" />
+                android:src="@drawable/ic_baseline_arrow_back_24"
+                android:tint="@android:color/white" />
 
             <com.tungsten.fcllibrary.component.view.FCLTextView
                 android:id="@+id/chat_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
+                android:textColor="@android:color/white"
                 android:textSize="18sp"
-                android:textStyle="bold"
-                app:auto_text_tint="true" />
+                android:textStyle="bold" />
 
         </androidx.appcompat.widget.LinearLayoutCompat>
 

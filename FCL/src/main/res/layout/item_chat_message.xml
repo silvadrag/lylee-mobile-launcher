@@ -11,10 +11,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="8dp"
-        android:background="@drawable/bg_container_white"
+        android:background="@drawable/bg_chat_bubble_other"
+        android:maxWidth="420dp"
         android:padding="10dp"
-        android:textSize="14sp"
-        app:auto_text_tint="true" />
+        android:textColor="@android:color/white"
+        android:textSize="14sp" />
 
     <com.tungsten.fcllibrary.component.view.FCLTextView
         android:id="@+id/msg_meta"
@@ -22,7 +23,7 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="8dp"
         android:layout_marginTop="2dp"
-        android:textSize="10sp"
-        app:auto_text_tint="true" />
+        android:textColor="#999999"
+        android:textSize="10sp" />
 
 </androidx.appcompat.widget.LinearLayoutCompat>

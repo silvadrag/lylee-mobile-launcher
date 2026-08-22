@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_container_white"
+    android:background="@drawable/bg_card_dark"
     android:orientation="horizontal"
     android:gravity="center_vertical"
     android:padding="12dp">
@@ -18,17 +18,17 @@
             android:id="@+id/row_username"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
             android:textSize="15sp"
-            android:textStyle="bold"
-            app:auto_text_tint="true" />
+            android:textStyle="bold" />
 
         <com.tungsten.fcllibrary.component.view.FCLTextView
             android:id="@+id/row_subtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
-            android:textSize="12sp"
-            app:auto_text_tint="true" />
+            android:textColor="#AAAAAA"
+            android:textSize="12sp" />
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 

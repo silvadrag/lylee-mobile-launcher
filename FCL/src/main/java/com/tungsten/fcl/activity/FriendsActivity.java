@@ -454,6 +454,7 @@ public class FriendsActivity extends FCLActivity {
 
             boolean isMine = myUsername.equals(msg.senderUsername);
             bubble.setText(msg.recalled ? getString(R.string.friends_message_recalled) : msg.body);
+            bubble.setBackgroundResource(isMine ? R.drawable.bg_chat_bubble_mine : R.drawable.bg_chat_bubble_other);
             meta.setText((isMine ? getString(R.string.friends_you) : msg.senderUsername) + " · " + msg.sentAt);
             ((androidx.appcompat.widget.LinearLayoutCompat) view).setGravity(isMine ? android.view.Gravity.END : android.view.Gravity.START);
             return view;
