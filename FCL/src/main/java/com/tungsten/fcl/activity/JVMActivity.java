@@ -24,6 +24,7 @@ import com.tungsten.fcl.control.MenuCallback;
 import com.tungsten.fcl.control.MenuType;
 import com.tungsten.fcl.control.OpenFolderDialog;
 import com.tungsten.fcl.control.view.MenuView;
+import com.tungsten.fcl.lylee.LyleeSessionTracker;
 import com.tungsten.fcl.setting.GameOption;
 import com.tungsten.fcl.terracotta.Terracotta;
 import com.tungsten.fcl.util.AndroidUtils;
@@ -268,6 +269,19 @@ public class JVMActivity extends FCLActivity implements TextureView.SurfaceTextu
     @Override
     protected void onDestroy() {
         Terracotta.setWaiting(this, true);
+        // Đóng phiên chơi Lylee Cobblemon nếu có (xem LauncherHelper — chỉ đặt
+        // LYLEE_SESSION_ID/TERRACOTTA_PLAYER khi launch version Cobblemon).
+        // onDestroy() luôn được gọi khi Activity kết thúc bất kể lý do (thoát
+        // tay, crash, back) nên đây là điểm chốt "phiên chơi kết thúc" đáng tin
+        // cậy nhất — chạy nền vì đây là gọi mạng, không được chặn UI thread.
+        Bundle extras = getIntent().getExtras();
+        if (extras != null && extras.containsKey("LYLEE_SESSION_ID")) {
+            long sessionId = extras.getLong("LYLEE_SESSION_ID");
+            String username = extras.getString("TERRACOTTA_PLAYER");
+            if (username != null) {
+                new Thread(() -> LyleeSessionTracker.end(username, sessionId)).start();
+            }
+        }
         super.onDestroy();
     }
 

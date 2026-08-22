@@ -43,6 +43,8 @@ import com.tungsten.fcl.R;
 import com.tungsten.fcl.activity.JVMActivity;
 import com.tungsten.fcl.activity.MainActivity;
 import com.tungsten.fcl.control.MenuType;
+import com.tungsten.fcl.lylee.LyleeCobblemonConnector;
+import com.tungsten.fcl.lylee.LyleeSessionTracker;
 import com.tungsten.fcl.setting.GameOption;
 import com.tungsten.fcl.setting.MenuSetting;
 import com.tungsten.fcl.setting.Profile;
@@ -236,30 +238,42 @@ public final class LauncherHelper {
                             gameOption.set("preferredGraphicsBackend", setting.getGraphicsBackend());
                             gameOption.save();
                             return Task.completed(fclBridge);
-                        }).thenAcceptAsync(fclBridge -> Schedulers.androidUIThread().execute(() -> {
-                            CallbackBridge.nativeSetUseInputStackQueue(version.get().getArguments().isPresent());
-                            Intent intent = new Intent(context, JVMActivity.class);
-                            fclBridge.setScaleFactor(scaleFactor);
-                            fclBridge.setController(repository.getVersionSetting(selectedVersion).getController());
-                            fclBridge.setGameDir(repository.getRunDirectory(selectedVersion).getAbsolutePath());
-                            fclBridge.setJava(Integer.toString(javaVersionRef.get().getVersion()));
-                            JVMActivity.setFCLBridge(fclBridge, MenuType.GAME);
-                            Bundle bundle = new Bundle();
-                            bundle.putString("controller", repository.getVersionSetting(selectedVersion).getController());
-                            bundle.putString("TERRACOTTA_PLAYER", account.getUsername());
-                            intent.putExtras(bundle);
-                            LOG.log(Level.INFO, "Start JVMActivity!");
-                            context.startActivity(intent);
-                            if (MainActivity.getInstance().shouldPlayVideo()) {
-                                MainActivity.getInstance().setMediaPlayer(null);
-                                MainActivity.getInstance().binding.videoView.stopPlayback();
-                            }
-                            if (context.getSharedPreferences("launcher", MODE_PRIVATE).getBoolean("autoExitLauncher", false)) {
-                                Activity activity = FCLApplication.getCurrentActivity();
-                                if (activity != null)
-                                    activity.finish();
-                            }
-                        }))
+                        }).thenAcceptAsync(fclBridge -> {
+                            // Ghi nhận thời gian chơi — CHỈ cho version Lylee Cobblemon (đúng
+                            // tinh thần PC: bản tự do/instance khác không tính giờ), gọi trên
+                            // luồng nền hiện tại (thenAcceptAsync), không phải luồng UI —
+                            // xem LyleeSessionTracker để biết vì sao best-effort/không chặn launch.
+                            Long sessionId = LyleeCobblemonConnector.VERSION_NAME.equals(selectedVersion)
+                                    ? LyleeSessionTracker.start(account.getUsername(), FCLPath.CONTEXT.getString(R.string.app_version))
+                                    : null;
+                            Schedulers.androidUIThread().execute(() -> {
+                                CallbackBridge.nativeSetUseInputStackQueue(version.get().getArguments().isPresent());
+                                Intent intent = new Intent(context, JVMActivity.class);
+                                fclBridge.setScaleFactor(scaleFactor);
+                                fclBridge.setController(repository.getVersionSetting(selectedVersion).getController());
+                                fclBridge.setGameDir(repository.getRunDirectory(selectedVersion).getAbsolutePath());
+                                fclBridge.setJava(Integer.toString(javaVersionRef.get().getVersion()));
+                                JVMActivity.setFCLBridge(fclBridge, MenuType.GAME);
+                                Bundle bundle = new Bundle();
+                                bundle.putString("controller", repository.getVersionSetting(selectedVersion).getController());
+                                bundle.putString("TERRACOTTA_PLAYER", account.getUsername());
+                                if (sessionId != null) {
+                                    bundle.putLong("LYLEE_SESSION_ID", sessionId);
+                                }
+                                intent.putExtras(bundle);
+                                LOG.log(Level.INFO, "Start JVMActivity!");
+                                context.startActivity(intent);
+                                if (MainActivity.getInstance().shouldPlayVideo()) {
+                                    MainActivity.getInstance().setMediaPlayer(null);
+                                    MainActivity.getInstance().binding.videoView.stopPlayback();
+                                }
+                                if (context.getSharedPreferences("launcher", MODE_PRIVATE).getBoolean("autoExitLauncher", false)) {
+                                    Activity activity = FCLApplication.getCurrentActivity();
+                                    if (activity != null)
+                                        activity.finish();
+                                }
+                            });
+                        })
                         .withStage("launch.state.waiting_launching"))
                 .withStagesHint(Lang.immutableListOf(
                         "launch.state.java",

@@ -39,6 +39,15 @@
             app:auto_text_tint="true" />
 
         <com.tungsten.fcllibrary.component.view.FCLTextView
+            android:id="@+id/server_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textSize="12sp"
+            android:visibility="gone"
+            app:auto_text_tint="true" />
+
+        <com.tungsten.fcllibrary.component.view.FCLTextView
             android:id="@+id/status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -56,6 +65,16 @@
             android:textSize="16sp"
             android:textStyle="bold"
             app:ripple="true" />
+
+        <com.tungsten.fcllibrary.component.view.FCLTextView
+            android:id="@+id/playtime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:textSize="12sp"
+            android:visibility="gone"
+            app:auto_text_tint="true" />
 
     </com.tungsten.fcllibrary.component.view.FCLLinearLayout>
 

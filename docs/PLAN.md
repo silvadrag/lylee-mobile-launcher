@@ -523,3 +523,78 @@ launch). Bấm thử thật trên máy test (Galaxy A50s, Exynos 9611/Mali-G72,
   viện glibc không có trên Android/Bionic) — không crash game (tự fallback
   "Using Cloth Config GUI"), nhưng tính năng voice chat khả năng không
   hoạt động trên mobile. Chưa điều tra sâu, chưa fix.
+
+## 19. So sánh tính năng PC ↔ Mobile + bổ sung playtime/trạng thái server (2026-08-22)
+
+Người dùng yêu cầu so sánh 2 launcher (đọc code thật cả 2 phía qua agent
+research, không đoán) để tìm chỗ có thể "liên kết" 2 nền tảng — bổ sung phần
+thiếu nếu khả thi và có lợi.
+
+### Bảng so sánh
+
+| Tính năng | PC | Mobile (trước mục này) |
+|---|---|---|
+| Trạng thái server (online/số người chơi) | Có (`ServerStatusService.cs` → `GET /api/servers`) | Không có |
+| Thời gian chơi (playtime) | Có (đọc + hiện) | Không có |
+| Kết bạn/chat | Có, đầy đủ (list/lời mời/chặn/chat gõ-đang-nhập/react/thu hồi) | Không có |
+| Đăng nhập Google | Có (khóa username, không bắt buộc để chơi) | Không có |
+| Cài modpack tự do (import `.mrpack`) | Có UI riêng | Máy FCL gốc hỗ trợ kỹ thuật, chưa có UI |
+| Nhiều tin tức/lịch sử thông báo | Có (`NewsCardsPagerControl`, đa announcement) | Có (mục 17, `AnnouncementHistoryDialog`) — NGANG NHAU, không phải khoảng trống |
+| Cảnh báo cấu hình yếu trước khi tải | Không có | Có (mục 18) |
+
+Ưu tiên đã chọn: **playtime + trạng thái server trước** (rẻ, backend PC đã
+chứng minh hoạt động, đúng nghĩa "liên kết" — chơi PC hay mobile cộng dồn
+chung 1 con số). Kết bạn/chat, Google login, cài modpack tự do: để dành
+phiên riêng (feature lớn hơn nhiều).
+
+### Đã làm
+
+- [x] **`LyleeSessionTracker.java`** (mới) — gọi `POST /api/players/{u}/session/start`
+  trước khi mở `JVMActivity` (trong `LauncherHelper.launch0()`, chạy trên
+  luồng nền của `thenAcceptAsync`, không phải UI thread), sessionId truyền
+  qua `Intent` extra `LYLEE_SESSION_ID`; `JVMActivity.onDestroy()` gọi
+  `POST .../session/{id}/end` trên thread riêng (onDestroy luôn được gọi
+  bất kể thoát tay/crash/back — điểm chốt tin cậy nhất cho "phiên chơi kết
+  thúc"). **CHỈ áp dụng cho version `LyleeCobblemonConnector.VERSION_NAME`**
+  — đúng tinh thần PC (bản tự do/instance khác không tính giờ). Best-effort
+  triệt để: mọi lỗi mạng chỉ trả `null`/im lặng bỏ qua, không chặn launch —
+  mobile chưa có hạ tầng JWT player (chưa đăng nhập Google) nên không tự
+  vượt qua được trường hợp "username đã khóa" như PC, chấp nhận fail-êm.
+- [x] Trang Lylee Cobblemon (`LyleeCobblemonUI.java`) hiện thêm **tổng thời
+  gian chơi** (`GET /playtime`, ẩn hẳn nếu 0/lỗi — không hiện "0 phút" gây
+  hiểu nhầm) và **số người đang online** (`LyleeServerStatus.java`, dùng
+  chung `GET /api/servers` với PC, lọc đúng `serverProfileId=1`).
+- [x] Build `FCL:assembleFordebug` sạch. **Chưa test trên máy thật** — điện
+  thoại không kết nối lúc code xong, để dành lần sau.
+
+### Phát hiện: lỗi 500 khi gọi session/start — khả năng đã âm thầm hỏng playtime trên CẢ PC
+
+- [x] Test tay `POST /api/players/claude_test_session/session/start` trên
+  server thật → **lỗi 500** ("Lỗi máy chủ nội bộ"). `GET /playtime` và
+  `GET /claim-status` cùng username lại chạy bình thường (Player table
+  khỏe) — cô lập được: lỗi nằm đúng ở bước `INSERT INTO PlayerSession`.
+- [x] Bảng `PlayerSession` **có trong `schema.mysql.sql`** (kèm comment
+  gốc: "phát hiện DB không có gì thay đổi dù người chơi thật đã vào game" —
+  tức triệu chứng NÀY đã từng bị để ý nhưng có thể bị chẩn đoán sai nguyên
+  nhân trước đây) nhưng **không xuất hiện trong `migrations-applied-2026-08.sql`**
+  — nhiều khả năng bảng chưa từng được tạo thật trên DB.
+- [x] **Quan trọng**: PC (`SessionService.cs`) coi MỌI lỗi HTTP (kể cả 500)
+  là "Unavailable" rồi im lặng tiếp tục launch — nghĩa là nếu đúng bảng
+  chưa tồn tại, **PC cũng đã ghi nhận playtime = 0 âm thầm bấy lâu nay**,
+  không ai biết vì lỗi không bao giờ hiện ra cho người chơi hay admin thấy.
+- [x] Đã chuẩn bị script sửa (`CREATE TABLE IF NOT EXISTS PlayerSession...`,
+  đúng y hệt định nghĩa trong `schema.mysql.sql`, an toàn nếu bảng lỡ đã
+  có) — người dùng tự chạy qua HeidiSQL trên DB thật, sẽ báo lại kết quả.
+
+### Việc cần làm tiếp
+
+- [ ] Xác nhận đã chạy xong script sửa `PlayerSession`, test lại
+  `session/start` trả về `sessionId` thay vì lỗi 500.
+- [ ] Test trên máy thật: cài bản Cobblemon → Chơi ngay → xem trang Lylee
+  Cobblemon có tự hiện "Tổng thời gian chơi" sau khi thoát game không.
+- [ ] Cân nhắc thêm vào `migrations-applied-2026-08.sql` sau khi xác nhận
+  script chạy đúng, để tránh lặp lại tình trạng "có trong schema nhưng
+  không ai biết đã áp dụng thật hay chưa".
+- [ ] Các mục lớn còn lại từ bảng so sánh (chưa làm, để dành phiên riêng):
+  kết bạn/chat mobile, đăng nhập Google mobile, UI cài modpack tự do trên
+  mobile, cảnh báo cấu hình yếu trên PC.
