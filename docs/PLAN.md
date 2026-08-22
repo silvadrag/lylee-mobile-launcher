@@ -662,10 +662,111 @@ auth (chỉ gọi session/playtime ẩn danh), nên đây là lần đầu mobil
 
 ### Việc cần làm tiếp
 
-- [ ] Test trên máy thật (điện thoại mất kết nối, chưa test được):
-  đăng ký tài khoản mới, kết bạn 2 chiều, chat qua lại, poll có cập
-  nhật tin mới không.
+- [x] Test trên máy thật — xem mục 21 (phát hiện 3 bug UI thật, đã sửa
+  hết; đăng nhập/danh sách bạn bè/chat 2 chiều đều chạy đúng).
 - [ ] Build + ký lại 5 file APK release kèm feature này (chưa build
   bản release, mới chỉ build debug để test compile).
 - [ ] Cân nhắc thêm các phần đã để dành ở trên nếu người dùng thấy
   thiếu sau khi dùng thử.
+
+## 21. Test thật kết bạn/chat trên máy — 3 bug UI + thêm đăng nhập Google (2026-08-22)
+
+Test trực tiếp trên điện thoại (Galaxy A50s) qua adb + màn hình vật lý
+(người dùng cầm máy bấm song song với adb, phát hiện log tap dồn dập
+hóa ra là do người dùng thao tác thật, không phải lỗi). 3 bug thật
+phát hiện qua test, không thấy được khi chỉ đọc code:
+
+### Bug 1 — Nút bạn bè trên màn chính không bấm được
+
+`friends_button` nằm đè lên vùng chạm-để-xoay mô hình nhân vật
+(`skin_viewer`, chiếm gần hết nửa phải màn hình) nên nuốt mất sự kiện
+chạm dù đứng đúng lớp trên cùng theo z-order. Sửa: dời sang cùng hàng,
+bên trái nút chuông (`ui_main.xml`) — giống hệt vị trí nút chuông vốn
+đã hoạt động tốt (chỉ chạm mép rất nhỏ vào vùng đó).
+
+### Bug 2 — Chữ hòa vào nền, không đọc được
+
+Nguyên nhân sâu hơn tưởng: `app:auto_text_tint="true"` (`FCLTextView`)
+tính màu chữ tương phản với **màu accent theme** (`ThemeData.autoTint`,
+so độ sáng với `color` — mặc định hồng `#EC5990`), KHÔNG phải tương
+phản với nền chữ đang đứng trên. Thuộc tính này chỉ đúng khi chữ nằm
+TRÊN nút/khối màu accent thật; dùng nó cho chữ nằm thẳng trên nền tối
+`card_bg` (như toàn bộ `activity_friends.xml`) là dùng sai chỗ — nếu
+người dùng đổi màu accent sang tông sáng trong Cài đặt, chữ tự lật
+sang đen và biến mất trên nền tối. Sửa: bỏ hết `auto_text_tint` khỏi
+các file mới, thay bằng `textColor` cố định (trắng cho chữ chính, xám
+`#AAAAAA` cho phụ). Icon mũi tên quay lại/thêm bạn cũng bị tương tự
+(tint xám mờ mặc định của `FCLImageButton`, không phải do theme) — đặt
+lại `android:tint="@android:color/white"`.
+
+### Bug 3 — Khung chat/thẻ bạn bè không viền, không phân biệt được
+
+`item_friend_row.xml`/`item_chat_message.xml` dùng nguyên
+`bg_container_white` (hình trắng đặc, dùng cho các nút khác vốn được
+retint bằng code sang màu tối — 2 file này thì không tint) nên không
+hiện rõ trên nền tối. Thêm 3 drawable mới:
+
+- `bg_card_dark.xml` — thẻ bạn bè, nền `#2F2F2F` + viền `#404040`.
+- `bg_chat_bubble_mine.xml` — bong bóng tin của mình, màu accent
+  (`@color/default_theme_color`), bo tròn 14dp.
+- `bg_chat_bubble_other.xml` — bong bóng tin đối phương, nền
+  `#333333` + viền `#454545`.
+
+Theo đúng gợi ý của người dùng, tham khảo bố cục Zalo/Messenger: tin
+mình bên phải màu accent, tin đối phương bên trái màu xám viền nhạt.
+`ChatMessageAdapter` chọn drawable theo `isMine` lúc bind.
+
+### Bug phụ — màn đăng nhập không có nút quay lại
+
+`login_container` là màn duy nhất trong 3 màn (LOGIN/LIST/CHAT) không
+có nút back trên màn hình (chỉ có phím back hệ thống) — không nhất
+quán với 2 màn kia. Thêm `login_back` cố định góc trên-trái, chỉ hiện
+khi đang ở màn LOGIN.
+
+### Thêm đăng nhập Google (người dùng tự tạo OAuth Client ID)
+
+Cùng luồng player-JWT như PC (`POST /api/auth/google`), không phải
+đăng nhập tài khoản Minecraft. Người dùng tự tạo trên Google Cloud
+Console (project `essential-graph-505020-f5`, cùng project PC):
+
+- Client "Android" (package `com.tungsten.fcl`, SHA-1
+  `D5:00:95:CF:B4:CF:A7:08:28:2B:84:32:EE:91:77:55:19:59:9F:70` từ
+  khóa ký release) — Google dùng ngầm để xác thực app, không cần lưu
+  Client ID.
+- Client "Web application" — `103098936310-se30mln5luh8lscoun2b73nodjjqm5k9.apps.googleusercontent.com`,
+  dùng làm audience cho `GoogleSignInOptions.requestIdToken()`
+  (Android bắt buộc kiểu Web, không dùng được client "Desktop" PC đang
+  có).
+
+Đã làm cả 2 phía:
+
+- **Backend** (`GoogleTokenVerifier.java`) — đổi từ 1 audience cố
+  định sang `Set<String>` nhiều audience. KHÔNG dùng
+  `JWTVerifier.withAudience(...)` nhiều tham số vì auth0 java-jwt đòi
+  token chứa ĐỦ tất cả giá trị truyền vào (AND), không phải "khớp 1
+  trong số đó" (OR) — tự so `verified.getAudience()` với tập đã cấu
+  hình sau khi verify chữ ký/issuer. `ModConfig` thêm field mới
+  `googleClientIdMobile` (tùy chọn, không ảnh hưởng PC nếu để
+  `CHANGE_ME`).
+- **Mobile** (`FriendsActivity.java`) — nút "Đăng nhập bằng Google"
+  dưới form mật khẩu, dùng `play-services-auth`
+  (`GoogleSignInClient`), kết quả trả về qua
+  `FCLActivity.startActivityForResult(...)` có sẵn (không cần tự đăng
+  ký `ActivityResultLauncher`). Mã lỗi 12501 (người dùng tự hủy chọn
+  tài khoản) xử lý riêng, không hiện khung lỗi đỏ.
+
+Build + cài thử cả 2 (Java `compileJava` phía mod, `assembleFordebug`
+phía mobile) đều sạch, nút hiện đúng trên máy thật.
+
+### Việc cần làm tiếp
+
+- [ ] **Deploy backend** (việc của người dùng, mình không có quyền
+  Lilypad console): upload
+  `build/libs/lyleelauncherapi-1.0.0.jar` mới đè lên server, thêm
+  `"googleClientIdMobile": "103098936310-se30mln5luh8lscoun2b73nodjjqm5k9.apps.googleusercontent.com"`
+  vào `config/lyleelauncherapi.json` thật, restart server. Trước khi
+  deploy, bấm "Đăng nhập bằng Google" vẫn mở được màn chọn tài khoản
+  (chạy phía máy) nhưng gửi token lên server sẽ báo lỗi.
+- [ ] Test đăng nhập Google trên máy thật sau khi deploy xong.
+- [ ] Build + ký lại 5 file APK release kèm toàn bộ mục 20+21 (login
+  Google, 3 bug UI đã sửa) — vẫn đang ở bản debug.
