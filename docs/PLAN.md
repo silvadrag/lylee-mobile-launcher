@@ -596,12 +596,35 @@ phiên riêng (feature lớn hơn nhiều).
   huống lỗi này **không thể xảy ra trong thực tế sử dụng** — chỉ xảy ra vì
   chuỗi test tự đặt quá dài.
 
+- [x] **Đính chính bảng so sánh — "cài modpack tự do" KHÔNG phải khoảng
+  trống thật**: đọc lại code mobile thấy đã có sẵn `ModpackSelectionPage`
+  (nút "Cài modpack" trong chế độ Modpack của tab Download) — cho chọn file
+  `.mrpack`/`.zip` từ máy HOẶC dán link tải, y hệt cách PC's
+  `ModpackInstallerService.cs` cũng đọc `.mrpack` (không phải "duyệt
+  catalog Modrinth trực tiếp trong app" như đánh giá ban đầu ở bảng so
+  sánh). 2 bên đã ngang nhau — mục này coi như xong, không cần làm gì thêm.
+- [x] Build + ký lại 5 file APK bản `1.3.2.8` (versionCode 1327→1328) —
+  gồm cả playtime + trạng thái server + đợt dịch/cảnh báo RAM trước đó.
+  Chữ ký hợp lệ cả 5 (`apksigner verify`), sẵn sàng upload đè lên
+  `LyLeeModPack/_launcher/mobile/` và publish qua AdminTool.
+
 ### Việc cần làm tiếp
 
-- [ ] Backend đã xác nhận khỏe 100%, không còn gì phải sửa ở DB — chỉ còn
-  test trên máy thật: cài bản Cobblemon → Chơi ngay → xem trang Lylee
+- [ ] **Upload 5 file `1.3.2.8` + publish qua AdminTool** (form giờ tự
+  điền sẵn, chỉ cần sửa Version Name/Download URL theo số mới + Mô tả).
+- [ ] Test trên máy thật: cài bản Cobblemon → Chơi ngay → xem trang Lylee
   Cobblemon có tự hiện "Tổng thời gian chơi" sau khi thoát game không (điện
   thoại mất kết nối giữa chừng session trước, chưa kịp test).
-- [ ] Các mục lớn còn lại từ bảng so sánh (chưa làm, để dành phiên riêng):
-  kết bạn/chat mobile, đăng nhập Google mobile, UI cài modpack tự do trên
-  mobile, cảnh báo cấu hình yếu trên PC.
+- [ ] **Đăng nhập Google mobile** — người dùng xác nhận muốn làm tiếp,
+  nhưng bị chặn bởi bước ngoài code: cần tạo 2 OAuth Client ID mới trong
+  Google Cloud Console (project `essential-graph-505020-f5`, cùng project
+  PC đang dùng) — 1 "Android" (package `com.tungsten.fcl`, SHA-1
+  `D5:00:95:CF:B4:CF:A7:08:28:2B:84:32:EE:91:77:55:19:59:9F:70` từ khóa
+  ký release) + 1 "Web application" (client ID này sẽ là audience mà
+  Android Google Sign-In yêu cầu ID token, KHÔNG dùng được client
+  "Desktop" mà PC đang có sẵn). Backend (`GoogleTokenVerifier`) hiện chỉ
+  chấp nhận 1 audience — cần sửa để chấp nhận cả 2 (PC's Desktop client +
+  mobile's Web client mới) khi có Client ID thật.
+- [ ] **Kết bạn/chat mobile** — feature lớn nhất còn lại, không bị chặn
+  gì cả, người dùng xác nhận muốn làm — bắt đầu ngay sau mục này.
+- [ ] Cảnh báo cấu hình yếu trên PC — độ ưu tiên thấp, chưa bắt đầu.
