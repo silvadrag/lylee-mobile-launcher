@@ -46,14 +46,29 @@
                 android:layout_height="0dp"
                 android:layout_weight="1">
 
-                <com.tungsten.fcllibrary.component.view.FCLTextView
-                    android:id="@+id/announcement"
+                <androidx.appcompat.widget.LinearLayoutCompat
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:autoLink="web"
-                    android:padding="10dp"
-                    android:textColorLink="#77FF00"
-                    app:auto_text_tint="true" />
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:id="@+id/announcement_image"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:adjustViewBounds="true"
+                        android:scaleType="fitCenter"
+                        android:visibility="gone" />
+
+                    <com.tungsten.fcllibrary.component.view.FCLTextView
+                        android:id="@+id/announcement"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:autoLink="web"
+                        android:padding="10dp"
+                        android:textColorLink="#77FF00"
+                        app:auto_text_tint="true" />
+
+                </androidx.appcompat.widget.LinearLayoutCompat>
 
             </ScrollView>
 

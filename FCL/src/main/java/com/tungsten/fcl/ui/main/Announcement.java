@@ -25,8 +25,13 @@ public class Announcement {
     private final ArrayList<Content> title;
     private final String date;
     private final ArrayList<Content> content;
+    /** Ảnh admin chèn vào nội dung rich-text bên AdminTool (xem Database.parseXaml
+     *  phía mod) — trước đây bị bóc bỏ luôn cùng markup XAML, giờ tách riêng ra
+     *  đây. Null-safe: field cũ trên server chưa deploy vẫn thiếu key này, Gson
+     *  để null thay vì lỗi parse. */
+    private final ArrayList<String> imageUrls;
 
-    public Announcement(int id, boolean significant, boolean outdated, int minVersion, int maxVersion, ArrayList<String> specificLang, ArrayList<Content> title, String date, ArrayList<Content> content) {
+    public Announcement(int id, boolean significant, boolean outdated, int minVersion, int maxVersion, ArrayList<String> specificLang, ArrayList<Content> title, String date, ArrayList<Content> content, ArrayList<String> imageUrls) {
         this.id = id;
         this.significant = significant;
         this.outdated = outdated;
@@ -36,6 +41,11 @@ public class Announcement {
         this.title = title;
         this.date = date;
         this.content = content;
+        this.imageUrls = imageUrls;
+    }
+
+    public ArrayList<String> getImageUrls() {
+        return imageUrls != null ? imageUrls : new ArrayList<>();
     }
 
     public int getId() {
