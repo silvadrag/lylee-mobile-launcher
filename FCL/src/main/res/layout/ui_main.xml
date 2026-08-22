@@ -34,55 +34,26 @@
                 android:padding="10dp"
                 android:singleLine="true"
                 android:text="@string/announcement"
-                app:auto_text_tint="true" />
+                android:textColor="@android:color/white" />
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="@android:color/darker_gray" />
 
-            <ScrollView
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/announcement_pager"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="1">
+                android:layout_weight="1" />
 
-                <androidx.appcompat.widget.LinearLayoutCompat
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <FrameLayout
-                        android:id="@+id/announcement_image_container"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-
-                    <com.tungsten.fcllibrary.component.view.FCLTextView
-                        android:id="@+id/announcement"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:autoLink="web"
-                        android:padding="10dp"
-                        android:textColorLink="#77FF00"
-                        app:auto_text_tint="true" />
-
-                </androidx.appcompat.widget.LinearLayoutCompat>
-
-            </ScrollView>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@android:color/darker_gray" />
-
-            <com.tungsten.fcllibrary.component.view.FCLTextView
-                android:id="@+id/date"
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/announcement_dots"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:padding="10dp"
-                android:singleLine="true"
-                android:text="@string/update_date"
-                app:auto_text_tint="true" />
+                android:layout_marginVertical="4dp"
+                android:orientation="horizontal" />
 
         </androidx.appcompat.widget.LinearLayoutCompat>
 

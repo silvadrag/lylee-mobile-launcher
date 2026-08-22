@@ -124,7 +124,7 @@
     <string name="action_upload">Upload log</string>
     <string name="action_skip">Skip</string>
 
-    <string name="announcement">Announcement: %s</string>
+    <string name="announcement">News</string>
     <string name="announcement_significant">This announcement is an important announcement. Please confirm that you have read this announcement before hiding it. Do you want to continue hiding it?</string>
 
     <string name="lylee_cobblemon_connecting">Connecting to Lylee Cobblemon</string>

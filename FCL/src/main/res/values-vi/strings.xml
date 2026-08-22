@@ -109,7 +109,7 @@
     <string name="action_upload">Tải lên nhật ký</string>
     <string name="action_skip">Bỏ qua</string>
 
-    <string name="announcement">Thông báo: %s</string>
+    <string name="announcement">Tin tức</string>
     <string name="announcement_significant">Đây là thông báo quan trọng. Vui lòng xác nhận rằng bạn đã đọc thông báo này trước khi ẩn nó. Bạn có muốn tiếp tục ẩn nó không?</string>
 
     <string name="lylee_cobblemon_connecting">Đang kết nối Lylee Cobblemon</string>

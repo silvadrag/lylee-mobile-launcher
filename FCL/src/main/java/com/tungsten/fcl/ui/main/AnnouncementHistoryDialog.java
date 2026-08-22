@@ -2,14 +2,12 @@ package com.tungsten.fcl.ui.main;
 
 import android.content.Context;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ScrollView;
 
 import androidx.appcompat.widget.LinearLayoutCompat;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.gson.reflect.TypeToken;
 import com.tungsten.fcl.R;
-import com.tungsten.fcl.lylee.LyleeImageSliderView;
 import com.tungsten.fclcore.task.Schedulers;
 import com.tungsten.fclcore.task.Task;
 import com.tungsten.fclcore.util.Logging;
@@ -30,14 +28,17 @@ import java.util.logging.Level;
  * FCLCommonUI (không có overlay trang tạm), với lại showTempPage gọi trên UI
  * khác tab (ManageUI) sẽ không hiện được vì contentView của tab đó chưa được
  * ViewPager2 gắn vào cây view đang hiển thị.
+ * <p>
+ * 1 trang = 1 tin (vuốt trái/phải để chuyển, KHÔNG tự chuyển — khác thẻ trang
+ * chủ) — trước đây xếp chồng dọc khiến tin cũ nhất bị đẩy khuất phía dưới.
  */
 public class AnnouncementHistoryDialog extends FCLDialog {
 
     private final FCLImageButton close;
     private final FCLProgressBar progress;
     private final FCLTextView empty;
-    private final ScrollView scroll;
-    private final LinearLayoutCompat container;
+    private final ViewPager2 pager;
+    private final LinearLayoutCompat dotsPanel;
 
     public AnnouncementHistoryDialog(Context context) {
         super(context);
@@ -46,13 +47,9 @@ public class AnnouncementHistoryDialog extends FCLDialog {
         close = findViewById(R.id.close);
         progress = findViewById(R.id.progress);
         empty = findViewById(R.id.empty);
-        scroll = findViewById(R.id.scroll);
+        pager = findViewById(R.id.pager);
+        dotsPanel = findViewById(R.id.dots);
         close.setOnClickListener(v -> dismiss());
-
-        container = new LinearLayoutCompat(getContext());
-        container.setOrientation(LinearLayoutCompat.VERTICAL);
-        scroll.addView(container, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        scroll.setVisibility(View.GONE);
 
         load();
     }
@@ -60,7 +57,7 @@ public class AnnouncementHistoryDialog extends FCLDialog {
     private void load() {
         progress.setVisibility(View.VISIBLE);
         empty.setVisibility(View.GONE);
-        scroll.setVisibility(View.GONE);
+        pager.setVisibility(View.GONE);
         Task.supplyAsync(() -> HttpRequest.HttpGetRequest.GET(MainUI.ANNOUNCEMENT_LIST_URL).getJson(new TypeToken<ArrayList<Announcement>>() {
                 }))
                 .whenComplete(Schedulers.androidUIThread(), (result, exception) -> {
@@ -75,53 +72,36 @@ public class AnnouncementHistoryDialog extends FCLDialog {
                         empty.setVisibility(View.VISIBLE);
                         return;
                     }
-                    scroll.setVisibility(View.VISIBLE);
-                    for (Announcement announcement : result) {
-                        container.addView(createItemView(announcement));
-                    }
+                    pager.setVisibility(View.VISIBLE);
+                    pager.setAdapter(new AnnouncementPagerAdapter(result, 4000));
+                    buildDots(result.size());
                 }).start();
     }
 
-    private View createItemView(Announcement announcement) {
-        int padding = ConvertUtils.dip2px(getContext(), 10);
+    private void buildDots(int count) {
+        dotsPanel.removeAllViews();
+        dotsPanel.setVisibility(count > 1 ? View.VISIBLE : View.GONE);
+        if (count <= 1) return;
 
-        LinearLayoutCompat item = new LinearLayoutCompat(getContext());
-        item.setOrientation(LinearLayoutCompat.VERTICAL);
-        item.setBackgroundResource(R.drawable.bg_container_white);
-        item.setPadding(padding, padding, padding, padding);
-        LinearLayoutCompat.LayoutParams itemParams = new LinearLayoutCompat.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        itemParams.bottomMargin = padding;
-        item.setLayoutParams(itemParams);
-
-        FCLTextView title = new FCLTextView(getContext());
-        title.setText(announcement.getDisplayTitle(getContext()));
-        title.setAutoTint(true);
-        title.setTextSize(16);
-        item.addView(title);
-
-        FCLTextView date = new FCLTextView(getContext());
-        date.setText(announcement.getDate());
-        date.setAutoTint(true);
-        date.setTextSize(12);
-        item.addView(date);
-
-        FCLTextView content = new FCLTextView(getContext());
-        content.setText(announcement.getDisplayContent(getContext()));
-        content.setAutoTint(true);
-        LinearLayoutCompat.LayoutParams contentParams = new LinearLayoutCompat.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        contentParams.topMargin = ConvertUtils.dip2px(getContext(), 6);
-        content.setLayoutParams(contentParams);
-        item.addView(content);
-
-        if (!announcement.getImageUrls().isEmpty()) {
-            LyleeImageSliderView slider = new LyleeImageSliderView(getContext(), 4000);
-            LinearLayoutCompat.LayoutParams sliderParams = new LinearLayoutCompat.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ConvertUtils.dip2px(getContext(), 160));
-            sliderParams.topMargin = ConvertUtils.dip2px(getContext(), 8);
-            slider.setLayoutParams(sliderParams);
-            item.addView(slider);
-            slider.setImages(announcement.getImageUrls());
+        View[] dots = new View[count];
+        for (int i = 0; i < count; i++) {
+            View dot = new View(getContext());
+            int size = ConvertUtils.dip2px(getContext(), 6);
+            LinearLayoutCompat.LayoutParams params = new LinearLayoutCompat.LayoutParams(size, size);
+            params.setMargins(ConvertUtils.dip2px(getContext(), 3), 0, ConvertUtils.dip2px(getContext(), 3), 0);
+            dot.setLayoutParams(params);
+            dot.setBackgroundColor(i == 0 ? 0xFFFFFFFF : 0x80FFFFFF);
+            dotsPanel.addView(dot);
+            dots[i] = dot;
         }
 
-        return item;
+        pager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                for (int i = 0; i < dots.length; i++) {
+                    dots[i].setBackgroundColor(i == position ? 0xFFFFFFFF : 0x80FFFFFF);
+                }
+            }
+        });
     }
 }

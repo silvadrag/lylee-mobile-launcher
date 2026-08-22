@@ -3,20 +3,20 @@ package com.tungsten.fcl.ui.main;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
-import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.core.content.ContextCompat;
+import androidx.viewpager2.widget.ViewPager2;
 
+import com.google.gson.reflect.TypeToken;
 import com.tungsten.fcl.R;
-import com.tungsten.fcl.lylee.LyleeImageSliderView;
-import com.tungsten.fcllibrary.util.ConvertUtils;
 import com.tungsten.fcl.activity.FriendsActivity;
 import com.tungsten.fcl.game.TexturesLoader;
 import com.tungsten.fcl.setting.Accounts;
-import com.tungsten.fcl.util.AndroidUtils;
 import com.tungsten.fclcore.auth.Account;
 import com.tungsten.fclcore.fakefx.beans.property.ObjectProperty;
 import com.tungsten.fclcore.fakefx.beans.property.SimpleObjectProperty;
@@ -32,8 +32,10 @@ import com.tungsten.fcllibrary.component.view.FCLImageButton;
 import com.tungsten.fcllibrary.component.view.FCLTextView;
 import com.tungsten.fcllibrary.skin.SkinRenderer;
 import com.tungsten.fcllibrary.skin.SkinViewer;
-import com.tungsten.fcllibrary.util.LocaleUtils;
+import com.tungsten.fcllibrary.util.ConvertUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 
 public class MainUI extends FCLCommonUI implements View.OnClickListener {
@@ -51,16 +53,27 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
     // ApiServer.getMobileAnnouncements bên mod.
     public static final String ANNOUNCEMENT_LIST_URL = "https://lylee-launcher-api.lyleelauncher.workers.dev/api/mobile/announcements";
 
+    private static final long AUTO_ADVANCE_MS = 6000;
+
     private LinearLayoutCompat announcementContainer;
     private LinearLayoutCompat announcementLayout;
     private FCLTextView title;
-    private FCLTextView announcementView;
-    private LyleeImageSliderView announcementImage;
-    private FCLTextView date;
+    private ViewPager2 announcementPager;
+    private LinearLayoutCompat announcementDots;
     private FCLButton hide;
     private FCLImageButton announcementHistory;
     private FCLImageButton friendsButton;
-    private Announcement announcement = null;
+    private final List<Announcement> announcements = new ArrayList<>();
+    private final Handler autoAdvanceHandler = new Handler(Looper.getMainLooper());
+    private final Runnable autoAdvanceRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (announcements.size() > 1) {
+                announcementPager.setCurrentItem((announcementPager.getCurrentItem() + 1) % announcements.size(), true);
+            }
+            autoAdvanceHandler.postDelayed(this, AUTO_ADVANCE_MS);
+        }
+    };
 
     private SkinViewer skinViewer;
     private SkinRenderer renderer;
@@ -77,12 +90,8 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
         announcementContainer = findViewById(R.id.announcement_container);
         announcementLayout = findViewById(R.id.announcement_layout);
         title = findViewById(R.id.title);
-        announcementView = findViewById(R.id.announcement);
-        FrameLayout announcementImageContainer = findViewById(R.id.announcement_image_container);
-        announcementImage = new LyleeImageSliderView(getContext(), 6000);
-        announcementImageContainer.addView(announcementImage, new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT, ConvertUtils.dip2px(getContext(), 160)));
-        date = findViewById(R.id.date);
+        announcementPager = findViewById(R.id.announcement_pager);
+        announcementDots = findViewById(R.id.announcement_dots);
         hide = findViewById(R.id.hide);
         announcementHistory = findViewById(R.id.announcement_history);
         friendsButton = findViewById(R.id.friends_button);
@@ -132,6 +141,7 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
             skinViewer.onPause();
             skinViewer.setVisibility(View.GONE);
         }
+        autoAdvanceHandler.removeCallbacks(autoAdvanceRunnable);
     }
 
     @Override
@@ -140,6 +150,10 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
         if (skinViewer != null && isShowing() && !ThemeEngine.getInstance().getTheme().isCloseSkinModel()) {
             skinViewer.setVisibility(View.VISIBLE);
             skinViewer.onResume();
+        }
+        if (announcements.size() > 1) {
+            autoAdvanceHandler.removeCallbacks(autoAdvanceRunnable);
+            autoAdvanceHandler.postDelayed(autoAdvanceRunnable, AUTO_ADVANCE_MS);
         }
     }
 
@@ -152,28 +166,72 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
 
     private void checkAnnouncement() {
         try {
-            String url = LocaleUtils.isChinese(getContext()) ? ANNOUNCEMENT_URL_CN : ANNOUNCEMENT_URL;
-            Task.supplyAsync(() -> HttpRequest.HttpGetRequest.GET(url).getJson(Announcement.class))
-                    .thenAcceptAsync(Schedulers.androidUIThread(), announcement -> {
-                        this.announcement = announcement;
-                        if (!announcement.shouldDisplay(getContext()))
+            Task.supplyAsync(() -> HttpRequest.HttpGetRequest.GET(MainUI.ANNOUNCEMENT_LIST_URL).getJson(new TypeToken<ArrayList<Announcement>>() {
+                    }))
+                    .thenAcceptAsync(Schedulers.androidUIThread(), result -> {
+                        announcements.clear();
+                        for (Announcement a : result) {
+                            if (a.shouldDisplay(getContext())) announcements.add(a);
+                        }
+                        if (announcements.isEmpty()) {
+                            announcementContainer.setVisibility(View.GONE);
                             return;
+                        }
                         announcementContainer.setVisibility(View.VISIBLE);
-                        title.setText(AndroidUtils.getLocalizedText(getContext(), "announcement", announcement.getDisplayTitle(getContext())));
-                        announcementView.setText(announcement.getDisplayContent(getContext()));
-                        date.setText(AndroidUtils.getLocalizedText(getContext(), "update_date", announcement.getDate()));
-                        announcementImage.setImages(announcement.getImageUrls());
+                        announcementPager.setAdapter(new AnnouncementPagerAdapter(announcements, 6000));
+                        buildDots();
+                        autoAdvanceHandler.removeCallbacks(autoAdvanceRunnable);
+                        if (announcements.size() > 1) {
+                            autoAdvanceHandler.postDelayed(autoAdvanceRunnable, AUTO_ADVANCE_MS);
+                        }
                     }).start();
         } catch (Exception e) {
             Logging.LOG.log(Level.WARNING, "Failed to get announcement!", e);
         }
     }
 
-    private void hideAnnouncement() {
-        announcementContainer.setVisibility(View.GONE);
-        if (announcement != null) {
-            announcement.hide(getContext());
+    private void buildDots() {
+        announcementDots.removeAllViews();
+        announcementDots.setVisibility(announcements.size() > 1 ? View.VISIBLE : View.GONE);
+        if (announcements.size() <= 1) return;
+
+        View[] dots = new View[announcements.size()];
+        for (int i = 0; i < announcements.size(); i++) {
+            View dot = new View(getContext());
+            int size = ConvertUtils.dip2px(getContext(), 6);
+            LinearLayoutCompat.LayoutParams params = new LinearLayoutCompat.LayoutParams(size, size);
+            params.setMargins(ConvertUtils.dip2px(getContext(), 3), 0, ConvertUtils.dip2px(getContext(), 3), 0);
+            dot.setLayoutParams(params);
+            dot.setBackgroundColor(i == 0 ? 0xFFFFFFFF : 0x80FFFFFF);
+            announcementDots.addView(dot);
+            dots[i] = dot;
         }
+
+        announcementPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                for (int i = 0; i < dots.length; i++) {
+                    dots[i].setBackgroundColor(i == position ? 0xFFFFFFFF : 0x80FFFFFF);
+                }
+            }
+        });
+    }
+
+    /** Ẩn đúng tin ĐANG hiện trên trang (không phải ẩn cả thẻ) — khớp với việc
+     *  thẻ giờ xoay vòng nhiều tin thay vì chỉ 1 tin mới nhất cố định. */
+    private void hideCurrentAnnouncement() {
+        int position = announcementPager.getCurrentItem();
+        if (position < 0 || position >= announcements.size()) return;
+        Announcement current = announcements.get(position);
+        current.hide(getContext());
+        announcements.remove(position);
+        if (announcements.isEmpty()) {
+            announcementContainer.setVisibility(View.GONE);
+            autoAdvanceHandler.removeCallbacks(autoAdvanceRunnable);
+            return;
+        }
+        announcementPager.setAdapter(new AnnouncementPagerAdapter(announcements, 6000));
+        buildDots();
     }
 
     private void setupSkinDisplay() {
@@ -205,16 +263,18 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
     @Override
     public void onClick(View view) {
         if (view == hide) {
-            if (announcement != null && announcement.isSignificant()) {
+            int position = announcementPager.getCurrentItem();
+            boolean significant = position >= 0 && position < announcements.size() && announcements.get(position).isSignificant();
+            if (significant) {
                 FCLAlertDialog.Builder builder = new FCLAlertDialog.Builder(getContext());
                 builder.setAlertLevel(FCLAlertDialog.AlertLevel.ALERT);
                 builder.setCancelable(false);
                 builder.setMessage(getContext().getString(R.string.announcement_significant));
-                builder.setPositiveButton(this::hideAnnouncement);
+                builder.setPositiveButton(this::hideCurrentAnnouncement);
                 builder.setNegativeButton(null);
                 builder.create().show();
             } else {
-                hideAnnouncement();
+                hideCurrentAnnouncement();
             }
         }
         if (view == announcementHistory) {
