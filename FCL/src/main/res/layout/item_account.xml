@@ -38,7 +38,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
-            android:layout_marginEnd="120dp"
+            android:layout_marginEnd="155dp"
             android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -66,6 +66,29 @@
                 app:auto_text_tint="true" />
 
         </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <!-- Liên kết/hủy liên kết Google cho ĐÚNG tài khoản Minecraft dòng này —
+             xem docs/PLAN.md, mỗi tài khoản Google chỉ liên kết được 1 dòng (backend
+             chặn nếu đã liên kết chỗ khác, xem Database.loginWithGoogle). -->
+        <com.tungsten.fcllibrary.component.view.FCLImageButton
+            android:id="@+id/google_link"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_baseline_link_24"
+            app:auto_tint="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/skin"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.tungsten.fcllibrary.component.view.FCLProgressBar
+            android:id="@+id/google_link_progress"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@id/google_link"
+            app:layout_constraintEnd_toEndOf="@id/google_link"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <com.tungsten.fcllibrary.component.view.FCLImageButton
             android:id="@+id/skin"

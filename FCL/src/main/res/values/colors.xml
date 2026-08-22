@@ -3,7 +3,12 @@
     <color name="default_theme_color">#EC5990</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="ui_bg_color">#40F4F4F4</color>
+    <!-- Trước là #40F4F4F4 (trắng 25% trong suốt) — giả định nền app LUÔN tối
+         nên chỉ cần phủ mờ nhẹ. Từ khi nền tùy chỉnh qua URL server (LyleeBackgroundSync)
+         có thể sáng/nhiều màu, mức trong suốt đó không đủ tương phản cho chữ trắng
+         (gần như biến mất). Đổi sang xám đậm gần đen, đủ đục để LUÔN đọc được bất kể
+         nền sáng/tối, vẫn còn chút trong suốt (không phủ đặc hoàn toàn). -->
+    <color name="ui_bg_color">#E01A1A1A</color>
     <color name="right_menu_color">#80F4F4F4</color>
     <color name="icon_background_color">#211B27</color>
     <!-- Đồng bộ ngôn ngữ thiết kế với launcher PC (docs/UI_DESIGN_GUIDELINES.md):

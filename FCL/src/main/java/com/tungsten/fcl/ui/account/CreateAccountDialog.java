@@ -78,13 +78,24 @@ public class CreateAccountDialog extends FCLDialog implements View.OnClickListen
     private TaskExecutor loginTask;
     private Details details;
     private final ObjectProperty<OAuthServer.GrantDeviceCodeEvent> deviceCode = new SimpleObjectProperty<>();
+    @Nullable
+    private final Runnable onSuccess;
 
     public static CreateAccountDialog getInstance() {
         return instance;
     }
 
     public CreateAccountDialog(@NonNull Context context, AccountFactory<?> factory) {
+        this(context, factory, null);
+    }
+
+    /** onSuccess: chạy SAU khi tài khoản tạo xong + đã setSelectedAccount (trước
+     *  khi dismiss) — dùng cho luồng "tài khoản ngoại tuyến có mật khẩu": tạo
+     *  xong offline account thường thì chain ngay sang dialog đặt mật khẩu Lylee
+     *  cho đúng username vừa tạo (xem AccountUI). */
+    public CreateAccountDialog(@NonNull Context context, AccountFactory<?> factory, @Nullable Runnable onSuccess) {
         super(context);
+        this.onSuccess = onSuccess;
         instance = this;
         setContentView(R.layout.dialog_create_account);
         setCancelable(false);
@@ -191,6 +202,7 @@ public class CreateAccountDialog extends FCLDialog implements View.OnClickListen
                         login.setEnabled(true);
                         cancel.setEnabled(true);
                         UIManager.getInstance().getAccountUI().refresh().start();
+                        if (onSuccess != null) onSuccess.run();
                         dismiss();
                     }, exception -> {
                         if (exception instanceof NoSelectedCharacterException || exception instanceof CancellationException) {

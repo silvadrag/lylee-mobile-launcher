@@ -1,7 +1,6 @@
 package com.tungsten.fcl.ui.account;
 
 import android.content.Context;
-import android.content.Intent;
 import android.view.View;
 import android.widget.ListView;
 
@@ -10,7 +9,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.tungsten.fcl.R;
-import com.tungsten.fcl.activity.FriendsActivity;
 import com.tungsten.fcl.setting.Accounts;
 import com.tungsten.fclcore.task.Task;
 import com.tungsten.fcllibrary.component.ui.FCLCommonUI;
@@ -23,7 +21,6 @@ public class AccountUI extends FCLCommonUI implements View.OnClickListener {
     private LinearLayoutCompat addOfflineAccount;
     private LinearLayoutCompat addMicrosoftAccount;
     private LinearLayoutCompat addLoginServer;
-    private LinearLayoutCompat friends;
 
     private RecyclerView recyclerView;
     private AccountListAdapter accountListAdapter;
@@ -39,11 +36,9 @@ public class AccountUI extends FCLCommonUI implements View.OnClickListener {
         addOfflineAccount = findViewById(R.id.offline);
         addMicrosoftAccount = findViewById(R.id.microsoft);
         addLoginServer = findViewById(R.id.add_login_server);
-        friends = findViewById(R.id.friends);
         addOfflineAccount.setOnClickListener(this);
         addMicrosoftAccount.setOnClickListener(this);
         addLoginServer.setOnClickListener(this);
-        friends.setOnClickListener(this);
 
         recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -74,8 +69,7 @@ public class AccountUI extends FCLCommonUI implements View.OnClickListener {
     @Override
     public void onClick(View view) {
         if (view == addOfflineAccount) {
-            CreateAccountDialog dialog = new CreateAccountDialog(getContext(), Accounts.FACTORY_OFFLINE);
-            dialog.show();
+            showOfflineCreateChoice();
         }
         if (view == addMicrosoftAccount) {
             CreateAccountDialog dialog = new CreateAccountDialog(getContext(), Accounts.FACTORY_MICROSOFT);
@@ -85,9 +79,32 @@ public class AccountUI extends FCLCommonUI implements View.OnClickListener {
             AddAuthlibInjectorServerDialog dialog = new AddAuthlibInjectorServerDialog(getContext());
             dialog.show();
         }
-        if (view == friends) {
-            getContext().startActivity(new Intent(getContext(), FriendsActivity.class));
-        }
+    }
+
+    // Offline account giờ có 2 kiểu: không mật khẩu (y hệt trước giờ) hoặc có
+    // mật khẩu+email — gộp thẳng bước "claim" tài khoản Lylee (bạn bè/chat) vào
+    // NGAY lúc tạo, không cần vào riêng màn Bạn bè mới thấy nữa (xem
+    // SetFriendsPasswordDialog, CreateAccountDialog.onSuccess).
+    private void showOfflineCreateChoice() {
+        String[] options = {
+                getContext().getString(R.string.account_create_offline_no_password),
+                getContext().getString(R.string.account_create_offline_with_password)
+        };
+        new android.app.AlertDialog.Builder(getContext())
+                .setTitle(getContext().getString(R.string.account_create_offline_choice_title))
+                .setItems(options, (dialog, which) -> {
+                    if (which == 0) {
+                        new CreateAccountDialog(getContext(), Accounts.FACTORY_OFFLINE).show();
+                    } else {
+                        new CreateAccountDialog(getContext(), Accounts.FACTORY_OFFLINE, () -> {
+                            var account = Accounts.getSelectedAccount();
+                            if (account != null) {
+                                new SetFriendsPasswordDialog(getContext(), account.getUsername()).show();
+                            }
+                        }).show();
+                    }
+                })
+                .show();
     }
 
 }

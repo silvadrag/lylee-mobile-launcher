@@ -48,14 +48,6 @@ public class FriendsActivity extends FCLActivity {
 
     private static final int POLL_INTERVAL_MS = 2000;
 
-    // Client ID OAuth "Web application" tạo riêng cho mobile trên Google Cloud
-    // Console (cùng project essential-graph-505020-f5 mà PC dùng) — Android
-    // GoogleSignInOptions.requestIdToken() cần audience kiểu Web, KHÔNG dùng
-    // được client "Desktop" mà PC launcher đang có sẵn. Backend
-    // (GoogleTokenVerifier) đã cấu hình chấp nhận cả 2 client này làm audience.
-    private static final String GOOGLE_WEB_CLIENT_ID =
-            "103098936310-se30mln5luh8lscoun2b73nodjjqm5k9.apps.googleusercontent.com";
-
     private enum Screen { LOGIN, LIST, CHAT, ACCOUNT_SETTINGS }
 
     // --- Đăng nhập ---
@@ -206,7 +198,7 @@ public class FriendsActivity extends FCLActivity {
         loginSubmit.setOnClickListener(v -> onLoginSubmit());
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(GOOGLE_WEB_CLIENT_ID)
+                .requestIdToken(LyleeFriendsApi.GOOGLE_WEB_CLIENT_ID)
                 .requestEmail()
                 .build();
         googleSignInClient = GoogleSignIn.getClient(this, gso);

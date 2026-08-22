@@ -28,6 +28,16 @@ public final class LyleeFriendsApi {
 
     private static final String BASE_URL = "https://lylee-launcher-api.lyleelauncher.workers.dev";
 
+    // Client ID OAuth "Web application" tạo riêng cho mobile trên Google Cloud
+    // Console (cùng project essential-graph-505020-f5 mà PC dùng) — Android
+    // GoogleSignInOptions.requestIdToken() cần audience kiểu Web, KHÔNG dùng
+    // được client "Desktop" mà PC launcher đang có sẵn. Backend
+    // (GoogleTokenVerifier) đã cấu hình chấp nhận cả 2 client này làm audience.
+    // Dùng chung ở cả FriendsActivity (đăng nhập) lẫn AccountListAdapter (liên
+    // kết/hủy liên kết theo từng dòng tài khoản).
+    public static final String GOOGLE_WEB_CLIENT_ID =
+            "103098936310-se30mln5luh8lscoun2b73nodjjqm5k9.apps.googleusercontent.com";
+
     private LyleeFriendsApi() {
     }
 
@@ -54,6 +64,10 @@ public final class LyleeFriendsApi {
         public boolean claimed;
         public boolean hasPassword;
         public boolean hasGoogle;
+    }
+
+    public static final class GoogleUnlinkResponse {
+        public String username;
     }
 
     // --- Bạn bè ---
@@ -125,6 +139,15 @@ public final class LyleeFriendsApi {
     public static Task<PlayerLoginResponse> googleLogin(String idToken, String username) {
         return postJson(BASE_URL + "/api/auth/google", null,
                 new GoogleLoginBody(idToken, username), PlayerLoginResponse.class);
+    }
+
+    /** Xác thực bằng CHÍNH idToken của tài khoản Google muốn gỡ — không cần
+     *  username/token phiên có sẵn (xem ApiServer.unlinkGoogle bên mod, lý do
+     *  ở comment Database.unlinkGoogle). response.username = đúng dòng tài
+     *  khoản Minecraft vừa bị gỡ liên kết. */
+    public static Task<GoogleUnlinkResponse> unlinkGoogle(String idToken) {
+        return postJson(BASE_URL + "/api/auth/google/unlink", null,
+                new IdTokenBody(idToken), GoogleUnlinkResponse.class);
     }
 
     public static Task<SuccessResponse> registerStart(String username, String email) {
@@ -276,6 +299,14 @@ public final class LyleeFriendsApi {
         GoogleLoginBody(String idToken, String username) {
             this.idToken = idToken;
             this.username = username;
+        }
+    }
+
+    private static final class IdTokenBody {
+        final String idToken;
+
+        IdTokenBody(String idToken) {
+            this.idToken = idToken;
         }
     }
 
