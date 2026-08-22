@@ -3,14 +3,13 @@ package com.tungsten.fcl.ui.main;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.ScrollView;
 
 import androidx.appcompat.widget.LinearLayoutCompat;
 
-import com.bumptech.glide.Glide;
 import com.google.gson.reflect.TypeToken;
 import com.tungsten.fcl.R;
+import com.tungsten.fcl.lylee.LyleeImageSliderView;
 import com.tungsten.fclcore.task.Schedulers;
 import com.tungsten.fclcore.task.Task;
 import com.tungsten.fclcore.util.Logging;
@@ -114,15 +113,13 @@ public class AnnouncementHistoryDialog extends FCLDialog {
         content.setLayoutParams(contentParams);
         item.addView(content);
 
-        for (String imageUrl : announcement.getImageUrls()) {
-            ImageView image = new ImageView(getContext());
-            image.setAdjustViewBounds(true);
-            image.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            LinearLayoutCompat.LayoutParams imageParams = new LinearLayoutCompat.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            imageParams.topMargin = ConvertUtils.dip2px(getContext(), 8);
-            image.setLayoutParams(imageParams);
-            Glide.with(getContext()).load(imageUrl).into(image);
-            item.addView(image);
+        if (!announcement.getImageUrls().isEmpty()) {
+            LyleeImageSliderView slider = new LyleeImageSliderView(getContext(), 4000);
+            LinearLayoutCompat.LayoutParams sliderParams = new LinearLayoutCompat.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ConvertUtils.dip2px(getContext(), 160));
+            sliderParams.topMargin = ConvertUtils.dip2px(getContext(), 8);
+            slider.setLayoutParams(sliderParams);
+            item.addView(slider);
+            slider.setImages(announcement.getImageUrls());
         }
 
         return item;

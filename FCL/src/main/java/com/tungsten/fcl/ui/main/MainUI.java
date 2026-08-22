@@ -4,14 +4,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.view.View;
-import android.widget.ImageView;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.core.content.ContextCompat;
 
-import com.bumptech.glide.Glide;
 import com.tungsten.fcl.R;
+import com.tungsten.fcl.lylee.LyleeImageSliderView;
+import com.tungsten.fcllibrary.util.ConvertUtils;
 import com.tungsten.fcl.activity.FriendsActivity;
 import com.tungsten.fcl.game.TexturesLoader;
 import com.tungsten.fcl.setting.Accounts;
@@ -54,7 +55,7 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
     private LinearLayoutCompat announcementLayout;
     private FCLTextView title;
     private FCLTextView announcementView;
-    private ImageView announcementImage;
+    private LyleeImageSliderView announcementImage;
     private FCLTextView date;
     private FCLButton hide;
     private FCLImageButton announcementHistory;
@@ -77,7 +78,10 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
         announcementLayout = findViewById(R.id.announcement_layout);
         title = findViewById(R.id.title);
         announcementView = findViewById(R.id.announcement);
-        announcementImage = findViewById(R.id.announcement_image);
+        FrameLayout announcementImageContainer = findViewById(R.id.announcement_image_container);
+        announcementImage = new LyleeImageSliderView(getContext(), 6000);
+        announcementImageContainer.addView(announcementImage, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, ConvertUtils.dip2px(getContext(), 160)));
         date = findViewById(R.id.date);
         hide = findViewById(R.id.hide);
         announcementHistory = findViewById(R.id.announcement_history);
@@ -158,12 +162,7 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
                         title.setText(AndroidUtils.getLocalizedText(getContext(), "announcement", announcement.getDisplayTitle(getContext())));
                         announcementView.setText(announcement.getDisplayContent(getContext()));
                         date.setText(AndroidUtils.getLocalizedText(getContext(), "update_date", announcement.getDate()));
-                        if (!announcement.getImageUrls().isEmpty()) {
-                            announcementImage.setVisibility(View.VISIBLE);
-                            Glide.with(getContext()).load(announcement.getImageUrls().get(0)).into(announcementImage);
-                        } else {
-                            announcementImage.setVisibility(View.GONE);
-                        }
+                        announcementImage.setImages(announcement.getImageUrls());
                     }).start();
         } catch (Exception e) {
             Logging.LOG.log(Level.WARNING, "Failed to get announcement!", e);
