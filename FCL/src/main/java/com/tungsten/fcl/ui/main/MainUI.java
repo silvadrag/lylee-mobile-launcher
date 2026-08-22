@@ -1,6 +1,7 @@
 package com.tungsten.fcl.ui.main;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.view.View;
 
@@ -9,6 +10,7 @@ import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.core.content.ContextCompat;
 
 import com.tungsten.fcl.R;
+import com.tungsten.fcl.activity.FriendsActivity;
 import com.tungsten.fcl.game.TexturesLoader;
 import com.tungsten.fcl.setting.Accounts;
 import com.tungsten.fcl.util.AndroidUtils;
@@ -53,6 +55,7 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
     private FCLTextView date;
     private FCLButton hide;
     private FCLImageButton announcementHistory;
+    private FCLImageButton friendsButton;
     private Announcement announcement = null;
 
     private SkinViewer skinViewer;
@@ -74,11 +77,13 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
         date = findViewById(R.id.date);
         hide = findViewById(R.id.hide);
         announcementHistory = findViewById(R.id.announcement_history);
+        friendsButton = findViewById(R.id.friends_button);
         // Nền thẻ tối #252525 (đồng bộ launcher PC — "news card" không phủ đặc
         // màu hồng theme) thay vì tint theo màu accent như trước.
         announcementLayout.getBackground().setTint(ContextCompat.getColor(getContext(), R.color.card_bg));
         hide.setOnClickListener(this);
         announcementHistory.setOnClickListener(this);
+        friendsButton.setOnClickListener(this);
 
         skinViewer = findViewById(R.id.skin_viewer);
         renderer = new SkinRenderer(getContext());
@@ -205,6 +210,9 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
         }
         if (view == announcementHistory) {
             new AnnouncementHistoryDialog(getContext()).show();
+        }
+        if (view == friendsButton) {
+            getContext().startActivity(new Intent(getContext(), FriendsActivity.class));
         }
     }
 }
