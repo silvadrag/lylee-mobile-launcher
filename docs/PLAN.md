@@ -567,34 +567,41 @@ phiên riêng (feature lớn hơn nhiều).
 - [x] Build `FCL:assembleFordebug` sạch. **Chưa test trên máy thật** — điện
   thoại không kết nối lúc code xong, để dành lần sau.
 
-### Phát hiện: lỗi 500 khi gọi session/start — khả năng đã âm thầm hỏng playtime trên CẢ PC
+### Điều tra lỗi 500 lúc test tay — KHÔNG phải bug, đã xác nhận sai lầm và sửa lại
 
 - [x] Test tay `POST /api/players/claude_test_session/session/start` trên
-  server thật → **lỗi 500** ("Lỗi máy chủ nội bộ"). `GET /playtime` và
-  `GET /claim-status` cùng username lại chạy bình thường (Player table
-  khỏe) — cô lập được: lỗi nằm đúng ở bước `INSERT INTO PlayerSession`.
-- [x] Bảng `PlayerSession` **có trong `schema.mysql.sql`** (kèm comment
-  gốc: "phát hiện DB không có gì thay đổi dù người chơi thật đã vào game" —
-  tức triệu chứng NÀY đã từng bị để ý nhưng có thể bị chẩn đoán sai nguyên
-  nhân trước đây) nhưng **không xuất hiện trong `migrations-applied-2026-08.sql`**
-  — nhiều khả năng bảng chưa từng được tạo thật trên DB.
-- [x] **Quan trọng**: PC (`SessionService.cs`) coi MỌI lỗi HTTP (kể cả 500)
-  là "Unavailable" rồi im lặng tiếp tục launch — nghĩa là nếu đúng bảng
-  chưa tồn tại, **PC cũng đã ghi nhận playtime = 0 âm thầm bấy lâu nay**,
-  không ai biết vì lỗi không bao giờ hiện ra cho người chơi hay admin thấy.
-- [x] Đã chuẩn bị script sửa (`CREATE TABLE IF NOT EXISTS PlayerSession...`,
-  đúng y hệt định nghĩa trong `schema.mysql.sql`, an toàn nếu bảng lỡ đã
-  có) — người dùng tự chạy qua HeidiSQL trên DB thật, sẽ báo lại kết quả.
+  server thật → lỗi 500. Lúc đầu đoán nhầm là bảng `PlayerSession` chưa
+  được tạo (dựa trên việc không thấy tên bảng trong
+  `migrations-applied-2026-08.sql`) — **đoán SAI**, bị người dùng chỉ ra
+  ngay: bảng đã có sẵn, đang chứa >1000 session thật.
+- [x] Người dùng tự mở log console Lilypad, dán nguyên exception thật ra —
+  đây mới là cách đúng để chẩn đoán, không nên đoán tiếp khi không có log.
+  Exception thật: `MysqlDataTruncation: Data too long for column
+  'Username' at row 1`, tại `Database.getOrCreatePlayerId` khi INSERT
+  Player mới.
+- [x] **Nguyên nhân thật**: cột `Player.Username` giới hạn `VARCHAR(16)`
+  (đúng bằng giới hạn tên Minecraft thật, cố ý) — username test
+  `claude_test_session` dài 20 ký tự, vượt giới hạn, bị DB từ chối đúng
+  như thiết kế. Không phải bug backend, không phải bảng thiếu, không cần
+  sửa DB gì cả (script `fix_playersession_table.sql` đã chuẩn bị trước đó
+  — KHÔNG cần chạy, có thể xóa).
+- [x] Test lại với username hợp lệ (`claude_test`, ≤16 ký tự) — cả 3 API
+  chạy đúng 100%: `session/start` → `{"sessionId":1308}` (khớp đúng dải số
+  người dùng thấy), `session/{id}/end` → `{"success":true}`,
+  `playtime` → `{"totalSeconds":10}` cộng dồn đúng. **Backend đã hoạt động
+  tốt từ trước giờ, kể cả trên PC — không hề có tình trạng "âm thầm hỏng"
+  như suy đoán ban đầu.**
+- [x] Vì mobile chỉ bao giờ gửi username thật của tài khoản người chơi
+  (offline/Microsoft, luôn ≤16 ký tự theo đúng giới hạn Minecraft), tình
+  huống lỗi này **không thể xảy ra trong thực tế sử dụng** — chỉ xảy ra vì
+  chuỗi test tự đặt quá dài.
 
 ### Việc cần làm tiếp
 
-- [ ] Xác nhận đã chạy xong script sửa `PlayerSession`, test lại
-  `session/start` trả về `sessionId` thay vì lỗi 500.
-- [ ] Test trên máy thật: cài bản Cobblemon → Chơi ngay → xem trang Lylee
-  Cobblemon có tự hiện "Tổng thời gian chơi" sau khi thoát game không.
-- [ ] Cân nhắc thêm vào `migrations-applied-2026-08.sql` sau khi xác nhận
-  script chạy đúng, để tránh lặp lại tình trạng "có trong schema nhưng
-  không ai biết đã áp dụng thật hay chưa".
+- [ ] Backend đã xác nhận khỏe 100%, không còn gì phải sửa ở DB — chỉ còn
+  test trên máy thật: cài bản Cobblemon → Chơi ngay → xem trang Lylee
+  Cobblemon có tự hiện "Tổng thời gian chơi" sau khi thoát game không (điện
+  thoại mất kết nối giữa chừng session trước, chưa kịp test).
 - [ ] Các mục lớn còn lại từ bảng so sánh (chưa làm, để dành phiên riêng):
   kết bạn/chat mobile, đăng nhập Google mobile, UI cài modpack tự do trên
   mobile, cảnh báo cấu hình yếu trên PC.
