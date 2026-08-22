@@ -154,6 +154,16 @@
     <string name="friends_google_login">Sign in with Google</string>
     <string name="friends_google_login_failed">Google sign-in failed. Try again.</string>
     <string name="friends_google_cancelled">Google sign-in was cancelled.</string>
+    <string name="friends_settings_title">Account settings</string>
+    <string name="friends_settings_password_yes">Password: set</string>
+    <string name="friends_settings_password_no">Password: not set</string>
+    <string name="friends_settings_add_password">Set a password</string>
+    <string name="friends_settings_google_yes">Google: linked</string>
+    <string name="friends_settings_google_no">Google: not linked</string>
+    <string name="friends_settings_add_google">Link Google account</string>
+    <string name="friends_settings_password_set">Password set.</string>
+    <string name="friends_settings_google_linked">Google account linked.</string>
+    <string name="friends_settings_load_failed">Couldn\'t load account settings.</string>
     <string name="friends_login_checking">Checking account %s…</string>
     <string name="friends_login_check_failed">Couldn\'t check this account. Check your connection and try again.</string>
     <string name="friends_login_subtitle_existing">Enter the password for %s to continue.</string>

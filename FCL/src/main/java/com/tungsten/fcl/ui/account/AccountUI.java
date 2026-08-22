@@ -1,6 +1,7 @@
 package com.tungsten.fcl.ui.account;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.View;
 import android.widget.ListView;
 
@@ -9,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.tungsten.fcl.R;
+import com.tungsten.fcl.activity.FriendsActivity;
 import com.tungsten.fcl.setting.Accounts;
 import com.tungsten.fclcore.task.Task;
 import com.tungsten.fcllibrary.component.ui.FCLCommonUI;
@@ -21,6 +23,7 @@ public class AccountUI extends FCLCommonUI implements View.OnClickListener {
     private LinearLayoutCompat addOfflineAccount;
     private LinearLayoutCompat addMicrosoftAccount;
     private LinearLayoutCompat addLoginServer;
+    private LinearLayoutCompat friends;
 
     private RecyclerView recyclerView;
     private AccountListAdapter accountListAdapter;
@@ -36,9 +39,11 @@ public class AccountUI extends FCLCommonUI implements View.OnClickListener {
         addOfflineAccount = findViewById(R.id.offline);
         addMicrosoftAccount = findViewById(R.id.microsoft);
         addLoginServer = findViewById(R.id.add_login_server);
+        friends = findViewById(R.id.friends);
         addOfflineAccount.setOnClickListener(this);
         addMicrosoftAccount.setOnClickListener(this);
         addLoginServer.setOnClickListener(this);
+        friends.setOnClickListener(this);
 
         recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -79,6 +84,9 @@ public class AccountUI extends FCLCommonUI implements View.OnClickListener {
         if (view == addLoginServer) {
             AddAuthlibInjectorServerDialog dialog = new AddAuthlibInjectorServerDialog(getContext());
             dialog.show();
+        }
+        if (view == friends) {
+            getContext().startActivity(new Intent(getContext(), FriendsActivity.class));
         }
     }
 

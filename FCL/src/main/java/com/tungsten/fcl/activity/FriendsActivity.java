@@ -56,7 +56,7 @@ public class FriendsActivity extends FCLActivity {
     private static final String GOOGLE_WEB_CLIENT_ID =
             "103098936310-se30mln5luh8lscoun2b73nodjjqm5k9.apps.googleusercontent.com";
 
-    private enum Screen { LOGIN, LIST, CHAT }
+    private enum Screen { LOGIN, LIST, CHAT, ACCOUNT_SETTINGS }
 
     // --- Đăng nhập ---
     private View loginBack;
@@ -87,6 +87,21 @@ public class FriendsActivity extends FCLActivity {
     private final List<LyleeFriendsApi.MessageResponse> chatMessages = new ArrayList<>();
     private FCLEditText chatInput;
     private String chatOtherUsername;
+
+    // --- Cài đặt tài khoản (thêm phương thức xác thực còn thiếu) ---
+    private View settingsContainer;
+    private FCLTextView settingsPasswordStatus;
+    private FCLButton settingsAddPassword;
+    private View settingsPasswordForm;
+    private FCLEditText settingsEmail;
+    private FCLEditText settingsCode;
+    private FCLEditText settingsNewPassword;
+    private FCLButton settingsPasswordSubmit;
+    private FCLTextView settingsGoogleStatus;
+    private FCLButton settingsAddGoogle;
+    private FCLTextView settingsError;
+    private FCLProgressBar settingsProgress;
+    private boolean settingsCodeSent = false;
 
     private String myUsername;
     private final Handler pollHandler = new Handler(Looper.getMainLooper());
@@ -120,6 +135,7 @@ public class FriendsActivity extends FCLActivity {
         bindLoginViews();
         bindListViews();
         bindChatViews();
+        bindSettingsViews();
 
         if (LyleeFriendsSession.isValid(this, myUsername)) {
             showScreen(Screen.LIST);
@@ -149,6 +165,7 @@ public class FriendsActivity extends FCLActivity {
         loginContainer.setVisibility(screen == Screen.LOGIN ? View.VISIBLE : View.GONE);
         listContainer.setVisibility(screen == Screen.LIST ? View.VISIBLE : View.GONE);
         chatContainer.setVisibility(screen == Screen.CHAT ? View.VISIBLE : View.GONE);
+        settingsContainer.setVisibility(screen == Screen.ACCOUNT_SETTINGS ? View.VISIBLE : View.GONE);
         pollHandler.removeCallbacks(pollRunnable);
         if (screen == Screen.LIST) {
             loadFriends();
@@ -162,6 +179,8 @@ public class FriendsActivity extends FCLActivity {
     @Override
     public void onBackPressed() {
         if (currentScreen == Screen.CHAT) {
+            showScreen(Screen.LIST);
+        } else if (currentScreen == Screen.ACCOUNT_SETTINGS) {
             showScreen(Screen.LIST);
         } else if (currentScreen == Screen.LIST) {
             finish();
@@ -310,6 +329,139 @@ public class FriendsActivity extends FCLActivity {
         loginError.setVisibility(View.VISIBLE);
     }
 
+    // ===================== Cài đặt tài khoản =====================
+    // Sau khi đã đăng nhập (Google HOẶC mật khẩu), cho phép thêm CÁCH CÒN LẠI —
+    // trước đây đăng nhập 1 kiểu là hết cách đăng nhập kiểu kia, không có màn
+    // nào để bổ sung. Dùng lại nguyên request registerStart/registerConfirm
+    // (backend giờ chỉ chặn khi ĐÃ có mật khẩu, không còn chặn theo GoogleSub)
+    // và luồng Google Sign-In đã có, chỉ khác ở chỗ không lưu session mới/
+    // không chuyển màn sau khi xong — tài khoản đã đăng nhập sẵn rồi.
+
+    private void bindSettingsViews() {
+        settingsContainer = findViewById(R.id.settings_container);
+        settingsPasswordStatus = findViewById(R.id.settings_password_status);
+        settingsAddPassword = findViewById(R.id.settings_add_password);
+        settingsPasswordForm = findViewById(R.id.settings_password_form);
+        settingsEmail = findViewById(R.id.settings_email);
+        settingsCode = findViewById(R.id.settings_code);
+        settingsNewPassword = findViewById(R.id.settings_new_password);
+        settingsPasswordSubmit = findViewById(R.id.settings_password_submit);
+        settingsGoogleStatus = findViewById(R.id.settings_google_status);
+        settingsAddGoogle = findViewById(R.id.settings_add_google);
+        settingsError = findViewById(R.id.settings_error);
+        settingsProgress = findViewById(R.id.settings_progress);
+        FCLImageButton back = findViewById(R.id.settings_back);
+        back.setOnClickListener(v -> showScreen(Screen.LIST));
+
+        settingsAddPassword.setOnClickListener(v -> {
+            settingsCodeSent = false;
+            settingsPasswordForm.setVisibility(View.VISIBLE);
+            settingsAddPassword.setVisibility(View.GONE);
+        });
+        settingsPasswordSubmit.setOnClickListener(v -> onSettingsPasswordSubmit());
+        settingsAddGoogle.setOnClickListener(v -> {
+            settingsError.setVisibility(View.GONE);
+            startActivityForResult(googleSignInClient.getSignInIntent(), this::onGoogleLinkResult);
+        });
+    }
+
+    private void loadAccountSettings() {
+        settingsError.setVisibility(View.GONE);
+        settingsPasswordForm.setVisibility(View.GONE);
+        settingsCodeSent = false;
+        setSettingsBusy(true);
+        LyleeFriendsApi.claimStatus(myUsername)
+                .whenComplete(Schedulers.androidUIThread(), (res, ex) -> {
+                    setSettingsBusy(false);
+                    if (ex != null || res == null) {
+                        settingsError.setText(R.string.friends_settings_load_failed);
+                        settingsError.setVisibility(View.VISIBLE);
+                        return;
+                    }
+                    settingsPasswordStatus.setText(res.hasPassword ? R.string.friends_settings_password_yes : R.string.friends_settings_password_no);
+                    settingsAddPassword.setVisibility(res.hasPassword ? View.GONE : View.VISIBLE);
+                    settingsGoogleStatus.setText(res.hasGoogle ? R.string.friends_settings_google_yes : R.string.friends_settings_google_no);
+                    settingsAddGoogle.setVisibility(res.hasGoogle ? View.GONE : View.VISIBLE);
+                }).start();
+    }
+
+    private void onSettingsPasswordSubmit() {
+        settingsError.setVisibility(View.GONE);
+        if (!settingsCodeSent) {
+            String email = String.valueOf(settingsEmail.getText());
+            if (email.isEmpty()) return;
+            setSettingsBusy(true);
+            LyleeFriendsApi.registerStart(myUsername, email)
+                    .whenComplete(Schedulers.androidUIThread(), (res, ex) -> {
+                        setSettingsBusy(false);
+                        if (ex != null || res == null || !res.success) {
+                            showSettingsError(R.string.friends_register_send_code_failed);
+                            return;
+                        }
+                        settingsCodeSent = true;
+                        settingsCode.setVisibility(View.VISIBLE);
+                        settingsNewPassword.setVisibility(View.VISIBLE);
+                        settingsPasswordSubmit.setText(R.string.friends_register_confirm);
+                        Toast.makeText(this, getString(R.string.friends_register_code_sent), Toast.LENGTH_LONG).show();
+                    }).start();
+        } else {
+            String code = String.valueOf(settingsCode.getText());
+            String password = String.valueOf(settingsNewPassword.getText());
+            if (code.isEmpty() || password.isEmpty()) return;
+            setSettingsBusy(true);
+            LyleeFriendsApi.registerConfirm(myUsername, code, password)
+                    .whenComplete(Schedulers.androidUIThread(), (res, ex) -> {
+                        setSettingsBusy(false);
+                        if (ex != null || res == null) {
+                            showSettingsError(R.string.friends_register_confirm_failed);
+                            return;
+                        }
+                        Toast.makeText(this, getString(R.string.friends_settings_password_set), Toast.LENGTH_SHORT).show();
+                        settingsPasswordForm.setVisibility(View.GONE);
+                        settingsPasswordSubmit.setText(R.string.friends_register_send_code);
+                        loadAccountSettings();
+                    }).start();
+        }
+    }
+
+    private void onGoogleLinkResult(androidx.activity.result.ActivityResult result) {
+        try {
+            GoogleSignInAccount account = GoogleSignIn.getSignedInAccountFromIntent(result.getData())
+                    .getResult(ApiException.class);
+            String idToken = account.getIdToken();
+            if (idToken == null) {
+                showSettingsError(R.string.friends_google_login_failed);
+                return;
+            }
+            setSettingsBusy(true);
+            LyleeFriendsApi.googleLogin(idToken, myUsername)
+                    .whenComplete(Schedulers.androidUIThread(), (res, ex) -> {
+                        setSettingsBusy(false);
+                        if (ex != null || res == null) {
+                            showSettingsError(R.string.friends_google_login_failed);
+                            return;
+                        }
+                        Toast.makeText(this, getString(R.string.friends_settings_google_linked), Toast.LENGTH_SHORT).show();
+                        loadAccountSettings();
+                    }).start();
+        } catch (ApiException e) {
+            if (e.getStatusCode() != 12501) {
+                showSettingsError(R.string.friends_google_login_failed);
+            }
+        }
+    }
+
+    private void setSettingsBusy(boolean busy) {
+        settingsProgress.setVisibility(busy ? View.VISIBLE : View.GONE);
+        settingsPasswordSubmit.setEnabled(!busy);
+        settingsAddGoogle.setEnabled(!busy);
+    }
+
+    private void showSettingsError(int resId) {
+        settingsError.setText(resId);
+        settingsError.setVisibility(View.VISIBLE);
+    }
+
     // ===================== Danh sách bạn bè =====================
 
     private void bindListViews() {
@@ -317,8 +469,13 @@ public class FriendsActivity extends FCLActivity {
         friendList = findViewById(R.id.friend_list);
         FCLImageButton back = findViewById(R.id.list_back);
         FCLImageButton add = findViewById(R.id.list_add);
+        FCLImageButton settings = findViewById(R.id.list_settings);
         back.setOnClickListener(v -> finish());
         add.setOnClickListener(v -> showAddFriendDialog());
+        settings.setOnClickListener(v -> {
+            showScreen(Screen.ACCOUNT_SETTINGS);
+            loadAccountSettings();
+        });
         friendRowAdapter = new FriendRowAdapter();
         friendList.setAdapter(friendRowAdapter);
     }

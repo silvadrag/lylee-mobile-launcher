@@ -308,6 +308,7 @@ class MainActivity : FCLActivity(), OnSelectListener, View.OnClickListener {
                     true
                 }
                 UpdateChecker.getInstance().checkAuto(this@MainActivity).start()
+                com.tungsten.fcl.lylee.LyleeBackgroundSync.applyServerBackground(this@MainActivity, binding.background)
                 if (!checkNotificationPermission() && getSharedPreferences(
                         "launcher",
                         MODE_PRIVATE

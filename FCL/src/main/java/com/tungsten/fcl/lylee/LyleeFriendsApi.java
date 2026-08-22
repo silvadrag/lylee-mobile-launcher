@@ -52,6 +52,8 @@ public final class LyleeFriendsApi {
 
     public static final class ClaimStatusResponse {
         public boolean claimed;
+        public boolean hasPassword;
+        public boolean hasGoogle;
     }
 
     // --- Bạn bè ---

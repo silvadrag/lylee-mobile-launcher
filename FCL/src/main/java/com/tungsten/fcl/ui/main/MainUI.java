@@ -1,7 +1,6 @@
 package com.tungsten.fcl.ui.main;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.Looper;
@@ -14,7 +13,6 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.gson.reflect.TypeToken;
 import com.tungsten.fcl.R;
-import com.tungsten.fcl.activity.FriendsActivity;
 import com.tungsten.fcl.game.TexturesLoader;
 import com.tungsten.fcl.setting.Accounts;
 import com.tungsten.fclcore.auth.Account;
@@ -62,7 +60,6 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
     private LinearLayoutCompat announcementDots;
     private FCLButton hide;
     private FCLImageButton announcementHistory;
-    private FCLImageButton friendsButton;
     private final List<Announcement> announcements = new ArrayList<>();
     private final Handler autoAdvanceHandler = new Handler(Looper.getMainLooper());
     private final Runnable autoAdvanceRunnable = new Runnable() {
@@ -94,13 +91,11 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
         announcementDots = findViewById(R.id.announcement_dots);
         hide = findViewById(R.id.hide);
         announcementHistory = findViewById(R.id.announcement_history);
-        friendsButton = findViewById(R.id.friends_button);
         // Nền thẻ tối #252525 (đồng bộ launcher PC — "news card" không phủ đặc
         // màu hồng theme) thay vì tint theo màu accent như trước.
         announcementLayout.getBackground().setTint(ContextCompat.getColor(getContext(), R.color.card_bg));
         hide.setOnClickListener(this);
         announcementHistory.setOnClickListener(this);
-        friendsButton.setOnClickListener(this);
 
         skinViewer = findViewById(R.id.skin_viewer);
         renderer = new SkinRenderer(getContext());
@@ -279,9 +274,6 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
         }
         if (view == announcementHistory) {
             new AnnouncementHistoryDialog(getContext()).show();
-        }
-        if (view == friendsButton) {
-            getContext().startActivity(new Intent(getContext(), FriendsActivity.class));
         }
     }
 }
