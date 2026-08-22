@@ -625,6 +625,47 @@ phiên riêng (feature lớn hơn nhiều).
   "Desktop" mà PC đang có sẵn). Backend (`GoogleTokenVerifier`) hiện chỉ
   chấp nhận 1 audience — cần sửa để chấp nhận cả 2 (PC's Desktop client +
   mobile's Web client mới) khi có Client ID thật.
-- [ ] **Kết bạn/chat mobile** — feature lớn nhất còn lại, không bị chặn
-  gì cả, người dùng xác nhận muốn làm — bắt đầu ngay sau mục này.
+- [x] **Kết bạn/chat mobile (v1)** — xem mục 20 bên dưới.
 - [ ] Cảnh báo cấu hình yếu trên PC — độ ưu tiên thấp, chưa bắt đầu.
+
+## 20. Kết bạn/chat mobile v1 (2026-08-22)
+
+Dùng chung 100% API friends/messages mà PC đã có sẵn (`ApiServer.java`,
+cùng DB, cùng player JWT) — mobile trước đây chưa từng gọi endpoint có
+auth (chỉ gọi session/playtime ẩn danh), nên đây là lần đầu mobile có
+đăng nhập player JWT thật.
+
+### Đã làm
+
+- `LyleeFriendsApi.java` — toàn bộ 22 route (login/register/quên mật
+  khẩu, friends CRUD, messages CRUD + edit/recall/react/typing/đính
+  kèm ảnh). 2 route không dùng được `HttpRequest` framework sẵn có nên
+  phải tự viết bằng `HttpURLConnection`: xóa bạn (framework không có
+  DELETE) và upload ảnh đính kèm (framework ép UTF-8 text, làm hỏng
+  byte nhị phân).
+- `LyleeFriendsSession.java` — lưu token/username/thời hạn vào
+  SharedPreferences riêng (`friends_player_token*`), tách khỏi tài
+  khoản Minecraft đang chọn.
+- `FriendsActivity.java` (Activity riêng, không phải Dialog — đủ chỗ
+  cho danh sách + khung chat) — 3 màn hình LOGIN/LIST/CHAT chuyển bằng
+  ẩn/hiện view trong 1 layout, poll 2 giây khi màn LIST/CHAT đang mở
+  (giống cách PC poll). Nút vào từ màn hình chính (`friends_button`,
+  cạnh chuông thông báo).
+- **Phạm vi v1**: đăng nhập/đăng ký, gửi/chấp nhận/từ chối/hủy kết
+  bạn, chặn, nhắn tin văn bản. **Cố tình để dành cho đợt sau** (route
+  backend đã có sẵn, chỉ là thêm dần ở client, không cần đổi gì phía
+  server): sửa/thu hồi/react tin nhắn, hiện "đang gõ", gửi ảnh, ghim/
+  tắt thông báo hội thoại.
+- Build sạch (`assembleFordebug`, JDK 21 — máy hiện có JDK 25 mặc định
+  không tương thích Gradle 8.13/AGP, phải trỏ
+  `-Dorg.gradle.java.home` sang JDK 21 khi build tay).
+
+### Việc cần làm tiếp
+
+- [ ] Test trên máy thật (điện thoại mất kết nối, chưa test được):
+  đăng ký tài khoản mới, kết bạn 2 chiều, chat qua lại, poll có cập
+  nhật tin mới không.
+- [ ] Build + ký lại 5 file APK release kèm feature này (chưa build
+  bản release, mới chỉ build debug để test compile).
+- [ ] Cân nhắc thêm các phần đã để dành ở trên nếu người dùng thấy
+  thiếu sau khi dùng thử.
