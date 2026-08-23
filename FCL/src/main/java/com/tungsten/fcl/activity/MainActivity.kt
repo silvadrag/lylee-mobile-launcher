@@ -541,7 +541,7 @@ class MainActivity : FCLActivity(), OnSelectListener, View.OnClickListener {
         // Ghi lại chiều rộng skin hiện tại (vùng nội dung mở rộng sau khi ẩn, dùng để cố định vị trí skin)
         val ui = UIManager.instance.currentUI
         if (ui is MainUI) {
-            skinViewerWidth = ui.contentView.findViewById<View>(R.id.skin_viewer).width
+            skinViewerWidth = ui.contentView.findViewById<View>(R.id.skin_viewer_frame).width
         }
         menu.animate().translationX(rightMenuWidth.toFloat()).setDuration(200).withEndAction {
             menu.visibility = View.GONE
@@ -557,7 +557,9 @@ class MainActivity : FCLActivity(), OnSelectListener, View.OnClickListener {
     private fun fixSkinViewerPosition(fix: Boolean) {
         val ui = UIManager.instance.currentUI
         if (ui !is MainUI) return
-        val skin = ui.contentView.findViewById<View>(R.id.skin_viewer)
+        // Khung FrameLayout bọc ngoài (ui_main.xml: skin_viewer_frame) mới là con trực tiếp
+        // của ConstraintLayout — skin_viewer (GLSurfaceView) chỉ là con của khung này.
+        val skin = ui.contentView.findViewById<View>(R.id.skin_viewer_frame)
         val params = skin.layoutParams as ConstraintLayout.LayoutParams
         if (fix) {
             params.width = skinViewerWidth
@@ -565,7 +567,8 @@ class MainActivity : FCLActivity(), OnSelectListener, View.OnClickListener {
             params.marginEnd = rightMenuWidth
         } else {
             params.width = 0
-            params.matchConstraintPercentWidth = 0.5f
+            // Phải khớp app:layout_constraintWidth_percent của skin_viewer_frame trong ui_main.xml
+            params.matchConstraintPercentWidth = 0.17f
             params.marginEnd = 0
         }
         skin.layoutParams = params

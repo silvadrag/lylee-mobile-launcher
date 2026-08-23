@@ -30,6 +30,11 @@ public class FCLImageButton extends AppCompatImageButton {
     private boolean useThemeColor;
     private BooleanProperty visibilityProperty;
     private BooleanProperty disableProperty;
+    // Nền khai báo trong XML (android:background) bị mất nếu không giữ lại: refreshStyle()
+    // luôn ghi đè background bằng 1 RippleDrawable trắng tay (không lớp nội dung), nên phải
+    // chụp lại nền gốc 1 LẦN DUY NHẤT trước khi registerEvent() chạy refreshStyle() lần đầu,
+    // rồi dùng lại nó làm lớp content của RippleDrawable ở mỗi lần refresh theme sau này.
+    private Drawable originalBackground;
 
     public void refreshStyle() {
         int[][] state = {
@@ -49,12 +54,20 @@ public class FCLImageButton extends AppCompatImageButton {
         if (useThemeColor && getDrawable() != null) {
             getDrawable().setTint(ThemeEngine.getInstance().getTheme().getColor2());
         }
-        RippleDrawable drawable = new RippleDrawable(new ColorStateList(state, colorRipple), null, null);
+        RippleDrawable drawable = new RippleDrawable(new ColorStateList(state, colorRipple), originalBackground, null);
         drawable.setRadius(ConvertUtils.dip2px(getContext(), noPadding ? 12 : 20));
         setBackgroundDrawable(drawable);
     }
 
-    private void init() {
+    private void init(@Nullable AttributeSet attrs) {
+        // Chỉ giữ lại nền nếu XML khai báo THẬT SỰ có android:background — nếu không kiểm tra
+        // attrs mà cứ lấy getBackground(), sẽ vô tình giữ luôn nền mặc định của platform
+        // ImageButton (1 ô vuông xám) cho những nút không hề khai nền, trông như bug mới.
+        // Phải chụp trước khi registerEvent() bên dưới chạy refreshStyle() lần đầu, nếu không
+        // getBackground() ở đây sẽ trả về chính RippleDrawable vừa tạo ở lần refresh trước.
+        boolean hasXmlBackground = attrs != null &&
+                attrs.getAttributeValue("http://schemas.android.com/apk/res/android", "background") != null;
+        originalBackground = hasXmlBackground ? getBackground() : null;
         if (!noPadding) {
             setPadding(
                     ConvertUtils.dip2px(getContext(), 8f),
@@ -72,7 +85,7 @@ public class FCLImageButton extends AppCompatImageButton {
 
     public FCLImageButton(@NonNull Context context) {
         super(context);
-        init();
+        init(null);
     }
 
     public FCLImageButton(@NonNull Context context, @Nullable AttributeSet attrs) {
@@ -82,7 +95,7 @@ public class FCLImageButton extends AppCompatImageButton {
         noPadding = typedArray.getBoolean(R.styleable.FCLImageButton_no_padding, false);
         useThemeColor = typedArray.getBoolean(R.styleable.FCLImageButton_use_theme_color, false);
         typedArray.recycle();
-        init();
+        init(attrs);
     }
 
     public FCLImageButton(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
@@ -92,7 +105,7 @@ public class FCLImageButton extends AppCompatImageButton {
         noPadding = typedArray.getBoolean(R.styleable.FCLImageButton_no_padding, false);
         useThemeColor = typedArray.getBoolean(R.styleable.FCLImageButton_use_theme_color, false);
         typedArray.recycle();
-        init();
+        init(attrs);
     }
 
     public void setAutoTint(boolean autoTint) {

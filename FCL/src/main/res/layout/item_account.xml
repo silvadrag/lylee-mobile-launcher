@@ -12,39 +12,41 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="5dp"
         android:background="@drawable/bg_container_white"
+        android:paddingBottom="6dp"
         app:auto_tint="true"
         app:layout_constraintTop_toTopOf="parent">
 
+        <!-- Dòng 1: thông tin tài khoản. Dòng 2 (actions) tách riêng bên dưới — gộp chung 1
+             dòng trước đây làm 6 nút hành động (link Google/skin/refresh/copy/sửa/xóa) chèn
+             sát nhau rất khó bấm đúng, đặc biệt màn hẹp. -->
         <com.tungsten.fcllibrary.component.view.FCLRadioButton
             android:id="@+id/radio"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/avatar"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.5" />
+            app:layout_constraintTop_toTopOf="@id/avatar" />
 
         <com.tungsten.fcllibrary.component.view.FCLImageView
             android:id="@+id/avatar"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginTop="8dp"
             app:layout_constraintStart_toEndOf="@+id/radio"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.5" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/info"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
-            android:layout_marginEnd="155dp"
+            android:layout_marginEnd="10dp"
             android:orientation="vertical"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/avatar"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/avatar"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.5">
+            app:layout_constraintTop_toTopOf="@id/avatar">
 
             <com.tungsten.fcllibrary.component.view.FCLTextView
                 android:id="@+id/name"
@@ -67,98 +69,141 @@
 
         </androidx.appcompat.widget.LinearLayoutCompat>
 
-        <!-- Liên kết/hủy liên kết Google cho ĐÚNG tài khoản Minecraft dòng này —
-             xem docs/PLAN.md, mỗi tài khoản Google chỉ liên kết được 1 dòng (backend
-             chặn nếu đã liên kết chỗ khác, xem Database.loginWithGoogle). -->
-        <com.tungsten.fcllibrary.component.view.FCLImageButton
-            android:id="@+id/google_link"
-            android:layout_width="wrap_content"
+        <!-- Dòng 2: hàng nút hành động, dàn đều full chiều ngang thay vì chèn cứng vào dòng 1. -->
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/actions"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_baseline_link_24"
-            app:auto_tint="true"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/skin"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.tungsten.fcllibrary.component.view.FCLProgressBar
-            android:id="@+id/google_link_progress"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:visibility="invisible"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="@id/google_link"
-            app:layout_constraintEnd_toEndOf="@id/google_link"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.tungsten.fcllibrary.component.view.FCLImageButton
-            android:id="@+id/skin"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_baseline_hanger_24"
-            app:auto_tint="true"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/refresh"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.tungsten.fcllibrary.component.view.FCLProgressBar
-            android:id="@+id/skin_progress"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:visibility="invisible"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="@id/skin"
-            app:layout_constraintEnd_toEndOf="@id/skin"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.tungsten.fcllibrary.component.view.FCLImageButton
-            android:id="@+id/refresh"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_baseline_refresh_24"
-            app:auto_tint="true"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/copy_uuid"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.tungsten.fcllibrary.component.view.FCLProgressBar
-            android:id="@+id/refresh_progress"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:visibility="invisible"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="@id/refresh"
-            app:layout_constraintEnd_toEndOf="@id/refresh"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.tungsten.fcllibrary.component.view.FCLImageButton
-            android:id="@+id/copy_uuid"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_baseline_content_copy_24"
-            app:auto_tint="true"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/edit"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.tungsten.fcllibrary.component.view.FCLImageButton
-            android:id="@+id/edit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_baseline_edit_24"
-            app:auto_tint="true"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/delete"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.tungsten.fcllibrary.component.view.FCLImageButton
-            android:id="@+id/delete"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_baseline_delete_24"
-            app:auto_tint="true"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginTop="4dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:weightSum="6"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/avatar">
+
+            <!-- Liên kết/hủy liên kết Google cho ĐÚNG tài khoản Minecraft dòng này —
+                 xem docs/PLAN.md, mỗi tài khoản Google chỉ liên kết được 1 dòng (backend
+                 chặn nếu đã liên kết chỗ khác, xem Database.loginWithGoogle). Icon đổi hẳn
+                 giữa ic_google_link/ic_google_linked ở code thay vì setColorFilter, để giữ
+                 nguyên màu logo Google chính hãng (tint sẽ làm mất màu logo). -->
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center">
+
+                <com.tungsten.fcllibrary.component.view.FCLImageButton
+                    android:id="@+id/google_link"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_google_link" />
+
+                <com.tungsten.fcllibrary.component.view.FCLProgressBar
+                    android:id="@+id/google_link_progress"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:visibility="invisible" />
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center">
+
+                <com.tungsten.fcllibrary.component.view.FCLImageButton
+                    android:id="@+id/skin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_baseline_hanger_24"
+                    app:auto_tint="true" />
+
+                <com.tungsten.fcllibrary.component.view.FCLProgressBar
+                    android:id="@+id/skin_progress"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:visibility="invisible" />
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center">
+
+                <com.tungsten.fcllibrary.component.view.FCLImageButton
+                    android:id="@+id/refresh"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_baseline_refresh_24"
+                    app:auto_tint="true" />
+
+                <com.tungsten.fcllibrary.component.view.FCLProgressBar
+                    android:id="@+id/refresh_progress"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:visibility="invisible" />
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center">
+
+                <com.tungsten.fcllibrary.component.view.FCLImageButton
+                    android:id="@+id/copy_uuid"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_baseline_content_copy_24"
+                    app:auto_tint="true" />
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center">
+
+                <com.tungsten.fcllibrary.component.view.FCLImageButton
+                    android:id="@+id/edit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_baseline_edit_24"
+                    app:auto_tint="true" />
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center">
+
+                <com.tungsten.fcllibrary.component.view.FCLImageButton
+                    android:id="@+id/delete"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_baseline_delete_24"
+                    app:auto_tint="true" />
+
+            </FrameLayout>
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
 
     </com.tungsten.fcllibrary.component.view.FCLConstraintLayout>
 

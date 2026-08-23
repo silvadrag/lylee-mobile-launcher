@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bản đã liên kết của ic_google_link.xml: cùng logo Google, badge góc dưới-phải đổi
+     sang xanh lá + dấu tick để báo trạng thái ĐÃ liên kết (bấm để hủy liên kết). -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:width="18dp"
+        android:height="18dp"
+        android:gravity="center"
+        android:drawable="@drawable/googleg_standard_color_18" />
+    <item
+        android:width="12dp"
+        android:height="12dp"
+        android:gravity="bottom|end"
+        android:drawable="@drawable/ic_link_badge_active" />
+</layer-list>

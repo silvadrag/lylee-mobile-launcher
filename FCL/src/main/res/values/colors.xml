@@ -7,8 +7,13 @@
          nên chỉ cần phủ mờ nhẹ. Từ khi nền tùy chỉnh qua URL server (LyleeBackgroundSync)
          có thể sáng/nhiều màu, mức trong suốt đó không đủ tương phản cho chữ trắng
          (gần như biến mất). Đổi sang xám đậm gần đen, đủ đục để LUÔN đọc được bất kể
-         nền sáng/tối, vẫn còn chút trong suốt (không phủ đặc hoàn toàn). -->
-    <color name="ui_bg_color">#E01A1A1A</color>
+         nền sáng/tối, vẫn còn chút trong suốt (không phủ đặc hoàn toàn).
+         Đây là giá trị CHẾ ĐỘ SÁNG (mặc định) — chữ/icon dùng use_theme_color trả về
+         MÀU ĐEN ở chế độ sáng (color2, xem ThemeData.getColor2), nên panel ở đây phải
+         SÁNG để tương phản; bản chế độ tối nằm ở values-night/colors.xml. Nếu chỉ để 1
+         giá trị tối duy nhất, bật "chế độ sáng" trong Cài đặt sẽ không còn tác dụng gì
+         lên các panel này, và chữ/icon đen sẽ biến mất trên nền tối. -->
+    <color name="ui_bg_color">#E6F0F0F0</color>
     <color name="right_menu_color">#80F4F4F4</color>
     <color name="icon_background_color">#211B27</color>
     <!-- Đồng bộ ngôn ngữ thiết kế với launcher PC (docs/UI_DESIGN_GUIDELINES.md):

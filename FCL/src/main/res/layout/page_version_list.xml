@@ -9,53 +9,60 @@
     android:paddingEnd="10dp"
     tools:ignore="HardcodedText">
 
-    <com.tungsten.fcllibrary.component.view.FCLEditText
-        android:id="@+id/search"
+    <!--
+    Cả cột trái bọc trong 1 nền panel chung (giống ui_account.xml) thay vì để search/list
+    trơ trên nền BG tuỳ chỉnh: dòng "Thư mục dùng chung"/"Thư mục riêng tư" trước đây không
+    đọc được vì bg_container_transparent_clickable của mỗi dòng chỉ hiện màu lúc bấm giữ.
+    -->
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/left_column"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:hint="@string/search"
-        android:imeOptions="flagNoFullscreen"
-        android:singleLine="true"
-        app:auto_edit_tint="true"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_percent="0.3" />
-
-    <ListView
-        android:id="@+id/profile_list"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginBottom="8dp"
-        android:divider="@android:color/transparent"
-        android:dividerHeight="0dp"
-        app:layout_constraintBottom_toTopOf="@id/refresh"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/search"
-        app:layout_constraintWidth_percent="0.3" />
-
-    <com.tungsten.fcllibrary.component.view.FCLButton
-        android:id="@+id/refresh"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:text="@string/action_refresh"
-        app:layout_constraintBottom_toTopOf="@id/new_profile"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintWidth_percent="0.3"
-        app:ripple="true" />
-
-    <com.tungsten.fcllibrary.component.view.FCLButton
-        android:id="@+id/new_profile"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="8dp"
-        android:text="@string/version_new_profile"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/bg_right_menu"
+        android:orientation="vertical"
+        android:padding="6dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintWidth_percent="0.3"
-        app:ripple="true" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent="0.3">
+
+        <com.tungsten.fcllibrary.component.view.FCLEditText
+            android:id="@+id/search"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:hint="@string/search"
+            android:imeOptions="flagNoFullscreen"
+            android:singleLine="true"
+            app:auto_edit_tint="true" />
+
+        <ListView
+            android:id="@+id/profile_list"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="8dp"
+            android:layout_weight="1"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="4dp" />
+
+        <com.tungsten.fcllibrary.component.view.FCLButton
+            android:id="@+id/refresh"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="@string/action_refresh"
+            app:ripple="true" />
+
+        <com.tungsten.fcllibrary.component.view.FCLButton
+            android:id="@+id/new_profile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/version_new_profile"
+            app:ripple="true" />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/layout"
@@ -63,7 +70,7 @@
         android:layout_height="match_parent"
         android:layout_marginStart="10dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/profile_list">
+        app:layout_constraintStart_toEndOf="@id/left_column">
 
         <com.mio.ui.widget.FCLAppBarLayout
             android:layout_width="match_parent"

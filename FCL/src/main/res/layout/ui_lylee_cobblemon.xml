@@ -12,6 +12,10 @@
         android:text="@string/lylee_cobblemon_page_title"
         android:textSize="26sp"
         android:textStyle="bold"
+        android:shadowColor="#CC000000"
+        android:shadowDx="0"
+        android:shadowDy="1"
+        android:shadowRadius="6"
         app:auto_text_tint="true"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

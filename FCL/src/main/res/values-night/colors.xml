@@ -3,4 +3,7 @@
     <color name="primary_text">#FFFFFF</color>
     <!-- Màu của module FCLLibrary cũ (module đã gộp vào FCL) -->
     <color name="dialog_background">#232323</color>
+    <!-- Bản chế độ tối của panel nền các khung/danh sách — xem giải thích ở values/colors.xml.
+         Chữ/icon dùng use_theme_color trả về MÀU TRẮNG ở chế độ tối nên panel phải tối. -->
+    <color name="ui_bg_color">#E01A1A1A</color>
 </resources>

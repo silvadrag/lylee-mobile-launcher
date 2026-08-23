@@ -164,7 +164,10 @@ public class LauncherSettingPage extends FCLPage implements LauncherSettingAdapt
                 ThemeEngine.getInstance().applyAndSave2(getContext(), Color.parseColor("#000000"));
                 break;
             case THEME_COLOR2_DARK_RESET:
-                ThemeEngine.getInstance().applyAndSave2Dark(getContext(), Color.parseColor("#000000"));
+                // Mặc định thật của color2Dark là TRẮNG (xem ThemePreference.color2Dark = 0xFFFFFFFF) —
+                // trước đây reset nhầm về đen giống hệt bản sáng (copy-paste từ THEME_COLOR2_RESET),
+                // khiến chữ/icon dùng use_theme_color biến mất trên nền tối sau khi bấm "Đặt lại".
+                ThemeEngine.getInstance().applyAndSave2Dark(getContext(), Color.parseColor("#FFFFFF"));
                 break;
             case BACKGROUND_LIVE_RESET:
                 try {

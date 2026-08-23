@@ -768,5 +768,121 @@ phía mobile) đều sạch, nút hiện đúng trên máy thật.
   deploy, bấm "Đăng nhập bằng Google" vẫn mở được màn chọn tài khoản
   (chạy phía máy) nhưng gửi token lên server sẽ báo lỗi.
 - [ ] Test đăng nhập Google trên máy thật sau khi deploy xong.
-- [ ] Build + ký lại 5 file APK release kèm toàn bộ mục 20+21 (login
-  Google, 3 bug UI đã sửa) — vẫn đang ở bản debug.
+- [x] Build + ký lại 5 file APK release kèm toàn bộ mục 20+21 (login
+  Google, 3 bug UI đã sửa) — xem mục 22, đã build + public bản 1.3.2.10.
+
+## 22. Gộp đăng nhập vào quản lý tài khoản + rà soát legibility toàn app (2026-08-23)
+
+Tiếp nối mục 21: chuyển 3 phương thức đăng nhập (ngoại tuyến/Microsoft/
+Google) vào đúng 1 chỗ — màn quản lý tài khoản — thay vì Google là màn
+đăng nhập riêng của tính năng Bạn bè. Sau khi cắm nền tùy chỉnh qua URL
+server (`LyleeBackgroundSync`, mục trước), rất nhiều chỗ vốn "ăn may"
+nhờ nền mặc định luôn tối lộ ra không đọc được — mất phần lớn phiên này
+để rà từng tab như 1 mobile dev thật, sửa từng lớp.
+
+### Google: liên kết theo từng dòng tài khoản, không phải màn đăng nhập riêng
+
+Sửa sai hướng ban đầu (đưa nút Bạn bè từ Home sang màn Tài khoản) theo
+đúng góp ý người dùng: nút Bạn bè giữ nguyên ở Home, chỉ thêm gate —
+chưa đăng nhập Lylee (`LyleeFriendsSession`) thì báo + đưa sang tab Tài
+khoản. Google trở thành hành động liên kết/hủy liên kết TRÊN TỪNG DÒNG
+tài khoản Minecraft (`AccountListAdapter.kt`), vì 1 máy có thể có nhiều
+tài khoản offline/Microsoft nhưng chỉ 1 phiên bạn bè đang hoạt động.
+
+- Backend (`Database.loginWithGoogle`) trước đây SILENT REDIRECT sang
+  tài khoản đã liên kết sẵn nếu đăng nhập bằng Google đã dùng ở nơi
+  khác — đổi thành `ApiException.conflict`, đúng nghĩa "1 tài khoản
+  Google chỉ liên kết được 1 dòng". Thêm `unlinkGoogle(googleSub)` +
+  route `POST /api/auth/google/unlink` — xác thực qua chính idToken
+  Google vừa đăng nhập (không cần player-JWT, vì mobile chỉ giữ 1
+  phiên bạn bè, không phải theo từng tài khoản Minecraft).
+- Icon liên kết: ban đầu dùng icon chuỗi (link) chung chung, người dùng
+  phản hồi khó nhận ra là nút Google. Đổi sang ghép logo Google chính
+  hãng (`googleg_standard_color_18`, có sẵn trong `play-services-base`
+  đã phụ thuộc — không cần tự vẽ) + huy hiệu tròn góc dưới-phải báo
+  trạng thái (hồng+icon-link = chưa liên kết, xanh+tick = đã liên kết).
+  Đổi HẲN drawable theo trạng thái (`ic_google_link`/`ic_google_linked`)
+  thay vì `setColorFilter` — tint sẽ phủ 1 màu lên toàn bộ logo nhiều
+  màu, mất nhận diện thương hiệu. Logo phải đặt `gravity="center"`
+  trong layer-list (không phải `top|start`) mới nhìn "thẳng" — ban đầu
+  neo góc khiến logo lệch hẳn về 1 phía so với huy hiệu.
+- Bug bảng chọn tài khoản Google tự chọn rồi đóng ngay (như lỗi chớp
+  nhoáng): `GoogleSignInClient.signInIntent` cache lựa chọn tài khoản
+  lần trước, gọi lại nhiều lần sẽ tự động chọn lại (rõ nhất khi máy chỉ
+  có 1 tài khoản Google). Sửa: gọi `signOut()` (chỉ xoá cache phía
+  client, không đụng tài khoản Google thật) trước khi mở `signInIntent`
+  mỗi lần link/unlink, ép hệ thống luôn hiện bảng chọn thật.
+
+### Nền UI tối cố định làm hỏng tương phản + vô hiệu hoá chuyển sáng/tối
+
+Root cause của gần hết các bug tương phản phiên này: `ui_bg_color`
+(nền panel dùng cho Version/Controller/Multiplayer/Tài khoản) là 1 màu
+tối CỐ ĐỊNH, không phân biệt sáng/tối — trong khi chữ/icon dùng
+`use_theme_color` (`ThemeData.getColor2`) đổi đen/trắng đúng theo
+`ThemeEngine.isNightMode()`. Ở chế độ sáng, chữ/icon tự chuyển ĐEN
+nhưng panel vẫn tối → biến mất hoàn toàn. Bật thử "Chế độ Sáng" mới lộ
+ra rõ nhất, và người dùng phản ánh đúng: "chuyển đổi chế độ UI không
+còn tác dụng" — vì gần hết panel không đổi màu theo. Sửa bằng đúng cơ
+chế `values`/`values-night` (app đã gọi `AppCompatDelegate.setDefault
+NightMode` theo cài đặt `themeMode` riêng, nên resource qualifier tôn
+trọng đúng lựa chọn trong app, không chỉ theo hệ thống): `ui_bg_color`
+tách 2 giá trị — sáng gần trắng (`values/colors.xml`), tối gần đen như
+cũ (`values-night/colors.xml`).
+
+Root cause thứ 2, khác hẳn: `FCLImageButton.refreshStyle()` LUÔN ghi đè
+`background` bằng 1 `RippleDrawable` tay không (content=null) mỗi lần
+theme refresh — xoá mất bất kỳ `android:background` nào khai trong
+XML. Nút chuông/kết bạn ở Home khai `bg_container_white` nhưng chưa
+bao giờ thực sự hiện ra. Sửa: chụp lại background gốc 1 lần trong
+`init()` (CHỈ khi XML thật sự có khai `android:background`, kiểm qua
+`AttributeSet` — nếu cứ lấy `getBackground()` vô điều kiện sẽ vô tình
+giữ luôn nền mặc định xám của platform ImageButton cho các nút chưa hề
+khai nền, ví dụ nút bánh răng trong "Khởi chạy" tự nhiên có khung xám
+lồng bên trong khung Khởi chạy — phát hiện qua phản hồi người dùng),
+dùng lại làm content-layer của RippleDrawable ở các lần refresh sau.
+
+Áp cả 2 fix xong, rà từng tab thêm: `page_version_list.xml`,
+`page_controller_manager.xml`, `ui_multiplayer.xml` đều có cột trái
+(ô tìm kiếm/danh sách/nút hành động) nằm trơ trên nền ảnh, không có
+panel bọc ngoài nào cả — bọc thêm `bg_right_menu` (cùng `ui_bg_color`)
+giống pattern đã dùng ở `ui_account.xml`. Model nhân vật (`SkinViewer`,
+`GLSurfaceView` với `setZOrderOnTop(true)`) tự nó KHÔNG thể nhận
+`android:background` (surface vẽ ở lớp compositing riêng, tách khỏi
+View thường) — phải bọc trong 1 `FrameLayout` thường làm khung nền+viền
+phía sau, đồng thời phát hiện+sửa luôn 1 bug ẩn tồn tại từ trước:
+`MainActivity.fixSkinViewerPosition()` hard-code lại `width_percent`
+cũ (0.5, tức RỘNG HƠN) mỗi lần ẩn/hiện menu phải — lẽ ra phải khớp giá
+trị mới trong XML.
+
+### Hàng nút hành động trên dòng tài khoản: tách 2 dòng + căn giữa
+
+`item_account.xml` gốc nhồi 6 icon hành động (link Google/đổi
+skin/làm mới/copy UUID/sửa/xoá) chung 1 dòng với avatar+tên, rất khó
+bấm trúng đúng nút — tách thành 2 dòng: dòng 1 chỉ avatar+tên+loại tài
+khoản, dòng 2 dàn đều 6 nút hành động full chiều ngang trong
+`LinearLayoutCompat` (`FrameLayout` mỗi ô, `layout_weight="1"`). Lần
+đầu dàn không đều — `android:gravity="center"` đặt trên `FrameLayout`
+cha không áp dụng đúng cho icon con khi kết hợp `layout_weight`, cả
+hàng lệch hẳn về trái. Sửa bằng cách đặt `layout_gravity="center"`
+TRỰC TIẾP lên từng icon con + `weightSum="6"` rõ ràng trên hàng cha —
+đo lại bằng `uiautomator dump` xác nhận lề 2 bên chênh nhau 1px.
+Đồng thời bật `android:scrollbars="vertical"` cho `recycler_view` danh
+sách tài khoản để còn thao tác được khi nhiều tài khoản tràn màn hình.
+
+### Bug phụ: nút "Đặt lại" màu phụ chế độ tối reset nhầm về đen
+
+`LauncherSettingPage.java` case `THEME_COLOR2_DARK_RESET` copy-paste từ
+case `THEME_COLOR2_RESET` (chế độ sáng) nhưng quên đổi màu — reset cả
+2 chế độ về `#000000`, trong khi mặc định thật của `color2Dark` là
+TRẮNG (`ThemePreference.color2Dark = 0xFFFFFFFF`). Bấm "Đặt lại" ở chế
+độ tối trước đây làm chữ/icon biến mất luôn thay vì về đúng mặc định.
+
+### Đã build + public bản 1.3.2.10
+
+`versionCode=1330`, đủ 5 file APK (`all`/`arm64-v8a`/`armeabi-v7a`/
+`x86`/`x86_64`), xác nhận qua `aapt2 dump badging`. Output đổi quy ước:
+từ giờ dùng `lylee-mobile-launcher/release-collected/` (thư mục gốc
+repo) làm 1 chỗ duy nhất chứa APK cuối, KHÔNG dùng
+`FCL/build/outputs/apk/release-collected/` nữa (đường Gradle cũ bị ghi
+đè/xoá mỗi lần build 1 kiến trúc khác, dễ lẫn bản cũ — đã xảy ra, dọn
+sạch bản 1.3.2.9 còn sót ở đó).

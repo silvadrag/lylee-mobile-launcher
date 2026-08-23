@@ -90,13 +90,27 @@
         app:layout_constraintEnd_toStartOf="@id/announcement_history"
         app:layout_constraintTop_toTopOf="@id/announcement_history" />
 
-    <com.tungsten.fcllibrary.skin.SkinViewer
-        android:id="@+id/skin_viewer"
+    <!--
+    SkinViewer là GLSurfaceView với setZOrderOnTop(true) nên nó vẽ ở 1 lớp compositing
+    riêng, NẰM TRÊN mọi View thường khác — tự đặt android:background lên chính nó sẽ
+    không hiện ra được. Phải bọc trong 1 FrameLayout thường để làm nền+viền phía sau.
+    -->
+    <FrameLayout
+        android:id="@+id/skin_viewer_frame"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:background="@drawable/bg_container_white"
+        android:padding="2dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.35"
-        app:layout_constraintWidth_percent="0.22" />
+        app:layout_constraintHeight_percent="0.32"
+        app:layout_constraintWidth_percent="0.17">
+
+        <com.tungsten.fcllibrary.skin.SkinViewer
+            android:id="@+id/skin_viewer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -2,7 +2,6 @@ package com.tungsten.fcl.ui.account
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -200,7 +199,7 @@ class AccountListAdapter(
     // dụng khi cuộn — tránh áp kết quả cũ của dòng khác vào dòng mới nếu request
     // trước chưa kịp trả lời) — so username lúc bind với username lúc callback chạy.
     private fun bindGoogleLink(binding: ItemAccountBinding, username: String) {
-        binding.googleLink.setColorFilter(Color.GRAY)
+        binding.googleLink.setImageResource(R.drawable.ic_google_link)
         binding.googleLink.contentDescription = username
         binding.googleLink.setOnClickListener(null)
         LyleeFriendsApi.claimStatus(username)
@@ -213,36 +212,54 @@ class AccountListAdapter(
     }
 
     private fun applyGoogleLinkState(binding: ItemAccountBinding, username: String, linked: Boolean) {
-        binding.googleLink.setColorFilter(
-            if (linked) context.resources.getColor(R.color.default_theme_color, null) else Color.GRAY
+        // Đổi HẲN icon (không setColorFilter) — logo Google là asset nhiều màu chính hãng,
+        // tint sẽ phủ 1 màu duy nhất lên toàn bộ icon và làm mất nhận diện thương hiệu.
+        binding.googleLink.setImageResource(
+            if (linked) R.drawable.ic_google_linked else R.drawable.ic_google_link
         )
         binding.googleLink.setOnClickListener {
             if (linked) confirmUnlinkGoogle(binding, username) else linkGoogleAccount(binding, username)
         }
     }
 
-    private fun linkGoogleAccount(binding: ItemAccountBinding, username: String) {
-        MainActivity.getInstance().startActivityForResult(googleSignInClient(context).signInIntent) { result ->
-            var account: GoogleSignInAccount? = null
-            try {
-                account = GoogleSignIn.getSignedInAccountFromIntent(result.data).getResult(ApiException::class.java)
-            } catch (e: ApiException) {
-                if (e.statusCode != 12501) { // 12501 = người dùng tự hủy chọn tài khoản, không phải lỗi thật
-                    Toast.makeText(context, R.string.account_google_link_failed, Toast.LENGTH_SHORT).show()
+    // Google cache lựa chọn tài khoản trước đó: gọi thẳng signInIntent nhiều lần sẽ tự động
+    // chọn lại tài khoản cũ và đóng ngay lập tức (trông như 1 lỗi chớp nhoáng) thay vì cho
+    // người dùng chọn lại — đặc biệt rõ khi máy chỉ có 1 tài khoản Google. Phải signOut()
+    // (chỉ xoá lựa chọn đã cache phía client, không ảnh hưởng gì tài khoản Google thật) trước
+    // để ép hệ thống luôn hiện bảng chọn tài khoản.
+    private fun launchGoogleAccountPicker(onResult: (GoogleSignInAccount?, ApiException?) -> Unit) {
+        val client = googleSignInClient(context)
+        client.signOut().addOnCompleteListener {
+            MainActivity.getInstance().startActivityForResult(client.signInIntent) { result ->
+                try {
+                    val account = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                        .getResult(ApiException::class.java)
+                    onResult(account, null)
+                } catch (e: ApiException) {
+                    onResult(null, e)
                 }
             }
-            val idToken = account?.idToken
-            if (idToken != null) {
-                LyleeFriendsApi.googleLogin(idToken, username)
-                    .whenComplete(Schedulers.androidUIThread()) { res, ex ->
-                        if (ex != null || res == null) {
-                            Toast.makeText(context, R.string.account_google_link_failed, Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(context, R.string.account_google_linked, Toast.LENGTH_SHORT).show()
-                            applyGoogleLinkState(binding, username, true)
-                        }
-                    }.start()
+        }
+    }
+
+    private fun linkGoogleAccount(binding: ItemAccountBinding, username: String) {
+        launchGoogleAccountPicker { account, error ->
+            if (error != null) {
+                if (error.statusCode != 12501) { // 12501 = người dùng tự hủy chọn tài khoản, không phải lỗi thật
+                    Toast.makeText(context, R.string.account_google_link_failed, Toast.LENGTH_SHORT).show()
+                }
+                return@launchGoogleAccountPicker
             }
+            val idToken = account?.idToken ?: return@launchGoogleAccountPicker
+            LyleeFriendsApi.googleLogin(idToken, username)
+                .whenComplete(Schedulers.androidUIThread()) { res, ex ->
+                    if (ex != null || res == null) {
+                        Toast.makeText(context, R.string.account_google_link_failed, Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, R.string.account_google_linked, Toast.LENGTH_SHORT).show()
+                        applyGoogleLinkState(binding, username, true)
+                    }
+                }.start()
         }
     }
 
@@ -251,27 +268,23 @@ class AccountListAdapter(
         builder.setAlertLevel(FCLAlertDialog.AlertLevel.ALERT)
         builder.setMessage(context.getString(R.string.account_google_unlink_confirm, username))
         builder.setPositiveButton {
-            MainActivity.getInstance().startActivityForResult(googleSignInClient(context).signInIntent) { result ->
-                var account: GoogleSignInAccount? = null
-                try {
-                    account = GoogleSignIn.getSignedInAccountFromIntent(result.data).getResult(ApiException::class.java)
-                } catch (e: ApiException) {
-                    if (e.statusCode != 12501) {
+            launchGoogleAccountPicker { account, error ->
+                if (error != null) {
+                    if (error.statusCode != 12501) {
                         Toast.makeText(context, R.string.account_google_unlink_failed, Toast.LENGTH_SHORT).show()
                     }
+                    return@launchGoogleAccountPicker
                 }
-                val idToken = account?.idToken
-                if (idToken != null) {
-                    LyleeFriendsApi.unlinkGoogle(idToken)
-                        .whenComplete(Schedulers.androidUIThread()) { res, ex ->
-                            if (ex != null || res == null) {
-                                Toast.makeText(context, R.string.account_google_unlink_failed, Toast.LENGTH_SHORT).show()
-                            } else {
-                                Toast.makeText(context, R.string.account_google_unlinked, Toast.LENGTH_SHORT).show()
-                                applyGoogleLinkState(binding, username, false)
-                            }
-                        }.start()
-                }
+                val idToken = account?.idToken ?: return@launchGoogleAccountPicker
+                LyleeFriendsApi.unlinkGoogle(idToken)
+                    .whenComplete(Schedulers.androidUIThread()) { res, ex ->
+                        if (ex != null || res == null) {
+                            Toast.makeText(context, R.string.account_google_unlink_failed, Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, R.string.account_google_unlinked, Toast.LENGTH_SHORT).show()
+                            applyGoogleLinkState(binding, username, false)
+                        }
+                    }.start()
             }
         }
         builder.setNegativeButton(null)
