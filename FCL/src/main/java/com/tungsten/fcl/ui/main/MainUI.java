@@ -63,6 +63,11 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
     private FCLTextView title;
     private ViewPager2 announcementPager;
     private LinearLayoutCompat announcementDots;
+    // buildDots() trước đây đăng ký thêm 1 OnPageChangeCallback MỚI mỗi lần gọi mà
+    // không huỷ cái cũ — gọi buildDots() nhiều lần (giờ có thêm từ checkAnnouncement()
+    // refresh lại) sẽ chồng chất nhiều listener cùng cập nhật (thừa, rò rỉ). Giữ lại
+    // tham chiếu để hủy đăng ký cái cũ trước khi thêm cái mới.
+    private ViewPager2.OnPageChangeCallback dotsPageChangeCallback;
     private FCLButton hide;
     private FCLImageButton announcementHistory;
     private FCLImageButton friendsButton;
@@ -71,8 +76,22 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
     private final Runnable autoAdvanceRunnable = new Runnable() {
         @Override
         public void run() {
-            if (announcements.size() > 1) {
-                announcementPager.setCurrentItem((announcementPager.getCurrentItem() + 1) % announcements.size(), true);
+            // UIManager.onResume()/onPause() gọi trên TẤT CẢ trang đã tạo (kể cả
+            // trang không hiển thị), chỉ khớp vòng đời cả Activity (mở app/quay từ
+            // nền) chứ không khớp việc chuyển tab trong app — nếu không chặn ở đây,
+            // lúc người dùng đứng ở tab khác, timer này vẫn âm thầm gọi
+            // setCurrentItem() dù không ai thấy; quay lại Home sẽ thấy tin nhảy đột
+            // ngột/thoáng qua vì đã lỡ vài vòng từ lúc đó. isShowing() (View.isShown())
+            // KHÔNG dùng được ở đây — ViewPager2 vẫn giữ trang Home "attached" dù
+            // đang cuộn sang tab khác (offscreenPageLimit mặc định), nên isShown()
+            // vẫn trả về true; phải so trực tiếp với UIManager.currentUI (chỉ cập
+            // nhật đúng lúc thật sự đổi tab, xem UIManager.pageChangeCallback).
+            // Chế độ infinite (xem AnnouncementPagerAdapter): không còn cần chia dư về
+            // 0 nữa — tăng đều trong dải ảo, ViewPager2 tự vẽ mượt như đang vuốt tiếp
+            // tới trang kế, hết trang cuối "thật" sẽ tự nối sang đầu danh sách mà
+            // không cuộn ngược qua mọi trang giữa như setCurrentItem(0) kiểu cũ.
+            if (announcements.size() > 1 && UIManager.instance.getCurrentUI() == MainUI.this) {
+                announcementPager.setCurrentItem(announcementPager.getCurrentItem() + 1, true);
             }
             autoAdvanceHandler.postDelayed(this, AUTO_ADVANCE_MS);
         }
@@ -94,6 +113,12 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
         announcementLayout = findViewById(R.id.announcement_layout);
         title = findViewById(R.id.title);
         announcementPager = findViewById(R.id.announcement_pager);
+        // Mặc định (OFFSCREEN_PAGE_LIMIT_DEFAULT/-1) chỉ dựa vào cache thường của
+        // RecyclerView, dễ khiến trang KẾ TIẾP phải inflate + load ảnh (Glide) ngay
+        // giữa lúc animation chuyển trang đang chạy — đúng lúc cần mượt nhất lại đúng
+        // lúc nặng nhất, gây cảm giác giật. Ép giữ sẵn 1 trang liền kề mỗi bên, dựng
+        // xong trước khi người dùng/timer thật sự chuyển tới.
+        announcementPager.setOffscreenPageLimit(1);
         announcementDots = findViewById(R.id.announcement_dots);
         hide = findViewById(R.id.hide);
         announcementHistory = findViewById(R.id.announcement_history);
@@ -104,6 +129,25 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
         hide.setOnClickListener(this);
         announcementHistory.setOnClickListener(this);
         friendsButton.setOnClickListener(this);
+        // Đăng ký 1 LẦN DUY NHẤT (khác dotsPageChangeCallback trong buildDots() — cái
+        // đó gắn lại theo mỗi lần đổi adapter, còn cái này chỉ cần gắn theo view
+        // announcementPager, sống suốt đời MainUI): tạm dừng auto-advance ngay khi
+        // người dùng CHẠM/kéo tay vào thẻ tin tức, chờ họ THẢ tay xong (SETTLING rồi
+        // IDLE) mới hẹn giờ lại 6s tiếp — tính từ đúng vị trí họ vừa dừng lại, không
+        // "đấu" ngược lại thao tác vuốt tay hay giật về vị trí cũ.
+        announcementPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                if (state == ViewPager2.SCROLL_STATE_DRAGGING) {
+                    autoAdvanceHandler.removeCallbacks(autoAdvanceRunnable);
+                } else if (state == ViewPager2.SCROLL_STATE_IDLE) {
+                    autoAdvanceHandler.removeCallbacks(autoAdvanceRunnable);
+                    if (announcements.size() > 1) {
+                        autoAdvanceHandler.postDelayed(autoAdvanceRunnable, AUTO_ADVANCE_MS);
+                    }
+                }
+            }
+        });
 
         skinViewer = findViewById(R.id.skin_viewer);
         renderer = new SkinRenderer(getContext());
@@ -158,6 +202,14 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
             autoAdvanceHandler.removeCallbacks(autoAdvanceRunnable);
             autoAdvanceHandler.postDelayed(autoAdvanceRunnable, AUTO_ADVANCE_MS);
         }
+        // checkAnnouncement() trước đây CHỈ gọi đúng 1 lần ở onCreate() — MainUI là
+        // instance sống suốt cả phiên app (UIManager cache theo uiRegistry, không tạo
+        // lại khi chuyển tab), nên tin đăng MỚI trong lúc app đang mở sẵn sẽ không bao
+        // giờ được thấy cho tới khi người dùng tắt hẳn app rồi mở lại. Gọi lại ở đây
+        // để mỗi lần app quay lại foreground (mở lại từ nền, mở khoá máy...) đều thử
+        // lấy danh sách mới nhất — checkAnnouncement() tự so sánh, danh sách không đổi
+        // thì không đụng gì tới adapter/vị trí đang xem (xem bên dưới).
+        checkAnnouncement();
     }
 
     @Override
@@ -172,16 +224,25 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
             Task.supplyAsync(() -> HttpRequest.HttpGetRequest.GET(MainUI.ANNOUNCEMENT_LIST_URL).getJson(new TypeToken<ArrayList<Announcement>>() {
                     }))
                     .thenAcceptAsync(Schedulers.androidUIThread(), result -> {
-                        announcements.clear();
+                        List<Announcement> fresh = new ArrayList<>();
                         for (Announcement a : result) {
-                            if (a.shouldDisplay(getContext())) announcements.add(a);
+                            if (a.shouldDisplay(getContext())) fresh.add(a);
                         }
+                        // Gọi lại nhiều lần trong phiên (xem onResume()) — đa số lần danh
+                        // sách KHÔNG đổi, không đụng gì tới adapter/vị trí đang xem để
+                        // tránh giật ngược về trang đầu mỗi lần refresh ngầm không ai để ý.
+                        if (sameAnnouncementIds(fresh, announcements)) return;
+                        announcements.clear();
+                        announcements.addAll(fresh);
                         if (announcements.isEmpty()) {
                             announcementContainer.setVisibility(View.GONE);
+                            autoAdvanceHandler.removeCallbacks(autoAdvanceRunnable);
                             return;
                         }
                         announcementContainer.setVisibility(View.VISIBLE);
-                        announcementPager.setAdapter(new AnnouncementPagerAdapter(announcements, 6000));
+                        AnnouncementPagerAdapter adapter = new AnnouncementPagerAdapter(announcements, 6000, true);
+                        announcementPager.setAdapter(adapter);
+                        announcementPager.setCurrentItem(adapter.getStartPosition(), false);
                         buildDots();
                         autoAdvanceHandler.removeCallbacks(autoAdvanceRunnable);
                         if (announcements.size() > 1) {
@@ -193,9 +254,21 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
         }
     }
 
+    private static boolean sameAnnouncementIds(List<Announcement> a, List<Announcement> b) {
+        if (a.size() != b.size()) return false;
+        for (int i = 0; i < a.size(); i++) {
+            if (a.get(i).getId() != b.get(i).getId()) return false;
+        }
+        return true;
+    }
+
     private void buildDots() {
         announcementDots.removeAllViews();
         announcementDots.setVisibility(announcements.size() > 1 ? View.VISIBLE : View.GONE);
+        if (dotsPageChangeCallback != null) {
+            announcementPager.unregisterOnPageChangeCallback(dotsPageChangeCallback);
+            dotsPageChangeCallback = null;
+        }
         if (announcements.size() <= 1) return;
 
         View[] dots = new View[announcements.size()];
@@ -210,20 +283,26 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
             dots[i] = dot;
         }
 
-        announcementPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+        dotsPageChangeCallback = new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
+                // Chế độ infinite: position là vị trí ẢO trong dải lặp, phải chia dư
+                // về đúng chỉ số thật trong announcements mới khớp với dots[].
+                int real = position % announcements.size();
                 for (int i = 0; i < dots.length; i++) {
-                    dots[i].setBackgroundColor(i == position ? 0xFFFFFFFF : 0x80FFFFFF);
+                    dots[i].setBackgroundColor(i == real ? 0xFFFFFFFF : 0x80FFFFFF);
                 }
             }
-        });
+        };
+        announcementPager.registerOnPageChangeCallback(dotsPageChangeCallback);
     }
 
     /** Ẩn đúng tin ĐANG hiện trên trang (không phải ẩn cả thẻ) — khớp với việc
      *  thẻ giờ xoay vòng nhiều tin thay vì chỉ 1 tin mới nhất cố định. */
     private void hideCurrentAnnouncement() {
-        int position = announcementPager.getCurrentItem();
+        // announcementPager.getCurrentItem() là vị trí ẢO (chế độ infinite) — chia dư
+        // về đúng chỉ số thật trước khi đọc/xóa khỏi announcements.
+        int position = announcementPager.getCurrentItem() % announcements.size();
         if (position < 0 || position >= announcements.size()) return;
         Announcement current = announcements.get(position);
         current.hide(getContext());
@@ -233,7 +312,9 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
             autoAdvanceHandler.removeCallbacks(autoAdvanceRunnable);
             return;
         }
-        announcementPager.setAdapter(new AnnouncementPagerAdapter(announcements, 6000));
+        AnnouncementPagerAdapter adapter = new AnnouncementPagerAdapter(announcements, 6000, true);
+        announcementPager.setAdapter(adapter);
+        announcementPager.setCurrentItem(adapter.getStartPosition(), false);
         buildDots();
     }
 

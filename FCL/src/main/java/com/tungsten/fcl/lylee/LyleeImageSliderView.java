@@ -64,6 +64,17 @@ public class LyleeImageSliderView extends FrameLayout {
         image.setOnClickListener(v -> goTo(index + 1, true));
     }
 
+    // AnnouncementPagerAdapter.onBindViewHolder tạo 1 instance MỚI mỗi lần bind (kể
+    // cả bind lại do RecyclerView/GapWorker prefetch, không chỉ lần đầu) — nếu
+    // instance CŨ không hủy Runnable đang chờ trước khi bị recycle, nó vẫn tự lặp
+    // lại (advanceRunnable tự postDelayed chính nó) dù view đã rời cây view, tạo
+    // ra các timer "mồ côi" chạy song song với slider hiện tại đang hiển thị.
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        handler.removeCallbacks(advanceRunnable);
+    }
+
     public void setImages(List<String> newUrls) {
         handler.removeCallbacks(advanceRunnable);
         urls = new ArrayList<>();

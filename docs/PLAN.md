@@ -886,3 +886,101 @@ repo) làm 1 chỗ duy nhất chứa APK cuối, KHÔNG dùng
 `FCL/build/outputs/apk/release-collected/` nữa (đường Gradle cũ bị ghi
 đè/xoá mỗi lần build 1 kiến trúc khác, dễ lẫn bản cũ — đã xảy ra, dọn
 sạch bản 1.3.2.9 còn sót ở đó).
+
+## 23. Săn lỗi thẻ tin tức tự chuyển trên Home — 4 bug thật, đo bằng ghi màn hình + gfxinfo (2026-08-24)
+
+Người dùng báo thẻ "Tin tức" tự chuyển (`MainUI`) có lỗi khi so với lúc
+đứng yên xem thủ công, nghi có liên quan tới model render — không đoán
+mò mà tự dùng `adb shell screenrecord` quay lại lúc auto-advance đang
+chạy, cắt khung hình bằng `ffmpeg fps=5` xếp thành contact-sheet để soi
+từng 200ms một, việc mắt thường/chụp ảnh rời rạc 1s/lần không bắt kịp.
+
+### Bug 1 — Timer chạy ngầm dù Home không phải tab đang xem
+
+`UIManager.onResume()`/`onPause()` gọi trên TẤT CẢ trang đã tạo trong
+`uiRegistry` (không chỉ trang đang hiển thị), nhưng chỉ khớp vòng đời
+CẢ ACTIVITY (mở app/quay từ nền/mở khoá máy) chứ không khớp việc đổi
+tab trong app (`switchUI()` không đụng gì tới onPause/onResume từng
+UI). Hệ quả: đứng ở tab khác mà app resume từ nền, `autoAdvanceRunnable`
+của `MainUI` vẫn âm thầm gọi `setCurrentItem()` dù không ai thấy — quay
+lại Home thấy tin nhảy vài vòng cùng lúc. Thử `isShowing()`
+(`View.isShown()`) trước nhưng KHÔNG dùng được: ViewPager2 vẫn giữ
+trang Home "attached" dù đang cuộn sang tab khác (offscreenPageLimit
+mặc định), `isShown()` vẫn trả `true`. Phải so trực tiếp
+`UIManager.instance.currentUI == MainUI.this` (chỉ cập nhật đúng lúc
+thật sự đổi tab, xem `pageChangeCallback`) — verify bằng kịch bản: đứng
+tab Version 14s, background/foreground app qua Recents, quay lại Home
+— trước khi sửa nhảy 3 vòng, sau khi sửa đứng yên đúng vị trí lúc rời
+đi.
+
+### Bug 2 — Danh sách tin tức là bản CACHE CỨNG từ lúc mở app
+
+`checkAnnouncement()` (gọi HTTP GET danh sách tin) trước đây CHỈ được
+gọi đúng 1 LẦN trong `onCreate()`. `MainUI` là instance sống suốt cả
+phiên (`UIManager` cache theo `uiRegistry`, không tạo lại khi đổi tab)
+— tin đăng MỚI trong lúc app đang mở sẵn sẽ không bao giờ được thấy
+tới khi người dùng tắt hẳn app rồi mở lại. Người dùng tự phát hiện qua
+quan sát thực tế: "5 trang tin tức mà chỉ 3 trang lặp đi lặp lại".
+Sửa: gọi lại `checkAnnouncement()` trong `onResume()` (khớp lúc app
+quay lại foreground); để tránh giật lại về trang đầu MỖI LẦN refresh
+ngầm (đa số lần danh sách không đổi), thêm hàm so `id` từng tin —
+giống hệt danh sách cũ thì không đụng gì tới adapter/vị trí đang xem.
+Tiện thể sửa luôn 1 rò rỉ nhỏ cùng chỗ: `buildDots()` đăng ký thêm 1
+`OnPageChangeCallback` MỚI mỗi lần gọi mà không huỷ cái cũ — gọi nhiều
+lần (giờ có thêm từ mỗi lần refresh) sẽ chồng chất listener thừa.
+
+### Bug 3 — Hết vòng thì cuộn NGƯỢC qua mọi trang giữa
+
+`(current + 1) % size` rồi `setCurrentItem(0, true)` khi tới trang
+cuối: ViewPager2 không biết "vòng lại", nhảy từ trang cuối (VD vị trí
+4) về trang đầu (vị trí 0) bằng smooth scroll sẽ animate NGƯỢC tuần tự
+qua hết mọi trang ở giữa (4→3→2→1→0) — đúng cảm giác người dùng mô tả
+"bị kéo lướt nhanh từ trái sang phải", không phải reload gì cả. Sửa
+theo đúng gợi ý người dùng: `AnnouncementPagerAdapter` thêm chế độ
+`infinite` (tham số constructor thứ 3) — `getItemCount()` trả về
+`announcements.size() * 10_000` (đủ lớn, không dùng `Integer.MAX_VALUE`
+vì dễ lệch modulo khi size không chia hết), `onBindViewHolder` đọc
+`position % size`, khởi tạo `setCurrentItem` ở GIỮA dải ảo
+(`getStartPosition()`) để còn dư địa vuốt lùi. Auto-advance chỉ còn
+`getCurrentItem() + 1` (không modulo) — tăng đều trong dải ảo, ViewPager2
+tự vẽ mượt như đang vuốt tiếp trang kế, không còn điểm "nối vòng" nào
+để cuộn ngược. Dialog "Tin tức" (nút chuông, vuốt tay,
+`AnnouncementHistoryDialog`) dùng chung adapter nhưng KHÔNG bật cờ này
+— vẫn hữu hạn như cũ, verify qua constructor 2-tham số cũ vẫn giữ
+`infinite=false` mặc định. Verify bằng ghi màn hình 35s bắt đúng điểm
+nối vòng: chuyển 1 bước mượt duy nhất, không còn multi-page blur.
+
+### Bug 4 (theo yêu cầu người dùng) — Tạm dừng khi người dùng tương tác
+
+Người dùng chỉ ra: auto-advance "hard-code" là đúng ý nhưng cần thông
+minh hơn — chạm/kéo tay vào thẻ phải NGỪNG tự chuyển ngay, thả tay
+xong mới hẹn giờ lại đúng từ vị trí vừa dừng, không "đấu" ngược lại
+thao tác vuốt. Thêm 1 `ViewPager2.OnPageChangeCallback` đăng ký
+1 LẦN trong `onCreate()` (khác `dotsPageChangeCallback` gắn lại theo
+mỗi lần đổi adapter): `onPageScrollStateChanged` — `SCROLL_STATE_DRAGGING`
+thì huỷ `autoAdvanceRunnable` ngay, `SCROLL_STATE_IDLE` thì hẹn lại 6s
+tính từ lúc đó (Runnable tự đọc `getCurrentItem()` động lúc chạy nên
+không cần lưu thêm state gì). Verify bằng vuốt tay thật trên máy: sau
+khi thả tay, khoảng 6s sau mới tự chuyển tiếp, không nhảy đúp/giật lại.
+
+### Bug phụ (theo yêu cầu người dùng) — Giật khi vuốt/tự chuyển
+
+Sau khi sửa xong 4 bug trên, người dùng vẫn thấy "cà giật cà giật" khi
+vuốt, đề nghị tham khảo cách miHoYo/game lớn làm mượt bất kể thao tác
+người dùng. Đo bằng `adb shell dumpsys gfxinfo com.tungsten.fcl reset`
++ vuốt vài lần + dump lại: **31% khung hình bị giật (janky frames)**.
+Nguyên nhân đúng 2 anti-pattern kinh điển của RecyclerView (tra cứu xác
+nhận, không phải đoán): (1) `AnnouncementPagerAdapter.onBindViewHolder`
+tự `removeAllViews()` + `new LyleeImageSliderView(...)` MỖI LẦN bind —
+kể cả bind lại 1 ViewHolder đã tồn tại (RecyclerView tái sử dụng liên
+tục khi cuộn/prefetch) — dựng lại nguyên 1 custom View (ImageView + panel
+chấm + Handler + Glide) đúng giữa lúc animation chuyển trang đang chạy;
+(2) `announcementPager` chưa set `offscreenPageLimit`, mặc định
+(`-1`) chỉ dựa cache thường của RecyclerView, dễ khiến trang KẾ TIẾP
+phải inflate + tải ảnh đồng bộ giữa lúc cần mượt nhất. Sửa: dựng
+`LyleeImageSliderView` đúng 1 LẦN trong `onCreateViewHolder`
+(`PageViewHolder` giữ tham chiếu), `onBindViewHolder` chỉ gọi
+`setImages()` trên slider có sẵn; `announcementPager.setOffscreenPageLimit(1)`
+ép giữ sẵn 1 trang liền kề mỗi bên. Verify lại bằng gfxinfo (nhiễu do
+test qua `adb shell input swipe` giả lập, không phải chạm tay thật) rồi
+người dùng tự cầm máy vuốt xác nhận trực tiếp — mượt hẳn.
