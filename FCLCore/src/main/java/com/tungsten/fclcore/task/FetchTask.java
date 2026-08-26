@@ -174,6 +174,15 @@ public abstract class FetchTask<T> extends Task<T> {
                     failedURL = url;
                     exception = ex;
                     Logging.LOG.log(Level.WARNING, "Failed to download " + url + ", repeat times: " + (++repeat) + ((redirects == null || redirects.isEmpty()) ? "" : ", redirects: " + redirects), ex);
+                    if (retryTime < retry - 1) {
+                        try {
+                            // Exponential backoff before retrying (500ms, 1000ms, 1500ms...)
+                            Thread.sleep(Math.min(500L * (retryTime + 1), 3000L));
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            break download;
+                        }
+                    }
                 }
             }
         }
@@ -279,7 +288,8 @@ public abstract class FetchTask<T> extends Task<T> {
 
     }
 
-    public static int DEFAULT_CONCURRENCY = Math.min(Runtime.getRuntime().availableProcessors() * 4, 64);
+    // Default concurrency limited to 3-6 threads on mobile to prevent socket exhaustion and packet loss
+    public static int DEFAULT_CONCURRENCY = Math.max(3, Math.min(Runtime.getRuntime().availableProcessors(), 6));
     private static int downloadExecutorConcurrency = DEFAULT_CONCURRENCY;
     private static volatile ThreadPoolExecutor DOWNLOAD_EXECUTOR;
 

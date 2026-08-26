@@ -37,7 +37,7 @@ import com.tungsten.fclcore.util.Pair;
 public final class NetworkUtils {
     public static final String PARAMETER_SEPARATOR = "&";
     public static final String NAME_VALUE_SEPARATOR = "=";
-    private static final int TIME_OUT = 8000;
+    private static final int TIME_OUT = 30000; // 30 seconds (optimized for mobile networks)
 
     private NetworkUtils() {
     }
@@ -210,9 +210,34 @@ public final class NetworkUtils {
     }
 
     public static String doGet(URL url) throws IOException {
-        HttpURLConnection con = createHttpConnection(url);
-        con = resolveConnection(con);
-        return IOUtils.readFullyAsString(con.getInputStream());
+        return doGet(url, 3);
+    }
+
+    public static String doGet(URL url, int maxRetries) throws IOException {
+        IOException lastException = null;
+        for (int i = 0; i < maxRetries; i++) {
+            HttpURLConnection con = null;
+            try {
+                con = createHttpConnection(url);
+                con = resolveConnection(con);
+                return IOUtils.readFullyAsString(con.getInputStream());
+            } catch (IOException e) {
+                lastException = e;
+                if (i < maxRetries - 1) {
+                    try {
+                        Thread.sleep(500L * (i + 1));
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw e;
+                    }
+                }
+            } finally {
+                if (con != null) {
+                    con.disconnect();
+                }
+            }
+        }
+        throw lastException != null ? lastException : new IOException("Failed to GET " + url);
     }
 
     public static String doPost(URL u, Map<String, String> params) throws IOException {

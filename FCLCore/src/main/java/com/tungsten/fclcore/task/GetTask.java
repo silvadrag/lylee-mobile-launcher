@@ -38,7 +38,7 @@ public final class GetTask extends FetchTask<String> {
     }
 
     public GetTask(URL url, Charset charset) {
-        this(url, charset, 3);
+        this(url, charset, 5);
     }
 
     public GetTask(URL url, Charset charset, int retry) {
@@ -46,7 +46,7 @@ public final class GetTask extends FetchTask<String> {
     }
 
     public GetTask(List<URL> url) {
-        this(url, UTF_8, 3);
+        this(url, UTF_8, 5);
     }
 
     public GetTask(List<URL> urls, Charset charset, int retry) {

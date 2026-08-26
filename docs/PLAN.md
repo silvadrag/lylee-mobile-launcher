@@ -984,3 +984,21 @@ phải inflate + tải ảnh đồng bộ giữa lúc cần mượt nhất. Sử
 ép giữ sẵn 1 trang liền kề mỗi bên. Verify lại bằng gfxinfo (nhiễu do
 test qua `adb shell input swipe` giả lập, không phải chạm tay thật) rồi
 người dùng tự cầm máy vuốt xác nhận trực tiếp — mượt hẳn.
+
+## 18. Bản phát hành v1.3.2.11 (Build 1331) — Vá lỗi mạng & Nâng cấp bảo mật
+
+### 18.1 Khắc phục lỗi SocketTimeoutException khi tải modpack
+- **Tăng Network Timeout:** Sửa `NetworkUtils.TIME_OUT` từ `8000ms` lên `30000ms` (30s) cho cả connect và read timeout.
+- **Cơ chế Auto-Retry:** 
+  - `NetworkUtils.doGet` hỗ trợ retry 3 lần kèm backoff.
+  - `FetchTask` bổ sung cơ chế nghỉ giãn cách (`Thread.sleep(500ms * (retryTime + 1))`) khi gặp `IOException` trước khi thử lại.
+  - Tăng số lần retry mặc định trong `FileDownloadTask` và `GetTask` lên 5 lần.
+- **Giới hạn số luồng tải di động:** `DEFAULT_CONCURRENCY` trong `FetchTask` giới hạn trong khoảng `[3, 6]` luồng (thay vì 32-64 luồng) nhằm tránh cạn kiệt socket và nghẽn băng thông trên chip mạng điện thoại.
+
+### 18.2 Ẩn địa chỉ IP thô trong hộp thoại lỗi
+- Thêm cơ chế regex khử IP & Port trong `DownloadProviders.java` (`sanitizeErrorMessage`).
+- Mọi chuỗi lỗi hiển thị lên UI và stack trace tự động ẩn IP thô và cổng server thành `[server]`.
+
+### 18.3 Đóng gói và phát hành
+- Nâng `versionCode = 1331`, `versionName = 1.3.2.11` trong `FCL/build.gradle.kts`.
+- Build và xuất bản đầy đủ 5 biến thể APK vào thư mục `release-collected/`: `all`, `arm64-v8a`, `armeabi-v7a`, `x86`, `x86_64`.

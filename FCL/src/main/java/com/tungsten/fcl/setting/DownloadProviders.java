@@ -141,34 +141,46 @@ public final class DownloadProviders {
         return config().isAutoChooseDownloadType() ? currentDownloadProvider : fileDownloadProvider;
     }
 
+    private static final java.util.regex.Pattern IP_PATTERN =
+            java.util.regex.Pattern.compile("\\b(?:\\d{1,3}\\.){3}\\d{1,3}(?::\\d+)?\\b");
+
+    public static String sanitizeErrorMessage(String text) {
+        if (text == null) return "";
+        return IP_PATTERN.matcher(text).replaceAll("[server]");
+    }
+
     public static String localizeErrorMessage(Context context, Throwable exception) {
+        String result;
         if (exception instanceof DownloadException) {
-            URL url = ((DownloadException) exception).getUrl();
+            URL rawUrl = ((DownloadException) exception).getUrl();
+            String url = rawUrl != null ? sanitizeErrorMessage(rawUrl.toString()) : "";
             if (exception.getCause() instanceof SocketTimeoutException) {
-                return AndroidUtils.getLocalizedText(context, "install_failed_downloading_timeout", url);
+                result = AndroidUtils.getLocalizedText(context, "install_failed_downloading_timeout", url);
             } else if (exception.getCause() instanceof ResponseCodeException) {
                 ResponseCodeException responseCodeException = (ResponseCodeException) exception.getCause();
                 if (AndroidUtils.hasStringId(context, "download_code_" + responseCodeException.getResponseCode())) {
-                    return AndroidUtils.getLocalizedText(context, "download_code_" + responseCodeException.getResponseCode(), url);
+                    result = AndroidUtils.getLocalizedText(context, "download_code_" + responseCodeException.getResponseCode(), url);
                 } else {
-                    return AndroidUtils.getLocalizedText(context, "install_failed_downloading_detail", url) + "\n" + StringUtils.getStackTrace(exception.getCause());
+                    result = AndroidUtils.getLocalizedText(context, "install_failed_downloading_detail", url) + "\n" + StringUtils.getStackTrace(exception.getCause());
                 }
             } else if (exception.getCause() instanceof FileNotFoundException) {
-                return AndroidUtils.getLocalizedText(context, "download_code_404", url);
+                result = AndroidUtils.getLocalizedText(context, "download_code_404", url);
             } else if (exception.getCause() instanceof AccessDeniedException) {
-                return AndroidUtils.getLocalizedText(context, "install_failed_downloading_detail", url) + "\n" + AndroidUtils.getLocalizedText(context, "exception_access_denied", ((AccessDeniedException) exception.getCause()).getFile());
+                result = AndroidUtils.getLocalizedText(context, "install_failed_downloading_detail", url) + "\n" + AndroidUtils.getLocalizedText(context, "exception_access_denied", ((AccessDeniedException) exception.getCause()).getFile());
             } else if (exception.getCause() instanceof ArtifactMalformedException) {
-                return AndroidUtils.getLocalizedText(context, "install_failed_downloading_detail", url) + "\n" + context.getString(R.string.exception_artifact_malformed);
+                result = AndroidUtils.getLocalizedText(context, "install_failed_downloading_detail", url) + "\n" + context.getString(R.string.exception_artifact_malformed);
             } else if (exception.getCause() instanceof SSLHandshakeException) {
-                return AndroidUtils.getLocalizedText(context, "install_failed_downloading_detail", url) + "\n" + context.getString(R.string.exception_ssl_handshake);
+                result = AndroidUtils.getLocalizedText(context, "install_failed_downloading_detail", url) + "\n" + context.getString(R.string.exception_ssl_handshake);
             } else {
-                return AndroidUtils.getLocalizedText(context, "install_failed_downloading_detail", url) + "\n" + StringUtils.getStackTrace(exception.getCause());
+                result = AndroidUtils.getLocalizedText(context, "install_failed_downloading_detail", url) + "\n" + StringUtils.getStackTrace(exception.getCause());
             }
         } else if (exception instanceof ArtifactMalformedException) {
-            return context.getString(R.string.exception_artifact_malformed);
+            result = context.getString(R.string.exception_artifact_malformed);
         } else if (exception instanceof CancellationException) {
-            return context.getString(R.string.message_cancelled);
+            result = context.getString(R.string.message_cancelled);
+        } else {
+            result = StringUtils.getStackTrace(exception);
         }
-        return StringUtils.getStackTrace(exception);
+        return sanitizeErrorMessage(result);
     }
 }

@@ -126,7 +126,7 @@ public class FileDownloadTask extends FetchTask<Void> {
      * @param integrityCheck the integrity check to perform, null if no integrity check is to be performed
      */
     public FileDownloadTask(List<URL> urls, File file, IntegrityCheck integrityCheck) {
-        this(urls, file, integrityCheck, 3);
+        this(urls, file, integrityCheck, 5);
     }
 
     /**
