@@ -53,11 +53,16 @@ public final class LyleeSessionTracker {
         public long totalSeconds;
     }
 
-    /** @return sessionId nếu gọi thành công, null nếu lỗi (không ném exception ra ngoài — best-effort). */
+    /** @return sessionId nếu gọi thành công cho Cobblemon (profile ID 1), null nếu lỗi */
     public static Long start(String username, String launcherVersion) {
+        return start(username, launcherVersion, SERVER_PROFILE_ID);
+    }
+
+    /** @return sessionId nếu gọi thành công cho serverProfileId chỉ định, null nếu lỗi (không ném exception ra ngoài — best-effort). */
+    public static Long start(String username, String launcherVersion, int serverProfileId) {
         try {
             SessionStartResponse res = HttpRequest.POST(BASE_URL + "/api/players/" + encodeUsername(username) + "/session/start")
-                    .json(new SessionStartRequest(SERVER_PROFILE_ID, launcherVersion))
+                    .json(new SessionStartRequest(serverProfileId, launcherVersion))
                     .getJson(SessionStartResponse.class);
             return res == null ? null : res.sessionId;
         } catch (Exception e) {

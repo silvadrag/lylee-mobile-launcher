@@ -129,6 +129,23 @@
     <string name="lylee_cobblemon_playtime">Tổng thời gian chơi: %d giờ %d phút</string>
     <string name="lylee_cobblemon_online_players">%d người đang chơi</string>
 
+    <string name="lylee_dragonball_connecting">Đang kết nối Lylee Dragonball</string>
+    <string name="lylee_dragonball_updating">Đang cập nhật modpack Lylee Dragonball</string>
+    <string name="lylee_dragonball_ready">Lylee Dragonball đã sẵn sàng, có thể vào chơi.</string>
+    <string name="lylee_dragonball_launch">Chơi ngay</string>
+    <string name="lylee_dragonball_info_new">Bấm để cài Lylee Dragonball: tạo 1 bản riêng và tải modpack về. Không đụng tới các bản khác của bạn.</string>
+    <string name="lylee_dragonball_info_installed">Lylee Dragonball đã cài rồi. Bấm lại chỉ tải mới các file mod thay đổi từ server — không cài lại từ đầu, không xóa file bạn tự thêm.</string>
+    <string name="lylee_dragonball_page_title">Lylee Dragonball</string>
+    <string name="lylee_dragonball_page_desc">Nối nhanh vào server Lylee Dragonball. Tự tạo 1 bản riêng, không đụng tới các bản/instance khác của bạn.</string>
+    <string name="lylee_dragonball_status_installed">Đã cài đặt trên máy này.</string>
+    <string name="lylee_dragonball_status_not_installed">Chưa cài đặt.</string>
+    <string name="lylee_dragonball_cta_install">Kết nối ngay</string>
+    <string name="lylee_dragonball_cta_update">Cập nhật modpack</string>
+    <string name="lylee_dragonball_ram_warning">Máy bạn có khoảng %.1f GB RAM. Modpack Dragonball cần khá nhiều bộ nhớ (khuyến nghị từ 6GB trở lên) — máy dưới mức này có thể bị giật/treo khi tải vào game. Bạn vẫn muốn tiếp tục?</string>
+    <string name="lylee_dragonball_ram_warning_continue">Vẫn tiếp tục</string>
+    <string name="lylee_dragonball_playtime">Tổng thời gian chơi: %d giờ %d phút</string>
+    <string name="lylee_dragonball_online_players">%d người đang chơi</string>
+
     <string name="friends_title">Bạn bè</string>
     <string name="friends_login_title">Bạn bè &amp; trò chuyện</string>
     <string name="friends_password_hint">Mật khẩu</string>

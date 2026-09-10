@@ -25,31 +25,21 @@ import com.tungsten.fcllibrary.component.dialog.FCLAlertDialog;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Locale;
 
 /**
- * "Lylee Cobblemon" nối nhanh: bấm 1 nút trên màn hình chính là tự tạo (nếu
- * chưa có) hoặc cập nhật version tên cố định {@link #VERSION_NAME} trong
- * profile hiện tại, đúng minecraftVersion/loaderVersion server thật yêu cầu
- * (qua manifest — xem {@link LyleeCobblemonSync}), rồi đồng bộ file modpack.
- *
- * KHÔNG đụng tới các version/profile tự do khác của người chơi — tách biệt
- * theo tên version, giống mô hình 2 tab "Lylee Cobblemon" + "Instances tự do"
- * bên launcher PC, chỉ khác là bên mobile chưa có tab riêng (xem docs/PLAN.md
- * mục việc-cần-làm — dùng tạm 1 nút trên MainUI cho tới đợt thiết kế lại UI).
+ * "Lylee Dragonball" nối nhanh: tự tạo hoặc cập nhật version cố định {@link #VERSION_NAME}
+ * trong profile hiện tại, chuẩn phiên bản Minecraft 1.21.4 và Fabric loader 0.19.3
+ * (theo manifest server 4), đồng bộ file modpack (bao gồm mods, configs, resourcepacks, plugins).
  */
-public final class LyleeCobblemonConnector {
+public final class LyleeDragonballConnector {
 
-    public static final String VERSION_NAME = "LyleeCobblemon";
-    public static final int SERVER_PROFILE_ID = 1;
+    public static final String VERSION_NAME = "LyleeDragonball";
+    public static final int SERVER_PROFILE_ID = 4;
 
-    // Ngưỡng cảnh báo RAM trước khi tải — lấy đúng mốc 6144MB mà
-    // MemoryUtils.findBestRAMAllocation() dùng để nhảy từ mức cấp 1GB lên 2GB
-    // heap (thay vì bịa 1 con số mới): dưới mốc này launcher chỉ cấp tối đa
-    // 1GB cho Minecraft, đã test thật thấy KHÔNG đủ để Cobblemon tải xong
-    // animation (treo hẳn, RAM hệ thống cạn kiệt) — xem docs/PLAN.md mục 18.
     private static final int RAM_WARNING_THRESHOLD_MB = 6144;
 
-    private LyleeCobblemonConnector() {
+    private LyleeDragonballConnector() {
     }
 
     public static void connect(Context context, Profile profile) {
@@ -58,8 +48,8 @@ public final class LyleeCobblemonConnector {
             FCLAlertDialog.Builder builder = new FCLAlertDialog.Builder(context);
             builder.setAlertLevel(FCLAlertDialog.AlertLevel.ALERT);
             builder.setCancelable(false);
-            builder.setMessage(AndroidUtils.getLocalizedText(context, "lylee_cobblemon_ram_warning", totalMemory / 1024.0));
-            builder.setPositiveButton(context.getString(R.string.lylee_cobblemon_ram_warning_continue), () -> doConnect(context, profile));
+            builder.setMessage(AndroidUtils.getLocalizedText(context, "lylee_dragonball_ram_warning", totalMemory / 1024.0));
+            builder.setPositiveButton(context.getString(R.string.lylee_dragonball_ram_warning_continue), () -> doConnect(context, profile));
             builder.setNegativeButton(null);
             builder.create().show();
             return;
@@ -68,16 +58,13 @@ public final class LyleeCobblemonConnector {
     }
 
     private static void doConnect(Context context, Profile profile) {
-        // Tiêu đề khác nhau tuỳ đã có version hay chưa, để người chơi biết ngay
-        // lần bấm này là cài mới hay chỉ đang tải lại mod mới nhất từ server
-        // (không phải cài lại từ đầu) — xem thêm showInfo().
         boolean alreadyInstalled = profile.getRepository().hasVersion(VERSION_NAME);
         TaskDialog dialog = new TaskDialog(context, new TaskCancellationAction(AppCompatDialog::dismiss));
         dialog.setTitle(context.getString(alreadyInstalled
-                ? R.string.lylee_cobblemon_updating
-                : R.string.lylee_cobblemon_connecting));
+                ? R.string.lylee_dragonball_updating
+                : R.string.lylee_dragonball_connecting));
 
-        Task<?> task = LyleeCobblemonSync.fetchManifest()
+        Task<?> task = LyleeDragonballSync.fetchManifest()
                 .thenComposeAsync(manifest -> prepareVersion(profile, manifest));
 
         Schedulers.androidUIThread().execute(() -> {
@@ -104,46 +91,50 @@ public final class LyleeCobblemonConnector {
     }
 
     /**
-     * Version đã tồn tại (lần nối trước, hoặc người chơi tự tạo trùng tên) thì
-     * chỉ đồng bộ file; chưa có thì tạo mới đúng minecraftVersion/loaderVersion
-     * manifest ghi rồi mới đồng bộ.
+     * Version đã tồn tại thì chỉ đồng bộ file; chưa có thì tạo mới đúng minecraftVersion/loaderVersion
+     * (mặc định 1.21.4 / fabric 0.19.3 theo yêu cầu server) rồi mới đồng bộ.
      */
     private static Task<?> prepareVersion(Profile profile, LyleeManifest manifest) throws IOException {
         if (profile.getRepository().hasVersion(VERSION_NAME)) {
             File runDir = profile.getRepository().getRunDirectory(VERSION_NAME);
-            return LyleeCobblemonSync.syncFiles(runDir, manifest);
+            return LyleeDragonballSync.syncFiles(runDir, manifest);
         }
 
+        String mcVersion = (manifest.minecraftVersion != null && !manifest.minecraftVersion.isEmpty())
+                ? manifest.minecraftVersion : "1.21.4";
+        String loaderType = (manifest.loaderType != null && !manifest.loaderType.isEmpty())
+                ? manifest.loaderType.toLowerCase(Locale.ROOT) : "fabric";
+        String loaderVersion = (manifest.loaderVersion != null && !manifest.loaderVersion.isEmpty())
+                ? manifest.loaderVersion : "0.19.3";
+
         DownloadProvider provider = DownloadProviders.getDownloadProvider();
-        VersionList<?> fabricList = provider.getVersionListById("fabric");
-        fabricList.loadAsync(manifest.minecraftVersion).join();
-        RemoteVersion fabricVersion = fabricList.getVersion(manifest.minecraftVersion, manifest.loaderVersion)
+        VersionList<?> loaderList = provider.getVersionListById(loaderType);
+        loaderList.loadAsync(mcVersion).join();
+        RemoteVersion remoteVersion = loaderList.getVersion(mcVersion, loaderVersion)
                 .orElseThrow(() -> new IOException(
-                        "Không tìm thấy Fabric loader " + manifest.loaderVersion
-                                + " cho Minecraft " + manifest.minecraftVersion + " (server đổi phiên bản?)."));
+                        "Không tìm thấy " + loaderType + " loader " + loaderVersion
+                                + " cho Minecraft " + mcVersion + " (server đổi phiên bản?)."));
 
         GameBuilder builder = profile.getDependency(provider).gameBuilder();
         builder.name(VERSION_NAME);
-        builder.gameVersion(manifest.minecraftVersion);
-        builder.version(fabricVersion);
+        builder.gameVersion(mcVersion);
+        builder.version(remoteVersion);
 
         return builder.buildAsync().thenComposeAsync(unused -> {
             File runDir = profile.getRepository().getRunDirectory(VERSION_NAME);
             new File(runDir, "mods").mkdirs();
-            return LyleeCobblemonSync.syncFiles(runDir, manifest);
+            new File(runDir, "plugins").mkdirs();
+            return LyleeDragonballSync.syncFiles(runDir, manifest);
         });
     }
 
-    /** Giải thích nút cho người chơi lần đầu bấm giữ — chủ yếu để làm rõ ý
-     *  nghĩa của lần bấm THỨ HAI trở đi (chỉ đồng bộ lại mod, không cài lại
-     *  từ đầu), vì nút không có chỗ nào khác diễn giải điều này. */
     public static void showInfo(Context context, Profile profile) {
         boolean alreadyInstalled = profile.getRepository().hasVersion(VERSION_NAME);
         FCLAlertDialog.Builder builder = new FCLAlertDialog.Builder(context);
         builder.setAlertLevel(FCLAlertDialog.AlertLevel.INFO);
         builder.setMessage(context.getString(alreadyInstalled
-                ? R.string.lylee_cobblemon_info_installed
-                : R.string.lylee_cobblemon_info_new));
+                ? R.string.lylee_dragonball_info_installed
+                : R.string.lylee_dragonball_info_new));
         builder.setNegativeButton(null);
         builder.create().show();
     }
@@ -152,8 +143,8 @@ public final class LyleeCobblemonConnector {
         FCLAlertDialog.Builder builder = new FCLAlertDialog.Builder(context);
         builder.setAlertLevel(FCLAlertDialog.AlertLevel.INFO);
         builder.setCancelable(false);
-        builder.setMessage(context.getString(R.string.lylee_cobblemon_ready));
-        builder.setPositiveButton(context.getString(R.string.lylee_cobblemon_launch), () -> Versions.launch(context, profile));
+        builder.setMessage(context.getString(R.string.lylee_dragonball_ready));
+        builder.setPositiveButton(context.getString(R.string.lylee_dragonball_launch), () -> Versions.launch(context, profile));
         builder.setNegativeButton(null);
         builder.create().show();
     }

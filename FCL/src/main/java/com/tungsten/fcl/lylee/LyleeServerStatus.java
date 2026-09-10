@@ -28,8 +28,13 @@ public final class LyleeServerStatus {
         Integer onlinePlayers;
     }
 
-    /** @return số người chơi online, null nếu server không báo số liệu hoặc lỗi mạng — không ném exception. */
+    /** @return số người chơi online server Cobblemon (profile ID 1) */
     public static Task<Integer> fetchOnlinePlayers() {
+        return fetchOnlinePlayers(SERVER_PROFILE_ID);
+    }
+
+    /** @return số người chơi online của server theo profile ID, null nếu server không báo số liệu hoặc lỗi mạng — không ném exception. */
+    public static Task<Integer> fetchOnlinePlayers(int serverProfileId) {
         return Task.supplyAsync(() -> {
             try {
                 List<ServerProfileResponse> servers = HttpRequest.GET(URL)
@@ -37,7 +42,7 @@ public final class LyleeServerStatus {
                         });
                 if (servers == null) return null;
                 return servers.stream()
-                        .filter(s -> s.serverProfileId == SERVER_PROFILE_ID)
+                        .filter(s -> s.serverProfileId == serverProfileId)
                         .findFirst()
                         .map(s -> s.onlinePlayers)
                         .orElse(null);

@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.tungsten.fcl.R
 import com.tungsten.fcl.lylee.LyleeCobblemonUI
+import com.tungsten.fcl.lylee.LyleeDragonballUI
 import com.tungsten.fcl.ui.account.AccountUI
 import com.tungsten.fcl.ui.controller.ControllerUI
 import com.tungsten.fcl.ui.download.DownloadUI
@@ -19,7 +20,7 @@ import com.tungsten.fcllibrary.component.ui.FCLBaseUI
 import com.tungsten.fcllibrary.component.ui.FCLCommonUI
 
 /**
- * Bộ quản lý UI màn hình chính: dùng ViewPager2 chứa 9 trang UI chính.
+ * Bộ quản lý UI màn hình chính: dùng ViewPager2 chứa 10 trang UI chính.
  *
  * Instance UI tạo/hủy theo vòng đời trang ViewPager (không giữ trạng thái):
  * khi trang bị ViewPager thu hồi (vượt offscreenPageLimit) thì hủy instance UI
@@ -32,9 +33,9 @@ class UIManager(val context: Context, val pager: ViewPager2) {
     }
 
     /** Bảng đăng ký vị trí trang → instance UI, hủy và xóa ô tương ứng khi trang bị thu hồi */
-    private val uiRegistry = arrayOfNulls<FCLCommonUI>(9)
+    private val uiRegistry = arrayOfNulls<FCLCommonUI>(10)
 
-    /** Factory UI theo vị trí trang. LyleeCobblemonUI thêm vào cuối (vị trí 8),
+    /** Factory UI theo vị trí trang. LyleeCobblemonUI (8), LyleeDragonballUI (9) thêm vào cuối,
      *  không đổi số thứ tự account(6)/version(7) cũ, tránh phải sửa dây chuyền
      *  các vị trí viết chết khác trong MainActivity. */
     private val factories: List<() -> FCLCommonUI> = listOf(
@@ -46,7 +47,8 @@ class UIManager(val context: Context, val pager: ViewPager2) {
         { SettingUI(context, R.layout.ui_setting) },
         { AccountUI(context, R.layout.ui_account) },
         { VersionUI(context, R.layout.ui_version) },
-        { LyleeCobblemonUI(context, R.layout.ui_lylee_cobblemon) }
+        { LyleeCobblemonUI(context, R.layout.ui_lylee_cobblemon) },
+        { LyleeDragonballUI(context, R.layout.ui_lylee_dragonball) }
     )
 
     var currentUI: FCLBaseUI? = null
@@ -90,6 +92,7 @@ class UIManager(val context: Context, val pager: ViewPager2) {
     val accountUI: AccountUI get() = getUI(6) as AccountUI
     val versionUI: VersionUI get() = getUI(7) as VersionUI
     val lyleeCobblemonUI: LyleeCobblemonUI get() = getUI(8) as LyleeCobblemonUI
+    val lyleeDragonballUI: LyleeDragonballUI get() = getUI(9) as LyleeDragonballUI
 
     fun init() {
         instance = this
@@ -160,7 +163,7 @@ class UIManager(val context: Context, val pager: ViewPager2) {
             var boundPosition: Int = 0
         }
 
-        override fun getItemCount(): Int = 9
+        override fun getItemCount(): Int = 10
 
         override fun getItemViewType(position: Int): Int = position
 

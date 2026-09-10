@@ -44,6 +44,7 @@ import com.tungsten.fcl.activity.JVMActivity;
 import com.tungsten.fcl.activity.MainActivity;
 import com.tungsten.fcl.control.MenuType;
 import com.tungsten.fcl.lylee.LyleeCobblemonConnector;
+import com.tungsten.fcl.lylee.LyleeDragonballConnector;
 import com.tungsten.fcl.lylee.LyleeSessionTracker;
 import com.tungsten.fcl.setting.GameOption;
 import com.tungsten.fcl.setting.MenuSetting;
@@ -243,9 +244,11 @@ public final class LauncherHelper {
                             // tinh thần PC: bản tự do/instance khác không tính giờ), gọi trên
                             // luồng nền hiện tại (thenAcceptAsync), không phải luồng UI —
                             // xem LyleeSessionTracker để biết vì sao best-effort/không chặn launch.
-                            Long sessionId = LyleeCobblemonConnector.VERSION_NAME.equals(selectedVersion)
-                                    ? LyleeSessionTracker.start(account.getUsername(), FCLPath.CONTEXT.getString(R.string.app_version))
-                                    : null;
+                            final Long sessionId = LyleeCobblemonConnector.VERSION_NAME.equals(selectedVersion)
+                                    ? LyleeSessionTracker.start(account.getUsername(), FCLPath.CONTEXT.getString(R.string.app_version), LyleeCobblemonConnector.SERVER_PROFILE_ID)
+                                    : (LyleeDragonballConnector.VERSION_NAME.equals(selectedVersion)
+                                            ? LyleeSessionTracker.start(account.getUsername(), FCLPath.CONTEXT.getString(R.string.app_version), LyleeDragonballConnector.SERVER_PROFILE_ID)
+                                            : null);
                             Schedulers.androidUIThread().execute(() -> {
                                 CallbackBridge.nativeSetUseInputStackQueue(version.get().getArguments().isPresent());
                                 Intent intent = new Intent(context, JVMActivity.class);

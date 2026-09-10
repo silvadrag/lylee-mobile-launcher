@@ -281,10 +281,15 @@ class MainActivity : FCLActivity(), OnSelectListener, View.OnClickListener {
                             refreshMenuView(lyleeCobblemon)
                             lyleeCobblemon.setSelected(true)
                         }
+
+                        9 -> {
+                            refreshMenuView(lyleeDragonball)
+                            lyleeDragonball.setSelected(true)
+                        }
                     }
                 }
                 // Bấm mục menu trái: luôn phát hoạt ảnh chọn (bấm lại khi đã chọn vẫn kích hoạt), logic chọn/chuyển vẫn theo setSelected
-                listOf(home, lyleeCobblemon, manage, download, controller, multiplayer, setting).forEach { menu ->
+                listOf(home, lyleeCobblemon, lyleeDragonball, manage, download, controller, multiplayer, setting).forEach { menu ->
                     menu.setOnClickListener {
                         playMenuAnim(menu)
                         menu.setSelected(true)
@@ -292,6 +297,7 @@ class MainActivity : FCLActivity(), OnSelectListener, View.OnClickListener {
                 }
                 home.setOnSelectListener(this@MainActivity)
                 lyleeCobblemon.setOnSelectListener(this@MainActivity)
+                lyleeDragonball.setOnSelectListener(this@MainActivity)
                 manage.setOnSelectListener(this@MainActivity)
                 download.setOnSelectListener(this@MainActivity)
                 controller.setOnSelectListener(this@MainActivity)
@@ -478,6 +484,11 @@ class MainActivity : FCLActivity(), OnSelectListener, View.OnClickListener {
                 lyleeCobblemon -> {
                     title.setTextWithAnim(getString(R.string.lylee_cobblemon_page_title))
                     uiManager.switchUI(uiManager.lyleeCobblemonUI)
+                }
+
+                lyleeDragonball -> {
+                    title.setTextWithAnim(getString(R.string.lylee_dragonball_page_title))
+                    uiManager.switchUI(uiManager.lyleeDragonballUI)
                 }
 
                 manage -> {
