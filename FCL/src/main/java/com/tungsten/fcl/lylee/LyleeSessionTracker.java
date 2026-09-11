@@ -21,7 +21,7 @@ import java.nio.charset.StandardCharsets;
  */
 public final class LyleeSessionTracker {
 
-    private static final String BASE_URL = "https://lylee-launcher-api.lyleelauncher.workers.dev";
+    private static final String BASE_URL = "https://lylee-launcher-api.silvadrag2006.workers.dev";
     private static final int SERVER_PROFILE_ID = 1;
 
     private LyleeSessionTracker() {

@@ -40,7 +40,7 @@ Chi tiết kiến trúc, nhật ký phát triển và giải pháp kỹ thuật 
                             ▼
 ┌────────────────────────────────────────────────────────┐
 │            Cloudflare Worker Proxy (CDN)               │
-│     lylee-launcher-api.lyleelauncher.workers.dev       │
+│     lylee-launcher-api.silvadrag2006.workers.dev       │
 └───────────────────────────┬────────────────────────────┘
                             │ HTTP
                             ▼

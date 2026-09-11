@@ -26,7 +26,7 @@ import java.util.List;
  */
 public final class LyleeFriendsApi {
 
-    private static final String BASE_URL = "https://lylee-launcher-api.lyleelauncher.workers.dev";
+    private static final String BASE_URL = "https://lylee-launcher-api.silvadrag2006.workers.dev";
 
     // Client ID OAuth "Web application" tạo riêng cho mobile trên Google Cloud
     // Console (cùng project essential-graph-505020-f5 mà PC dùng) — Android
@@ -58,6 +58,20 @@ public final class LyleeFriendsApi {
         public String expiresAt;
         public String username;
         public String email;
+        public String recoveryKey;
+    }
+
+    public static final class RegisterResponse {
+        public String token;
+        public String expiresAt;
+        public String username;
+        public String recoveryKey;
+    }
+
+    public static final class ResetPasswordRecoveryResponse {
+        public boolean success;
+        public String message;
+        public String newRecoveryKey;
     }
 
     public static final class ClaimStatusResponse {
@@ -148,6 +162,16 @@ public final class LyleeFriendsApi {
     public static Task<GoogleUnlinkResponse> unlinkGoogle(String idToken) {
         return postJson(BASE_URL + "/api/auth/google/unlink", null,
                 new IdTokenBody(idToken), GoogleUnlinkResponse.class);
+    }
+
+    public static Task<RegisterResponse> register(String username, String password) {
+        return postJson(BASE_URL + "/api/players/" + enc(username) + "/register", null,
+                new PasswordBody(password), RegisterResponse.class);
+    }
+
+    public static Task<ResetPasswordRecoveryResponse> resetPasswordRecovery(String username, String recoveryKey, String newPassword) {
+        return postJson(BASE_URL + "/api/players/" + enc(username) + "/reset-password-recovery", null,
+                new ResetPasswordRecoveryBody(recoveryKey, newPassword), ResetPasswordRecoveryResponse.class);
     }
 
     public static Task<SuccessResponse> registerStart(String username, String email) {
@@ -334,6 +358,16 @@ public final class LyleeFriendsApi {
 
         ResetPasswordBody(String token, String newPassword) {
             this.token = token;
+            this.newPassword = newPassword;
+        }
+    }
+
+    private static final class ResetPasswordRecoveryBody {
+        final String recoveryKey;
+        final String newPassword;
+
+        ResetPasswordRecoveryBody(String recoveryKey, String newPassword) {
+            this.recoveryKey = recoveryKey;
             this.newPassword = newPassword;
         }
     }

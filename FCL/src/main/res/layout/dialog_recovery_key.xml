@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="380dp"
+    android:layout_height="wrap_content"
+    android:background="@color/card_bg"
+    android:orientation="vertical"
+    android:padding="22dp">
+
+    <com.tungsten.fcllibrary.component.view.FCLTextView
+        android:id="@+id/recovery_dialog_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/recovery_key_dialog_title"
+        android:textColor="@android:color/white"
+        android:textSize="17sp"
+        android:textStyle="bold" />
+
+    <com.tungsten.fcllibrary.component.view.FCLTextView
+        android:id="@+id/recovery_dialog_subtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="@string/recovery_key_dialog_subtitle"
+        android:textColor="#FFCC00"
+        android:textSize="12sp" />
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="#161616"
+        android:gravity="center"
+        android:paddingVertical="12dp"
+        android:paddingHorizontal="16dp">
+
+        <com.tungsten.fcllibrary.component.view.FCLTextView
+            android:id="@+id/recovery_key_display"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:text="LYLEE-XXXX-XXXX-XXXX"
+            android:textColor="#77C2FF"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <com.tungsten.fcllibrary.component.view.FCLButton
+        android:id="@+id/recovery_copy_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:paddingVertical="10dp"
+        android:text="@string/recovery_key_dialog_copy"
+        app:ripple="true" />
+
+    <com.tungsten.fcllibrary.component.view.FCLTextView
+        android:id="@+id/recovery_status_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:gravity="center"
+        android:textColor="#77DD77"
+        android:textSize="12sp"
+        android:visibility="gone" />
+
+    <com.tungsten.fcllibrary.component.view.FCLButton
+        android:id="@+id/recovery_dismiss_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:paddingVertical="12dp"
+        android:text="@string/recovery_key_dialog_dismiss"
+        app:ripple="true" />
+
+</androidx.appcompat.widget.LinearLayoutCompat>

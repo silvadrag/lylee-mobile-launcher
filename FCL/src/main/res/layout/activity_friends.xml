@@ -54,22 +54,13 @@
             android:hint="@string/friends_password_hint"
             android:inputType="textPassword" />
 
-        <!-- Chỉ hiện khi đăng ký (chưa claim username) -->
         <com.tungsten.fcllibrary.component.view.FCLEditText
-            android:id="@+id/login_email"
+            android:id="@+id/login_confirm_password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:hint="@string/friends_email_hint"
-            android:inputType="textEmailAddress"
-            android:visibility="gone" />
-
-        <com.tungsten.fcllibrary.component.view.FCLEditText
-            android:id="@+id/login_code"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:hint="@string/friends_code_hint"
+            android:hint="@string/friends_confirm_password_hint"
+            android:inputType="textPassword"
             android:visibility="gone" />
 
         <com.tungsten.fcllibrary.component.view.FCLButton
@@ -79,6 +70,17 @@
             android:layout_marginTop="16dp"
             android:paddingVertical="12dp"
             app:ripple="true" />
+
+        <com.tungsten.fcllibrary.component.view.FCLTextView
+            android:id="@+id/login_forgot_password"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="8dp"
+            android:text="@string/friends_forgot_password"
+            android:textColor="#77C2FF"
+            android:textSize="12sp"
+            android:visibility="gone" />
 
         <com.tungsten.fcllibrary.component.view.FCLTextView
             android:layout_width="wrap_content"
@@ -328,28 +330,19 @@
                 android:visibility="gone">
 
                 <com.tungsten.fcllibrary.component.view.FCLEditText
-                    android:id="@+id/settings_email"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/friends_email_hint"
-                    android:inputType="textEmailAddress" />
-
-                <com.tungsten.fcllibrary.component.view.FCLEditText
-                    android:id="@+id/settings_code"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:hint="@string/friends_code_hint"
-                    android:visibility="gone" />
-
-                <com.tungsten.fcllibrary.component.view.FCLEditText
                     android:id="@+id/settings_new_password"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:hint="@string/friends_new_password_hint"
+                    android:inputType="textPassword" />
+
+                <com.tungsten.fcllibrary.component.view.FCLEditText
+                    android:id="@+id/settings_confirm_password"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:hint="@string/friends_password_hint"
-                    android:inputType="textPassword"
-                    android:visibility="gone" />
+                    android:hint="@string/friends_confirm_password_hint"
+                    android:inputType="textPassword" />
 
                 <com.tungsten.fcllibrary.component.view.FCLButton
                     android:id="@+id/settings_password_submit"
@@ -357,7 +350,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:paddingVertical="10dp"
-                    android:text="@string/friends_register_send_code"
+                    android:text="@string/friends_register_button"
                     app:ripple="true" />
 
             </androidx.appcompat.widget.LinearLayoutCompat>

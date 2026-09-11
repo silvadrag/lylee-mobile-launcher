@@ -48,13 +48,13 @@ public class MainUI extends FCLCommonUI implements View.OnClickListener {
     // đang hiển thị, request tự fail êm, không hiện gì — catch Exception bên dưới).
     // Cố tình KHÔNG còn trỏ về repo GitHub thật của FCL-Team nữa (tránh hiện thông
     // báo/liên kết của đội FCL gốc bên trong app đã đổi thương hiệu Lylee).
-    public static final String ANNOUNCEMENT_URL = "https://lylee-launcher-api.lyleelauncher.workers.dev/api/mobile/announcement";
+    public static final String ANNOUNCEMENT_URL = "https://lylee-launcher-api.silvadrag2006.workers.dev/api/mobile/announcement";
     public static final String ANNOUNCEMENT_URL_CN = ANNOUNCEMENT_URL;
 
     // Danh sách nhiều thông báo gần đây (khác ANNOUNCEMENT_URL chỉ trả 1 cái mới
     // nhất) — dùng cho AnnouncementHistoryDialog mở từ nút chuông, xem
     // ApiServer.getMobileAnnouncements bên mod.
-    public static final String ANNOUNCEMENT_LIST_URL = "https://lylee-launcher-api.lyleelauncher.workers.dev/api/mobile/announcements";
+    public static final String ANNOUNCEMENT_LIST_URL = "https://lylee-launcher-api.silvadrag2006.workers.dev/api/mobile/announcements";
 
     private static final long AUTO_ADVANCE_MS = 6000;
 

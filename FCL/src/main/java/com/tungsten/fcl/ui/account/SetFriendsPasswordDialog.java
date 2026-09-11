@@ -28,14 +28,12 @@ public class SetFriendsPasswordDialog extends FCLDialog {
 
     private final String username;
     private final FCLTextView subtitle;
-    private final FCLEditText emailField;
-    private final FCLEditText codeField;
     private final FCLEditText passwordField;
+    private final FCLEditText confirmPasswordField;
     private final FCLTextView errorText;
     private final FCLButton skipButton;
     private final FCLButton submitButton;
     private final FCLProgressBar progress;
-    private boolean codeSent = false;
 
     public SetFriendsPasswordDialog(Context context, String username) {
         super(context);
@@ -44,9 +42,8 @@ public class SetFriendsPasswordDialog extends FCLDialog {
         setContentView(R.layout.dialog_set_password);
 
         subtitle = findViewById(R.id.subtitle);
-        emailField = findViewById(R.id.email);
-        codeField = findViewById(R.id.code);
         passwordField = findViewById(R.id.password);
+        confirmPasswordField = findViewById(R.id.confirm_password);
         errorText = findViewById(R.id.error);
         skipButton = findViewById(R.id.skip);
         submitButton = findViewById(R.id.submit);
@@ -59,40 +56,41 @@ public class SetFriendsPasswordDialog extends FCLDialog {
 
     private void onSubmit() {
         errorText.setVisibility(View.GONE);
-        if (!codeSent) {
-            String email = String.valueOf(emailField.getText());
-            if (email.isEmpty()) return;
-            setBusy(true);
-            LyleeFriendsApi.registerStart(username, email)
-                    .whenComplete(Schedulers.androidUIThread(), (res, ex) -> {
-                        setBusy(false);
-                        if (ex != null || res == null || !res.success) {
-                            showError(R.string.friends_register_send_code_failed);
-                            return;
-                        }
-                        codeSent = true;
-                        codeField.setVisibility(View.VISIBLE);
-                        passwordField.setVisibility(View.VISIBLE);
-                        submitButton.setText(R.string.friends_register_confirm);
-                        Toast.makeText(getContext(), getContext().getString(R.string.friends_register_code_sent), Toast.LENGTH_LONG).show();
-                    }).start();
-        } else {
-            String code = String.valueOf(codeField.getText());
-            String password = String.valueOf(passwordField.getText());
-            if (code.isEmpty() || password.isEmpty()) return;
-            setBusy(true);
-            LyleeFriendsApi.registerConfirm(username, code, password)
-                    .whenComplete(Schedulers.androidUIThread(), (res, ex) -> {
-                        setBusy(false);
-                        if (ex != null || res == null) {
-                            showError(R.string.friends_register_confirm_failed);
-                            return;
-                        }
-                        LyleeFriendsSession.save(getContext(), res.token, res.username, res.expiresAt);
-                        Toast.makeText(getContext(), getContext().getString(R.string.friends_settings_password_set), Toast.LENGTH_SHORT).show();
-                        dismiss();
-                    }).start();
+        String password = passwordField.getText() != null ? passwordField.getText().toString() : "";
+        String confirmPassword = confirmPasswordField.getText() != null ? confirmPasswordField.getText().toString() : "";
+
+        if (password.length() < 4) {
+            showError(getContext().getString(R.string.friends_password_too_short));
+            return;
         }
+
+        if (!password.equals(confirmPassword)) {
+            showError(getContext().getString(R.string.friends_password_mismatch));
+            return;
+        }
+
+        setBusy(true);
+        LyleeFriendsApi.register(username, password)
+                .whenComplete(Schedulers.androidUIThread(), (res, ex) -> {
+                    setBusy(false);
+                    if (ex != null || res == null) {
+                        String msg = ex != null && ex.getMessage() != null && !ex.getMessage().isEmpty()
+                                ? ex.getMessage() : getContext().getString(R.string.friends_register_failed);
+                        showError(msg);
+                        return;
+                    }
+
+                    LyleeFriendsSession.save(getContext(), res.token, res.username, res.expiresAt);
+                    dismiss();
+
+                    new RecoveryKeyDialog(
+                            getContext(),
+                            getContext().getString(R.string.recovery_key_dialog_title),
+                            getContext().getString(R.string.recovery_key_dialog_subtitle),
+                            res.recoveryKey,
+                            null
+                    ).show();
+                }).start();
     }
 
     private void setBusy(boolean busy) {
@@ -101,8 +99,8 @@ public class SetFriendsPasswordDialog extends FCLDialog {
         skipButton.setEnabled(!busy);
     }
 
-    private void showError(int resId) {
-        errorText.setText(resId);
+    private void showError(String msg) {
+        errorText.setText(msg);
         errorText.setVisibility(View.VISIBLE);
     }
 }

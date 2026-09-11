@@ -15,7 +15,7 @@ import java.io.IOException;
 public class LyleeDragonballSync {
 
     public static final String MANIFEST_URL =
-            "https://lylee-launcher-api.lyleelauncher.workers.dev/api/servers/4/manifest";
+            "https://lylee-launcher-api.silvadrag2006.workers.dev/api/servers/2/manifest";
 
     private LyleeDragonballSync() {
     }

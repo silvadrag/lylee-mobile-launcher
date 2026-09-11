@@ -35,7 +35,7 @@ import java.util.Locale;
 public final class LyleeDragonballConnector {
 
     public static final String VERSION_NAME = "LyleeDragonball";
-    public static final int SERVER_PROFILE_ID = 4;
+    public static final int SERVER_PROFILE_ID = 2;
 
     private static final int RAM_WARNING_THRESHOLD_MB = 6144;
 

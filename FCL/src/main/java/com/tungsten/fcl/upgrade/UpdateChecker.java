@@ -25,7 +25,7 @@ public class UpdateChecker {
     // Cố tình KHÔNG còn trỏ về repo GitHub thật của FCL-Team nữa (app đã đổi
     // thương hiệu Lylee, không nên tự ý kiểm tra cập nhật dựa theo version của
     // đội FCL gốc).
-    public static final String UPDATE_CHECK_URL = "https://lylee-launcher-api.lyleelauncher.workers.dev/api/mobile/version-check";
+    public static final String UPDATE_CHECK_URL = "https://lylee-launcher-api.silvadrag2006.workers.dev/api/mobile/version-check";
     public static final String UPDATE_CHECK_URL_CN = UPDATE_CHECK_URL;
 
     private static UpdateChecker instance;

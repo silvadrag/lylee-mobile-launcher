@@ -15,7 +15,7 @@ import java.util.List;
  */
 public final class LyleeServerStatus {
 
-    private static final String URL = "https://lylee-launcher-api.lyleelauncher.workers.dev/api/servers";
+    private static final String URL = "https://lylee-launcher-api.silvadrag2006.workers.dev/api/servers";
     private static final int SERVER_PROFILE_ID = 1;
 
     private LyleeServerStatus() {

@@ -21,6 +21,8 @@ import com.tungsten.fcl.R;
 import com.tungsten.fcl.lylee.LyleeFriendsApi;
 import com.tungsten.fcl.lylee.LyleeFriendsSession;
 import com.tungsten.fcl.setting.Accounts;
+import com.tungsten.fcl.ui.account.ForgotPasswordDialog;
+import com.tungsten.fcl.ui.account.RecoveryKeyDialog;
 import com.tungsten.fcl.util.AndroidUtils;
 import com.tungsten.fclcore.auth.Account;
 import com.tungsten.fclcore.task.Schedulers;
@@ -46,7 +48,7 @@ import java.util.List;
  */
 public class FriendsActivity extends FCLActivity {
 
-    private static final int POLL_INTERVAL_MS = 2000;
+    private static final int POLL_INTERVAL_MS = 3000;
 
     private enum Screen { LOGIN, LIST, CHAT, ACCOUNT_SETTINGS }
 
@@ -55,15 +57,14 @@ public class FriendsActivity extends FCLActivity {
     private View loginContainer;
     private FCLTextView loginSubtitle;
     private FCLEditText loginPassword;
-    private FCLEditText loginEmail;
-    private FCLEditText loginCode;
+    private FCLEditText loginConfirmPassword;
+    private FCLTextView loginForgotPassword;
     private FCLButton loginSubmit;
     private FCLTextView loginError;
     private FCLProgressBar loginProgress;
     private View loginGoogle;
     private GoogleSignInClient googleSignInClient;
     private boolean isClaimed = false;
-    private boolean registerCodeSent = false;
 
     // --- Danh sách ---
     private View listContainer;
@@ -85,15 +86,13 @@ public class FriendsActivity extends FCLActivity {
     private FCLTextView settingsPasswordStatus;
     private FCLButton settingsAddPassword;
     private View settingsPasswordForm;
-    private FCLEditText settingsEmail;
-    private FCLEditText settingsCode;
     private FCLEditText settingsNewPassword;
+    private FCLEditText settingsConfirmPassword;
     private FCLButton settingsPasswordSubmit;
     private FCLTextView settingsGoogleStatus;
     private FCLButton settingsAddGoogle;
     private FCLTextView settingsError;
     private FCLProgressBar settingsProgress;
-    private boolean settingsCodeSent = false;
 
     private String myUsername;
     private final Handler pollHandler = new Handler(Looper.getMainLooper());
@@ -189,13 +188,16 @@ public class FriendsActivity extends FCLActivity {
         loginContainer = findViewById(R.id.login_container);
         loginSubtitle = findViewById(R.id.login_subtitle);
         loginPassword = findViewById(R.id.login_password);
-        loginEmail = findViewById(R.id.login_email);
-        loginCode = findViewById(R.id.login_code);
+        loginConfirmPassword = findViewById(R.id.login_confirm_password);
+        loginForgotPassword = findViewById(R.id.login_forgot_password);
         loginSubmit = findViewById(R.id.login_submit);
         loginError = findViewById(R.id.login_error);
         loginProgress = findViewById(R.id.login_progress);
         loginGoogle = findViewById(R.id.login_google);
         loginSubmit.setOnClickListener(v -> onLoginSubmit());
+        if (loginForgotPassword != null) {
+            loginForgotPassword.setOnClickListener(v -> onForgotPassword());
+        }
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(LyleeFriendsApi.GOOGLE_WEB_CLIENT_ID)
@@ -206,6 +208,13 @@ public class FriendsActivity extends FCLActivity {
             loginError.setVisibility(View.GONE);
             startActivityForResult(googleSignInClient.getSignInIntent(), this::onGoogleSignInResult);
         });
+    }
+
+    private void onForgotPassword() {
+        new ForgotPasswordDialog(this, myUsername, () -> {
+            loginPassword.setText("");
+            if (loginConfirmPassword != null) loginConfirmPassword.setText("");
+        }).show();
     }
 
     private void onGoogleSignInResult(androidx.activity.result.ActivityResult result) {
@@ -250,12 +259,13 @@ public class FriendsActivity extends FCLActivity {
                     if (isClaimed) {
                         loginSubtitle.setText(AndroidUtils.getLocalizedText(this, "friends_login_subtitle_existing", myUsername));
                         loginSubmit.setText(R.string.friends_login_button);
-                        loginEmail.setVisibility(View.GONE);
-                        loginCode.setVisibility(View.GONE);
+                        if (loginConfirmPassword != null) loginConfirmPassword.setVisibility(View.GONE);
+                        if (loginForgotPassword != null) loginForgotPassword.setVisibility(View.VISIBLE);
                     } else {
                         loginSubtitle.setText(AndroidUtils.getLocalizedText(this, "friends_login_subtitle_new", myUsername));
-                        loginSubmit.setText(R.string.friends_register_send_code);
-                        loginEmail.setVisibility(View.VISIBLE);
+                        loginSubmit.setText(R.string.friends_register_button);
+                        if (loginConfirmPassword != null) loginConfirmPassword.setVisibility(View.VISIBLE);
+                        if (loginForgotPassword != null) loginForgotPassword.setVisibility(View.GONE);
                     }
                 }).start();
     }
@@ -274,38 +284,45 @@ public class FriendsActivity extends FCLActivity {
                             return;
                         }
                         LyleeFriendsSession.save(this, res.token, res.username, res.expiresAt);
-                        showScreen(Screen.LIST);
-                    }).start();
-        } else if (!registerCodeSent) {
-            String email = String.valueOf(loginEmail.getText());
-            if (email.isEmpty()) return;
-            setLoginBusy(true);
-            LyleeFriendsApi.registerStart(myUsername, email)
-                    .whenComplete(Schedulers.androidUIThread(), (res, ex) -> {
-                        setLoginBusy(false);
-                        if (ex != null || res == null || !res.success) {
-                            showLoginError(R.string.friends_register_send_code_failed);
-                            return;
+                        if (res.recoveryKey != null && !res.recoveryKey.isEmpty()) {
+                            new RecoveryKeyDialog(
+                                    this,
+                                    "CẤP MÃ KHÔI PHỤC BẢO MẬT",
+                                    "Hệ thống đã nâng cấp cơ chế bảo mật bằng Mã Khôi Phục (thay thế email). Dưới đây là Mã Khôi Phục duy nhất cho tài khoản của bạn. Vui lòng sao chép và lưu trữ an toàn ngay bây giờ!",
+                                    res.recoveryKey,
+                                    () -> showScreen(Screen.LIST)
+                            ).show();
+                        } else {
+                            showScreen(Screen.LIST);
                         }
-                        registerCodeSent = true;
-                        loginCode.setVisibility(View.VISIBLE);
-                        loginSubmit.setText(R.string.friends_register_confirm);
-                        Toast.makeText(this, getString(R.string.friends_register_code_sent), Toast.LENGTH_LONG).show();
                     }).start();
         } else {
-            String code = String.valueOf(loginCode.getText());
             String password = String.valueOf(loginPassword.getText());
-            if (code.isEmpty() || password.isEmpty()) return;
+            String confirmPassword = loginConfirmPassword != null ? String.valueOf(loginConfirmPassword.getText()) : "";
+            if (password.length() < 4) {
+                showLoginError(R.string.friends_password_too_short);
+                return;
+            }
+            if (!password.equals(confirmPassword)) {
+                showLoginError(R.string.friends_password_mismatch);
+                return;
+            }
             setLoginBusy(true);
-            LyleeFriendsApi.registerConfirm(myUsername, code, password)
+            LyleeFriendsApi.register(myUsername, password)
                     .whenComplete(Schedulers.androidUIThread(), (res, ex) -> {
                         setLoginBusy(false);
                         if (ex != null || res == null) {
-                            showLoginError(R.string.friends_register_confirm_failed);
+                            showLoginError(R.string.friends_register_failed);
                             return;
                         }
                         LyleeFriendsSession.save(this, res.token, res.username, res.expiresAt);
-                        showScreen(Screen.LIST);
+                        new RecoveryKeyDialog(
+                                this,
+                                getString(R.string.recovery_key_dialog_title),
+                                getString(R.string.recovery_key_dialog_subtitle),
+                                res.recoveryKey,
+                                () -> showScreen(Screen.LIST)
+                        ).show();
                     }).start();
         }
     }
@@ -334,9 +351,8 @@ public class FriendsActivity extends FCLActivity {
         settingsPasswordStatus = findViewById(R.id.settings_password_status);
         settingsAddPassword = findViewById(R.id.settings_add_password);
         settingsPasswordForm = findViewById(R.id.settings_password_form);
-        settingsEmail = findViewById(R.id.settings_email);
-        settingsCode = findViewById(R.id.settings_code);
         settingsNewPassword = findViewById(R.id.settings_new_password);
+        settingsConfirmPassword = findViewById(R.id.settings_confirm_password);
         settingsPasswordSubmit = findViewById(R.id.settings_password_submit);
         settingsGoogleStatus = findViewById(R.id.settings_google_status);
         settingsAddGoogle = findViewById(R.id.settings_add_google);
@@ -346,7 +362,6 @@ public class FriendsActivity extends FCLActivity {
         back.setOnClickListener(v -> showScreen(Screen.LIST));
 
         settingsAddPassword.setOnClickListener(v -> {
-            settingsCodeSent = false;
             settingsPasswordForm.setVisibility(View.VISIBLE);
             settingsAddPassword.setVisibility(View.GONE);
         });
@@ -360,7 +375,6 @@ public class FriendsActivity extends FCLActivity {
     private void loadAccountSettings() {
         settingsError.setVisibility(View.GONE);
         settingsPasswordForm.setVisibility(View.GONE);
-        settingsCodeSent = false;
         setSettingsBusy(true);
         LyleeFriendsApi.claimStatus(myUsername)
                 .whenComplete(Schedulers.androidUIThread(), (res, ex) -> {
@@ -379,41 +393,35 @@ public class FriendsActivity extends FCLActivity {
 
     private void onSettingsPasswordSubmit() {
         settingsError.setVisibility(View.GONE);
-        if (!settingsCodeSent) {
-            String email = String.valueOf(settingsEmail.getText());
-            if (email.isEmpty()) return;
-            setSettingsBusy(true);
-            LyleeFriendsApi.registerStart(myUsername, email)
-                    .whenComplete(Schedulers.androidUIThread(), (res, ex) -> {
-                        setSettingsBusy(false);
-                        if (ex != null || res == null || !res.success) {
-                            showSettingsError(R.string.friends_register_send_code_failed);
-                            return;
-                        }
-                        settingsCodeSent = true;
-                        settingsCode.setVisibility(View.VISIBLE);
-                        settingsNewPassword.setVisibility(View.VISIBLE);
-                        settingsPasswordSubmit.setText(R.string.friends_register_confirm);
-                        Toast.makeText(this, getString(R.string.friends_register_code_sent), Toast.LENGTH_LONG).show();
-                    }).start();
-        } else {
-            String code = String.valueOf(settingsCode.getText());
-            String password = String.valueOf(settingsNewPassword.getText());
-            if (code.isEmpty() || password.isEmpty()) return;
-            setSettingsBusy(true);
-            LyleeFriendsApi.registerConfirm(myUsername, code, password)
-                    .whenComplete(Schedulers.androidUIThread(), (res, ex) -> {
-                        setSettingsBusy(false);
-                        if (ex != null || res == null) {
-                            showSettingsError(R.string.friends_register_confirm_failed);
-                            return;
-                        }
-                        Toast.makeText(this, getString(R.string.friends_settings_password_set), Toast.LENGTH_SHORT).show();
-                        settingsPasswordForm.setVisibility(View.GONE);
-                        settingsPasswordSubmit.setText(R.string.friends_register_send_code);
-                        loadAccountSettings();
-                    }).start();
+        String password = settingsNewPassword != null ? String.valueOf(settingsNewPassword.getText()) : "";
+        String confirm = settingsConfirmPassword != null ? String.valueOf(settingsConfirmPassword.getText()) : "";
+        if (password.length() < 4) {
+            showSettingsError(R.string.friends_password_too_short);
+            return;
         }
+        if (!password.equals(confirm)) {
+            showSettingsError(R.string.friends_password_mismatch);
+            return;
+        }
+        setSettingsBusy(true);
+        LyleeFriendsApi.register(myUsername, password)
+                .whenComplete(Schedulers.androidUIThread(), (res, ex) -> {
+                    setSettingsBusy(false);
+                    if (ex != null || res == null) {
+                        showSettingsError(R.string.friends_register_failed);
+                        return;
+                    }
+                    Toast.makeText(this, getString(R.string.friends_settings_password_set), Toast.LENGTH_SHORT).show();
+                    settingsPasswordForm.setVisibility(View.GONE);
+                    new RecoveryKeyDialog(
+                            this,
+                            getString(R.string.recovery_key_dialog_title),
+                            getString(R.string.recovery_key_dialog_subtitle),
+                            res.recoveryKey,
+                            null
+                    ).show();
+                    loadAccountSettings();
+                }).start();
     }
 
     private void onGoogleLinkResult(androidx.activity.result.ActivityResult result) {

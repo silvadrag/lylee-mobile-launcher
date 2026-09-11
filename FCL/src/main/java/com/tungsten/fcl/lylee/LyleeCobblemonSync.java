@@ -31,7 +31,7 @@ public class LyleeCobblemonSync {
     /** Cùng domain Cloudflare Worker mà launcher PC đang dùng thật (không đổi
      *  hạ tầng riêng cho mobile) — chỉ khác path, xem MainUI/UpdateChecker. */
     public static final String MANIFEST_URL =
-            "https://lylee-launcher-api.lyleelauncher.workers.dev/api/servers/1/manifest";
+            "https://lylee-launcher-api.silvadrag2006.workers.dev/api/servers/1/manifest";
 
     private LyleeCobblemonSync() {
     }
@@ -69,8 +69,12 @@ public class LyleeCobblemonSync {
                 if (entry.path == null || entry.url == null || entry.hash == null) continue;
                 File local = new File(gameDir, entry.path);
                 if (isUpToDate(local, entry)) continue;
+                String fileUrl = entry.url;
+                if (fileUrl.contains("lylee-launcher-api.lyleelauncher.workers.dev")) {
+                    fileUrl = fileUrl.replace("lylee-launcher-api.lyleelauncher.workers.dev", "lylee-launcher-api.silvadrag2006.workers.dev");
+                }
                 downloads.add(new FileDownloadTask(
-                        NetworkUtils.toURL(entry.url),
+                        NetworkUtils.toURL(fileUrl),
                         local,
                         new FileDownloadTask.IntegrityCheck(normalizeHashAlgorithm(entry.hashType), entry.hash)
                 ));
