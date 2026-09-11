@@ -78,8 +78,18 @@ public class LyleeImageSliderView extends FrameLayout {
     public void setImages(List<String> newUrls) {
         handler.removeCallbacks(advanceRunnable);
         urls = new ArrayList<>();
-        for (String u : newUrls) {
-            if (u != null && !u.isBlank()) urls.add(u);
+        if (newUrls != null) {
+            for (String u : newUrls) {
+                if (u != null && !u.isBlank()) {
+                    String normalized = u.replace("lylee-launcher-api.lyleelauncher.workers.dev", "lylee-launcher-api.silvadrag2006.workers.dev")
+                                         .replace("/files/cobblemon/_announcements/", "/files/_announcements/")
+                                         .replace("/files/dragonball/_announcements/", "/files/_announcements/");
+                    if (normalized.startsWith("/files/")) {
+                        normalized = "https://lylee-launcher-api.silvadrag2006.workers.dev" + normalized;
+                    }
+                    urls.add(normalized);
+                }
+            }
         }
         index = 0;
         dotsPanel.removeAllViews();
