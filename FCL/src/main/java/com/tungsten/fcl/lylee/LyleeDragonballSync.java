@@ -15,7 +15,7 @@ import java.io.IOException;
 public class LyleeDragonballSync {
 
     public static final String MANIFEST_URL =
-            "https://lylee-launcher-api.silvadrag2006.workers.dev/api/servers/2/manifest";
+            "https://lylee-launcher-api.silvadrag2006.workers.dev/api/servers/4/manifest";
 
     private LyleeDragonballSync() {
     }
@@ -31,7 +31,9 @@ public class LyleeDragonballSync {
     /** Chỉ lấy manifest từ server profile 4, không tải file. */
     public static Task<LyleeManifest> fetchManifest() {
         return Task.supplyAsync(() -> {
-            String json = NetworkUtils.doGet(NetworkUtils.toURL(MANIFEST_URL));
+            String sep = MANIFEST_URL.contains("?") ? "&" : "?";
+            String url = MANIFEST_URL + sep + "t=" + (System.currentTimeMillis() / 1000);
+            String json = NetworkUtils.doGet(NetworkUtils.toURL(url));
             LyleeManifest manifest = JsonUtils.GSON.fromJson(json, LyleeManifest.class);
             if (manifest == null || manifest.files == null || manifest.files.isEmpty()) {
                 throw new IOException("Không lấy được danh sách file modpack từ server Lylee Dragonball (manifest rỗng hoặc sai định dạng).");

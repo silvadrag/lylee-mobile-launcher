@@ -70,7 +70,9 @@ public class LyleeCobblemonSync {
 
     public static Task<LyleeManifest> fetchManifest() {
         return Task.supplyAsync(() -> {
-            String json = NetworkUtils.doGet(NetworkUtils.toURL(MANIFEST_URL));
+            String sep = MANIFEST_URL.contains("?") ? "&" : "?";
+            String url = MANIFEST_URL + sep + "t=" + (System.currentTimeMillis() / 1000);
+            String json = NetworkUtils.doGet(NetworkUtils.toURL(url));
             LyleeManifest manifest = JsonUtils.GSON.fromJson(json, LyleeManifest.class);
             if (manifest == null || manifest.files == null || manifest.files.isEmpty()) {
                 throw new IOException("Không lấy được danh sách file modpack từ server Lylee (manifest rỗng hoặc sai định dạng).");
@@ -110,6 +112,10 @@ public class LyleeCobblemonSync {
                 String fileUrl = entry.url;
                 if (fileUrl.contains("lylee-launcher-api.lyleelauncher.workers.dev")) {
                     fileUrl = fileUrl.replace("lylee-launcher-api.lyleelauncher.workers.dev", "lylee-launcher-api.silvadrag2006.workers.dev");
+                }
+                if (entry.hash != null && !entry.hash.isEmpty()) {
+                    String sep = fileUrl.contains("?") ? "&" : "?";
+                    fileUrl = fileUrl + sep + "v=" + entry.hash;
                 }
                 File local = new File(gameDir, entry.path);
                 FileDownloadTask downloadTask = new FileDownloadTask(
